@@ -27,8 +27,10 @@ python -m http.server 4173
 https://zhxh1021.github.io/academic-garden/
 ```
 
-如果首次部署后地址暂时打不开，请到 GitHub 仓库的 `Settings -> Pages` 中确认
-`Build and deployment` 的来源为 `GitHub Actions`。线上版仍然把数据保存在当前
+如果首次部署失败并提示 `Get Pages site failed`，请到 GitHub 仓库的
+`Settings -> Pages` 中确认 `Build and deployment` 的来源为 `GitHub Actions`。
+这个设置需要在 GitHub 网页上手动打开一次；打开后重新运行失败的 workflow，
+后续每次推送都会自动部署。线上版仍然把数据保存在当前
 浏览器的 `IndexedDB` 中；换电脑或换浏览器前，请先用页面右上角导出 JSON 备份。
 
 ## 数据
