@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Garden | 学术花园</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="paper-glow" aria-hidden="true"></div>
+    <header class="masthead">
+      <div class="brand">
+        <p class="eyebrow">ACADEMIC GARDEN</p>
+        <h1>学术花园</h1>
+        <p class="tagline">让长期投入被温柔地看见。</p>
+      </div>
+      <div class="header-actions">
+        <section class="wallet" aria-label="花园金币">
+          <span class="wallet-label">金币</span>
+          <strong id="coin-count">0</strong>
+        </section>
+        <button type="button" class="quiet-button" id="export-button">导出备份</button>
+        <button type="button" class="primary-button" id="open-create">种下一株植物</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="welcome-card">
+        <div>
+          <p class="eyebrow">本周花园</p>
+          <h2>正在培育的项目，先在这里呼吸。</h2>
+          <p>论文和课程都有自己的季节。记录真实推进，不必追赶连续签到。</p>
+        </div>
+        <div class="garden-summary" id="garden-summary" aria-label="花园统计"></div>
+      </section>
+
+      <nav class="garden-nav" aria-label="花园区域">
+        <button class="garden-tab is-selected" data-zone="active" type="button">
+          <span>正在生长</span><strong id="active-count">0</strong>
+        </button>
+        <button class="garden-tab" data-zone="harvested" type="button">
+          <span>收获园</span><strong id="harvested-count">0</strong>
+        </button>
+        <button class="garden-tab" data-zone="dormant" type="button">
+          <span>沉睡花园</span><strong id="dormant-count">0</strong>
+        </button>
+      </nav>
+
+      <section class="plot-header">
+        <div>
+          <p class="eyebrow" id="zone-kicker">ACTIVE PLOT</p>
+          <h2 id="zone-title">正在生长的花园</h2>
+          <p id="zone-description">当前需要关心的树与花。</p>
+        </div>
+        <button type="button" class="link-button" id="import-history">导入历史成果</button>
+      </section>
+
+      <section class="plant-grid" id="plant-grid" aria-live="polite"></section>
+    </main>
+
+    <dialog class="plant-dialog" id="plant-dialog">
+      <form method="dialog" id="plant-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow" id="dialog-kicker">NEW PLANT</p>
+            <h2 id="dialog-title">种下一株植物</h2>
+          </div>
+          <button type="button" class="close-button" id="close-dialog" aria-label="关闭">×</button>
+        </div>
+        <input type="hidden" name="historical" id="historical-field" value="false" />
+        <label class="field">
+          <span>项目名称</span>
+          <input name="title" required maxlength="80" placeholder="例如：数字平台治理论文" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>植物类型</span>
+            <select name="type" id="plant-type">
+              <option value="paper">树（论文）</option>
+              <option value="course">花（课程）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>植物品种</span>
+            <select name="variety" id="plant-variety"></select>
+          </label>
+        </div>
+        <div id="paper-fields">
+          <label class="field">
+            <span>作者角色</span>
+            <select name="authorRole">
+              <option value="primary">主要作者</option>
+              <option value="coauthor">共同作者</option>
+            </select>
+          </label>
+        </div>
+        <div id="course-fields" hidden>
+          <label class="field">
+            <span>学期</span>
+            <input name="term" maxlength="30" placeholder="例如：2026 春季" />
+          </label>
+        </div>
+        <p class="history-note" id="history-note" hidden>
+          历史成果会直接安放到收获园，不占用当前花园视野。
+        </p>
+        <footer class="dialog-actions">
+          <button type="button" class="quiet-button" id="cancel-dialog">取消</button>
+          <button type="submit" class="primary-button" id="submit-plant">种下植物</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="detail-dialog" id="detail-dialog">
+      <form method="dialog" id="detail-form">
+        <input type="hidden" id="detail-plant-id" name="plantId" />
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow" id="detail-kicker">PLANT JOURNAL</p>
+            <h2 id="detail-title"></h2>
+            <p class="detail-status" id="detail-status"></p>
+          </div>
+          <button type="button" class="close-button" id="close-detail" aria-label="关闭">×</button>
+        </div>
+        <section class="detail-paper" id="detail-paper">
+          <h3>论文信息</h3>
+          <label class="field">
+            <span>作者</span>
+            <textarea name="authors" rows="2" maxlength="300" placeholder="例如：张三；李四；王五"></textarea>
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span>发表年份</span>
+              <input name="publicationYear" type="number" min="1900" max="2100" placeholder="2026" />
+            </label>
+            <label class="field">
+              <span>发表日期</span>
+              <input name="publicationDate" type="date" />
+            </label>
+          </div>
+          <label class="field">
+            <span>期刊或会议</span>
+            <input name="venue" maxlength="120" placeholder="例如：Organization Studies" />
+          </label>
+        </section>
+        <section class="detail-course" id="detail-course" hidden></section>
+        <section class="journal-history">
+          <h3>培育记录</h3>
+          <div id="detail-activities"></div>
+        </section>
+        <footer class="dialog-actions">
+          <button type="button" class="quiet-button" id="cancel-detail">取消</button>
+          <button type="submit" class="primary-button" id="save-detail">保存详情</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <template id="empty-template">
+      <article class="empty-state">
+        <span class="empty-sprout" aria-hidden="true"></span>
+        <h3></h3>
+        <p></p>
+      </article>
+    </template>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
