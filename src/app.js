@@ -54,6 +54,7 @@ const elements = {
   gardenHome: document.querySelector("#garden-home"),
   projectWorkbench: document.querySelector("#project-workbench"),
   overviewGarden: document.querySelector("#overview-garden"),
+  shopSection: document.querySelector("#shop-section"),
   shopGrid: document.querySelector("#shop-grid"),
   settleToday: document.querySelector("#settle-today"),
   settlementCopy: document.querySelector("#settlement-copy"),
@@ -276,10 +277,10 @@ function renderSettlement() {
 function miniPlantMarkup(plant, index) {
   const config = TYPE_CONFIG[plant.type];
   const stage = stageOf(plant);
-  const column = index % 3;
-  const row = Math.floor(index / 3);
+  const column = index % 4;
+  const row = Math.floor(index / 4);
   return `
-    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage}" data-overview-plant-id="${plant.id}" style="--x:${9 + column * 30}%;--y:${22 + row * 30}%">
+    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage}" data-overview-plant-id="${plant.id}" style="--x:${18 + column * 17}%;--y:${54 + row * 16}%">
       <span class="mini-sprite" aria-hidden="true"></span>
       <strong>${escapeText(plant.title)}</strong>
       <em>${config.label} · ${stage.label}</em>
@@ -291,44 +292,28 @@ function decorationMarkup(decoration) {
   return `<span class="garden-decoration ${decoration.className}" title="${escapeText(decoration.label)}"></span>`;
 }
 
-function sceneEmptyText(zone) {
-  if (zone === "active") return "种下当前论文或课程后，这里会出现新的植物。";
-  if (zone === "harvested") return "已完成的成果会安放在温室里。";
-  return "暂停的项目会在夜晚花园里安静休息。";
-}
-
-function sceneMarkup(zone) {
-  const scenePlants = plantsIn(zone);
-  const ownedDecorations = zone === "active"
-    ? DECORATIONS.filter((decoration) => state.decorations.owned.includes(decoration.id))
-    : [];
-  const plantsMarkup = scenePlants.length > 0
-    ? scenePlants.map(miniPlantMarkup).join("")
-    : `<p class="overview-empty">${sceneEmptyText(zone)}</p>`;
-  return `
-    <section class="scene-card scene-${zone}" data-overview-zone="${zone}" aria-label="${ZONES[zone].title}">
-      <button type="button" class="scene-link" data-overview-zone="${zone}">
-        <span>${ZONES[zone].title}</span>
-        <strong>${scenePlants.length}</strong>
-      </button>
-      <div class="scene-sky" aria-hidden="true"></div>
-      <div class="scene-field">
-        ${ownedDecorations.map(decorationMarkup).join("")}
-        ${plantsMarkup}
-      </div>
-    </section>
-  `;
-}
-
 function renderOverview() {
+  const activePlants = plantsIn("active");
   const ownedDecorations = DECORATIONS.filter((decoration) => state.decorations.owned.includes(decoration.id));
+  const activePlantMarkup = activePlants.length > 0
+    ? activePlants.map(miniPlantMarkup).join("")
+    : `<p class="overview-empty">前景花圃还空着，先种下一株植物。</p>`;
   elements.overviewGarden.innerHTML = `
-    <div class="overview-scenes">
-      ${sceneMarkup("active")}
-      ${sceneMarkup("harvested")}
-      ${sceneMarkup("dormant")}
+    <div class="map-sky" aria-hidden="true"></div>
+    <button type="button" class="map-house house-harvested" data-overview-zone="harvested">
+      <span class="house-art greenhouse" aria-hidden="true"></span>
+      <strong>收获园</strong>
+      <em>${plantsIn("harvested").length}</em>
+    </button>
+    <button type="button" class="map-house house-dormant" data-overview-zone="dormant">
+      <span class="house-art night-house" aria-hidden="true"></span>
+      <strong>沉睡园</strong>
+      <em>${plantsIn("dormant").length}</em>
+    </button>
+    <div class="map-field">
+      ${ownedDecorations.map(decorationMarkup).join("")}
+      ${activePlantMarkup}
     </div>
-    ${ownedDecorations.length === 0 ? `<p class="overview-hint">买下装饰后，它们会先出现在正在生长的花园里。</p>` : ""}
   `;
 }
 
@@ -569,6 +554,15 @@ elements.overviewGarden.addEventListener("click", (event) => {
   const zoneTarget = event.target.closest("[data-overview-zone]");
   if (zoneTarget) goToZone(zoneTarget.dataset.overviewZone);
 });
+
+document.querySelector("[data-home-action='shop']").addEventListener("click", () => {
+  elements.shopSection.classList.toggle("is-collapsed");
+  if (!elements.shopSection.classList.contains("is-collapsed")) {
+    elements.shopSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+});
+
+document.querySelector("[data-home-action='projects']").addEventListener("click", () => goToZone("active"));
 
 document.querySelector("#open-create").addEventListener("click", () => openForm(false));
 document.querySelector("#import-history").addEventListener("click", () => openForm(true));

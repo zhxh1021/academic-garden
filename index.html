@@ -30,41 +30,26 @@
 
     <main class="layout">
       <section class="garden-home" id="garden-home">
-        <section class="welcome-card">
-          <div>
-            <p class="eyebrow">GARDEN OVERVIEW</p>
-            <h2>整座花园先被看见，项目在里面慢慢长大。</h2>
-            <p>记录会积累今日的日照、浇水或施肥；结算后，它们会变成成长值。</p>
-          </div>
-          <div class="garden-summary" id="garden-summary" aria-label="花园统计"></div>
-        </section>
-
-        <section class="settlement-card" id="settlement-card">
-          <div>
-            <p class="eyebrow">DAILY CARE</p>
-            <h2>今日照料结算</h2>
-            <p id="settlement-copy">今天的照料还在等待记录。</p>
-          </div>
-          <button type="button" class="primary-button" id="settle-today">结算今日</button>
-        </section>
-
         <section class="garden-board">
-          <div class="plot-header">
-            <div>
-              <p class="eyebrow">PIXEL GARDEN</p>
-              <h2>花园全貌</h2>
-              <p>这里展示正在生长的树与花，以及已经买下的装饰品。</p>
-            </div>
+          <div class="home-hud">
+            <div class="garden-summary" id="garden-summary" aria-label="花园统计"></div>
+            <section class="settlement-card" id="settlement-card">
+              <p id="settlement-copy">今天的照料还在等待记录。</p>
+              <button type="button" class="primary-button" id="settle-today">结算今日</button>
+            </section>
           </div>
           <div class="overview-garden" id="overview-garden" aria-label="花园全貌"></div>
+          <div class="home-actions">
+            <button type="button" class="quiet-button" data-home-action="shop">装饰商店</button>
+            <button type="button" class="quiet-button" data-home-action="projects">项目管理</button>
+          </div>
         </section>
 
-        <section class="shop-section">
+        <section class="shop-section is-collapsed" id="shop-section">
           <div class="plot-header">
             <div>
               <p class="eyebrow">GARDEN SHOP</p>
               <h2>装饰商店</h2>
-              <p>用金币给花园添一点自己的气味。</p>
             </div>
           </div>
           <div class="shop-grid" id="shop-grid"></div>
