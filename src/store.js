@@ -9,6 +9,10 @@ export function emptyState() {
     plants: [],
     activities: [],
     harvestYields: [],
+    settlements: [],
+    decorations: {
+      owned: []
+    },
     wallet: {
       currentCoins: 0,
       lifetimeCoins: 0,
@@ -71,4 +75,3 @@ export function downloadBackup(state) {
   link.click();
   URL.revokeObjectURL(link.href);
 }
-

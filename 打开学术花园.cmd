@@ -1,12 +1,12 @@
 @echo off
 cd /d "%~dp0"
-python "%~dp0scripts\open_local.py" --no-browser
+where py >nul 2>nul
+if %errorlevel%==0 (
+  py -3 "%~dp0scripts\open_local.py"
+) else (
+  python "%~dp0scripts\open_local.py"
+)
 if errorlevel 1 (
   pause
   exit /b 1
-)
-start "" "http://127.0.0.1:4173"
-if errorlevel 1 (
-  echo Cannot open the browser automatically. Please visit http://127.0.0.1:4173
-  pause
 )

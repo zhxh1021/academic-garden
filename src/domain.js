@@ -60,30 +60,65 @@ export const MILESTONE_REWARD = {
   coins: 12
 };
 
+export const CARE_TYPES = {
+  sun: { label: "日照", growth: 3 },
+  water: { label: "浇水", growth: 4 },
+  fertilizer: { label: "施肥", growth: 5 }
+};
+
+export const DECORATIONS = [
+  {
+    id: "stone-path",
+    label: "鹅卵石小径",
+    price: 10,
+    description: "给花园铺一段安静的小路。",
+    className: "decor-path"
+  },
+  {
+    id: "wood-bench",
+    label: "木长椅",
+    price: 16,
+    description: "给完成思考后的自己留一个座位。",
+    className: "decor-bench"
+  },
+  {
+    id: "lamp",
+    label: "小路灯",
+    price: 22,
+    description: "夜里也能看见正在长大的项目。",
+    className: "decor-lamp"
+  },
+  {
+    id: "pond",
+    label: "像素水池",
+    price: 30,
+    description: "让花园多一点清亮的呼吸。",
+    className: "decor-pond"
+  }
+];
+
 export const ACTIVITY_RULES = {
   paper: [
-    { id: "writing", label: "写作", keywords: ["写", "修改", "改写", "正文", "初稿", "撰写"], care: "浇水", growth: 8, coins: 4 },
-    { id: "analysis", label: "分析", keywords: ["数据", "分析", "模型", "实验", "编码", "案例处理"], care: "施肥", growth: 9, coins: 4 },
-    { id: "submission", label: "投稿事务", keywords: ["投稿", "审稿", "回复", "返修", "格式"], care: "浇水 + 施肥", growth: 10, coins: 5 },
-    { id: "reading", label: "阅读", keywords: ["阅读", "读了", "文献", "笔记"], care: "阳光 + 养分", growth: 6, coins: 3 },
-    { id: "discussion", label: "讨论", keywords: ["讨论", "会议", "组会", "汇报", "合作者"], care: "阳光", growth: 6, coins: 3 },
-    { id: "idea", label: "构思", keywords: ["构思", "框架", "问题", "idea", "理论"], care: "阳光", growth: 6, coins: 3 }
+    { id: "writing", label: "写作", keywords: ["写", "修改", "改写", "正文", "初稿", "撰写"], careType: "water" },
+    { id: "analysis", label: "分析", keywords: ["数据", "分析", "模型", "实验", "编码", "案例处理"], careType: "fertilizer" },
+    { id: "submission", label: "投稿事务", keywords: ["投稿", "审稿", "回复", "返修", "格式"], careType: "fertilizer" },
+    { id: "reading", label: "阅读", keywords: ["阅读", "读了", "文献", "笔记"], careType: "sun" },
+    { id: "discussion", label: "讨论", keywords: ["讨论", "会议", "组会", "汇报", "合作者"], careType: "sun" },
+    { id: "idea", label: "构思", keywords: ["构思", "框架", "问题", "idea", "理论"], careType: "sun" }
   ],
   course: [
-    { id: "teaching", label: "授课", keywords: ["授课", "上课", "课堂", "又上了一次课"], care: "浇水 + 阳光", growth: 8, coins: 4 },
-    { id: "prep", label: "备课", keywords: ["备课", "课件", "教学设计"], care: "阳光", growth: 6, coins: 3 },
-    { id: "materials", label: "材料更新", keywords: ["材料", "案例", "作业", "讲义"], care: "浇水", growth: 7, coins: 3 },
-    { id: "interaction", label: "学生互动", keywords: ["学生", "答疑", "指导", "反馈"], care: "阳光", growth: 6, coins: 3 },
-    { id: "reflection", label: "复盘", keywords: ["复盘", "总结", "结课报告", "评教"], care: "施肥", growth: 8, coins: 4 }
+    { id: "teaching", label: "授课", keywords: ["授课", "上课", "课堂", "又上了一次课"], careType: "water" },
+    { id: "prep", label: "备课", keywords: ["备课", "课件", "教学设计"], careType: "sun" },
+    { id: "materials", label: "材料更新", keywords: ["材料", "案例", "作业", "讲义"], careType: "water" },
+    { id: "interaction", label: "学生互动", keywords: ["学生", "答疑", "指导", "反馈"], careType: "sun" },
+    { id: "reflection", label: "复盘", keywords: ["复盘", "总结", "结课报告", "评教"], careType: "fertilizer" }
   ]
 };
 
 const GENERAL_ACTIVITY = {
   id: "progress",
   label: "日常推进",
-  care: "阳光",
-  growth: 4,
-  coins: 2
+  careType: "sun"
 };
 
 function createId() {
@@ -118,6 +153,7 @@ export function createPlant(input) {
           venue: ""
         }
       : { term: input.term.trim(), sessions: 0, inheritedFrom: null },
+    careLog: {},
     milestones: historical
       ? [{ id: createId(), kind: "history_import", label: "导入历史成果", at: now }]
       : []
@@ -194,35 +230,123 @@ export function classifyActivity(plantType, text, forcedActivityId = null) {
   return scoredRules[0].score > 0 ? scoredRules[0].rule : GENERAL_ACTIVITY;
 }
 
+export function dateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function emptyCareDay() {
+  return {
+    sun: 0,
+    water: 0,
+    fertilizer: 0,
+    settledSun: 0,
+    settledWater: 0,
+    settledFertilizer: 0,
+    settled: false
+  };
+}
+
+export function careSummaryForDate(plant, day = dateKey()) {
+  return { ...emptyCareDay(), ...(plant.careLog?.[day] ?? {}) };
+}
+
+export function pendingCareForDate(plant, day = dateKey()) {
+  const care = careSummaryForDate(plant, day);
+  const settledSun = care.settledSun || (care.settled ? care.sun : 0);
+  const settledWater = care.settledWater || (care.settled ? care.water : 0);
+  const settledFertilizer = care.settledFertilizer || (care.settled ? care.fertilizer : 0);
+  return {
+    sun: Math.max(0, care.sun - settledSun),
+    water: Math.max(0, care.water - settledWater),
+    fertilizer: Math.max(0, care.fertilizer - settledFertilizer)
+  };
+}
+
+export function careLabel(careType) {
+  return CARE_TYPES[careType]?.label ?? CARE_TYPES.sun.label;
+}
+
+export function addCare(plant, careType, day = dateKey()) {
+  const current = careSummaryForDate(plant, day);
+  return {
+    ...plant,
+    careLog: {
+      ...(plant.careLog ?? {}),
+      [day]: {
+        ...current,
+        [careType]: current[careType] + 1,
+        settled: false
+      }
+    }
+  };
+}
+
+export function settleCareForDate(plant, day) {
+  const care = careSummaryForDate(plant, day);
+  const pendingCare = pendingCareForDate(plant, day);
+  const totalCare = pendingCare.sun + pendingCare.water + pendingCare.fertilizer;
+  if (totalCare === 0) return { plant, settlement: null };
+  const balanceBonus = pendingCare.sun > 0 && pendingCare.water > 0 && pendingCare.fertilizer > 0 ? 4 : 0;
+  const growth =
+    pendingCare.sun * CARE_TYPES.sun.growth +
+    pendingCare.water * CARE_TYPES.water.growth +
+    pendingCare.fertilizer * CARE_TYPES.fertilizer.growth +
+    balanceBonus;
+  return {
+    plant: {
+      ...plant,
+      growth: plant.growth + growth,
+      careLog: {
+        ...(plant.careLog ?? {}),
+        [day]: {
+          ...care,
+          settledSun: care.sun,
+          settledWater: care.water,
+          settledFertilizer: care.fertilizer,
+          settled: true
+        }
+      }
+    },
+    settlement: {
+      plantId: plant.id,
+      day,
+      care: pendingCare,
+      growth,
+      balanceBonus
+    }
+  };
+}
+
 export function recordActivity(plant, text, forcedActivityId = null) {
   if (plant.status !== "active") return { plant, activity: null, reward: null };
   const rawText = text.trim();
   if (!rawText) return { plant, activity: null, reward: null };
   const rule = classifyActivity(plant.type, rawText, forcedActivityId);
   const at = new Date().toISOString();
+  const careType = rule.careType;
   const incrementsSession = plant.type === "course" && rule.id === "teaching";
   const updatedMetadata = incrementsSession
     ? { ...plant.metadata, sessions: plant.metadata.sessions + 1 }
     : plant.metadata;
-  const reward = { growth: rule.growth, coins: rule.coins };
+  const updatedPlant = addCare({ ...plant, metadata: updatedMetadata }, careType);
   return {
-    plant: {
-      ...plant,
-      metadata: updatedMetadata,
-      growth: plant.growth + reward.growth
-    },
+    plant: updatedPlant,
     activity: {
       id: createId(),
       plantId: plant.id,
       rawText,
       activityType: rule.id,
       activityLabel: rule.label,
-      care: rule.care,
-      growth: reward.growth,
-      coins: reward.coins,
+      careType,
+      care: careLabel(careType),
+      growth: 0,
+      coins: 0,
       classifiedBy: forcedActivityId ? "shortcut" : "local_rules",
       at
     },
-    reward
+    reward: null
   };
 }

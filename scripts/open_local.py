@@ -37,13 +37,33 @@ def start_server() -> None:
         )
 
 
-def open_browser() -> None:
+def open_browser() -> bool:
     if os.name == "nt":
-        os.startfile(URL)
-        return
+        openers = (
+            lambda: subprocess.Popen(
+                ["explorer.exe", URL],
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ),
+            lambda: os.startfile(URL),
+            lambda: subprocess.Popen(
+                ["rundll32.exe", "url.dll,FileProtocolHandler", URL],
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ),
+        )
+        for opener in openers:
+            try:
+                opener()
+                return True
+            except OSError:
+                continue
+        return False
     import webbrowser
 
-    webbrowser.open(URL)
+    return webbrowser.open(URL)
 
 
 def main() -> int:
@@ -58,8 +78,9 @@ def main() -> int:
     if not is_garden_available():
         print(f"Unable to open Academic Garden. See log: {LOG_PATH}")
         return 1
-    if not no_browser:
-        open_browser()
+    if not no_browser and not open_browser():
+        print(f"Please open this address manually: {URL}")
+        return 1
     print(f"Academic Garden is available at {URL}")
     return 0
 

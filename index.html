@@ -19,43 +19,90 @@
           <span class="wallet-label">金币</span>
           <strong id="coin-count">0</strong>
         </section>
+        <nav class="view-switch" aria-label="页面切换">
+          <button type="button" class="view-tab is-selected" data-view="home">花园首页</button>
+          <button type="button" class="view-tab" data-view="projects">项目管理</button>
+        </nav>
         <button type="button" class="quiet-button" id="export-button">导出备份</button>
         <button type="button" class="primary-button" id="open-create">种下一株植物</button>
       </div>
     </header>
 
     <main class="layout">
-      <section class="welcome-card">
-        <div>
-          <p class="eyebrow">本周花园</p>
-          <h2>正在培育的项目，先在这里呼吸。</h2>
-          <p>论文和课程都有自己的季节。记录真实推进，不必追赶连续签到。</p>
-        </div>
-        <div class="garden-summary" id="garden-summary" aria-label="花园统计"></div>
+      <section class="garden-home" id="garden-home">
+        <section class="welcome-card">
+          <div>
+            <p class="eyebrow">GARDEN OVERVIEW</p>
+            <h2>整座花园先被看见，项目在里面慢慢长大。</h2>
+            <p>记录会积累今日的日照、浇水或施肥；结算后，它们会变成成长值。</p>
+          </div>
+          <div class="garden-summary" id="garden-summary" aria-label="花园统计"></div>
+        </section>
+
+        <section class="settlement-card" id="settlement-card">
+          <div>
+            <p class="eyebrow">DAILY CARE</p>
+            <h2>今日照料结算</h2>
+            <p id="settlement-copy">今天的照料还在等待记录。</p>
+          </div>
+          <button type="button" class="primary-button" id="settle-today">结算今日</button>
+        </section>
+
+        <section class="garden-board">
+          <div class="plot-header">
+            <div>
+              <p class="eyebrow">PIXEL GARDEN</p>
+              <h2>花园全貌</h2>
+              <p>这里展示正在生长的树与花，以及已经买下的装饰品。</p>
+            </div>
+          </div>
+          <div class="overview-garden" id="overview-garden" aria-label="花园全貌"></div>
+        </section>
+
+        <section class="shop-section">
+          <div class="plot-header">
+            <div>
+              <p class="eyebrow">GARDEN SHOP</p>
+              <h2>装饰商店</h2>
+              <p>用金币给花园添一点自己的气味。</p>
+            </div>
+          </div>
+          <div class="shop-grid" id="shop-grid"></div>
+        </section>
       </section>
 
-      <nav class="garden-nav" aria-label="花园区域">
-        <button class="garden-tab is-selected" data-zone="active" type="button">
-          <span>正在生长</span><strong id="active-count">0</strong>
-        </button>
-        <button class="garden-tab" data-zone="harvested" type="button">
-          <span>收获园</span><strong id="harvested-count">0</strong>
-        </button>
-        <button class="garden-tab" data-zone="dormant" type="button">
-          <span>沉睡花园</span><strong id="dormant-count">0</strong>
-        </button>
-      </nav>
+      <section class="project-workbench" id="project-workbench" hidden>
+        <section class="welcome-card">
+          <div>
+            <p class="eyebrow">PROJECT JOURNAL</p>
+            <h2>项目详情在这里推进和记录。</h2>
+            <p>这里保留原来的创建、导入、沉睡、唤醒、阶段推进与培育记录。</p>
+          </div>
+        </section>
 
-      <section class="plot-header">
-        <div>
-          <p class="eyebrow" id="zone-kicker">ACTIVE PLOT</p>
-          <h2 id="zone-title">正在生长的花园</h2>
-          <p id="zone-description">当前需要关心的树与花。</p>
-        </div>
-        <button type="button" class="link-button" id="import-history">导入历史成果</button>
+        <nav class="garden-nav" aria-label="花园区域">
+          <button class="garden-tab is-selected" data-zone="active" type="button">
+            <span>正在生长</span><strong id="active-count">0</strong>
+          </button>
+          <button class="garden-tab" data-zone="harvested" type="button">
+            <span>收获园</span><strong id="harvested-count">0</strong>
+          </button>
+          <button class="garden-tab" data-zone="dormant" type="button">
+            <span>沉睡花园</span><strong id="dormant-count">0</strong>
+          </button>
+        </nav>
+
+        <section class="plot-header">
+          <div>
+            <p class="eyebrow" id="zone-kicker">ACTIVE PLOT</p>
+            <h2 id="zone-title">正在生长的花园</h2>
+            <p id="zone-description">当前需要关心的树与花。</p>
+          </div>
+          <button type="button" class="link-button" id="import-history">导入历史成果</button>
+        </section>
+
+        <section class="plant-grid" id="plant-grid" aria-live="polite"></section>
       </section>
-
-      <section class="plant-grid" id="plant-grid" aria-live="polite"></section>
     </main>
 
     <dialog class="plant-dialog" id="plant-dialog">

@@ -1,23 +1,62 @@
 import {
+  DECORATIONS,
   TYPE_CONFIG,
   ZONES,
   advanceMilestone,
+  careSummaryForDate,
   createPlant,
+  dateKey,
+  pendingCareForDate,
   recordActivity,
   setPlantStatus,
+  settleCareForDate,
   stageOf,
   updatePaperDetails,
   varietyLabel
 } from "./domain.js";
 import { downloadBackup, loadState, saveState } from "./store.js";
 
-let state = await loadState();
+function normalizeState(snapshot) {
+  return {
+    ...snapshot,
+    plants: snapshot.plants.map((plant) => ({
+      ...plant,
+      careLog: plant.careLog ?? {}
+    })),
+    activities: snapshot.activities ?? [],
+    settlements: snapshot.settlements ?? [],
+    decorations: snapshot.decorations ?? { owned: [] },
+    wallet: {
+      ...snapshot.wallet,
+      currentCoins: snapshot.wallet?.currentCoins ?? 0,
+      lifetimeCoins: snapshot.wallet?.lifetimeCoins ?? 0,
+      unlockedVarieties: snapshot.wallet?.unlockedVarieties ?? ["ginkgo", "daisy", "camphor", "hydrangea"]
+    }
+  };
+}
+
+function createId() {
+  return globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+let state = normalizeState(await loadState());
 let selectedZone = "active";
+let selectedView = "home";
 let nurturedPlantId = null;
+let focusedPlantId = null;
 let nurtureTimer = null;
+let focusTimer = null;
 
 const elements = {
   coinCount: document.querySelector("#coin-count"),
+  viewTabs: [...document.querySelectorAll(".view-tab")],
+  gardenHome: document.querySelector("#garden-home"),
+  projectWorkbench: document.querySelector("#project-workbench"),
+  overviewGarden: document.querySelector("#overview-garden"),
+  shopGrid: document.querySelector("#shop-grid"),
+  settleToday: document.querySelector("#settle-today"),
+  settlementCopy: document.querySelector("#settlement-copy"),
   counts: {
     active: document.querySelector("#active-count"),
     harvested: document.querySelector("#harvested-count"),
@@ -89,6 +128,26 @@ function milestoneLabel(plant, milestone) {
   return milestone?.label;
 }
 
+function careLine(care) {
+  return `日照 ${care.sun} · 浇水 ${care.water} · 施肥 ${care.fertilizer}`;
+}
+
+function todayCareMarkup(plant) {
+  if (plant.status !== "active") return "";
+  const care = careSummaryForDate(plant);
+  return `
+    <div class="care-meter" aria-label="今日照料">
+      <span>今日照料</span>
+      <strong>${careLine(care)}</strong>
+    </div>
+  `;
+}
+
+function activityRewardText(activity) {
+  if (activity.careType) return `今日${escapeText(activity.care)} +1，等待结算`;
+  return `+${activity.growth} 成长 · +${activity.coins} 金币`;
+}
+
 function recentActivityMarkup(plant) {
   const records = state.activities
     .filter((activity) => activity.plantId === plant.id)
@@ -99,7 +158,7 @@ function recentActivityMarkup(plant) {
       ${records.map((activity) => `
         <p><strong>${escapeText(activity.care)}</strong> ${escapeText(activity.activityLabel)}
         <em>${escapeText(activity.rawText)}</em>
-        <span>+${activity.growth} 成长 · +${activity.coins} 金币</span></p>
+        <span>${activityRewardText(activity)}</span></p>
       `).join("")}
     </section>
   `;
@@ -111,7 +170,7 @@ function plantMarkup(plant) {
   const nextAction = plant.status === "active" ? stage.nextAction : null;
   const lastMilestone = plant.milestones.at(-1);
   return `
-    <article class="plant-card ${config.icon} stage-${plant.stage} ${plant.id === nurturedPlantId ? "is-nurtured" : ""}">
+    <article id="plant-${plant.id}" class="plant-card ${config.icon} stage-${plant.stage} ${plant.id === nurturedPlantId ? "is-nurtured" : ""} ${plant.id === focusedPlantId ? "is-focused" : ""}">
       <div class="plant-illustration" aria-hidden="true">
         <span class="cloud"></span>
         <span class="care-particles"></span>
@@ -137,6 +196,7 @@ function plantMarkup(plant) {
           <strong>${plant.growth}</strong>
           <div class="growth-track"><i style="width:${Math.min(plant.growth, 100)}%"></i></div>
         </div>
+        ${todayCareMarkup(plant)}
         ${lastMilestone ? `<p class="latest">最近节点：${escapeText(milestoneLabel(plant, lastMilestone))}</p>` : `<p class="latest muted">等待第一次里程碑推进</p>`}
         ${recentActivityMarkup(plant)}
         ${plant.status === "active" ? `
@@ -179,8 +239,125 @@ function renderZone() {
   elements.grid.innerHTML = plants.map(plantMarkup).join("");
 }
 
+function renderView() {
+  elements.gardenHome.hidden = selectedView !== "home";
+  elements.projectWorkbench.hidden = selectedView !== "projects";
+  elements.viewTabs.forEach((tab) => {
+    tab.classList.toggle("is-selected", tab.dataset.view === selectedView);
+  });
+}
+
+function renderSettlement() {
+  const today = dateKey();
+  const activePlants = plantsIn("active");
+  const totals = activePlants.reduce(
+    (total, plant) => {
+      const care = careSummaryForDate(plant, today);
+      const pendingCare = pendingCareForDate(plant, today);
+      total.sun += care.sun;
+      total.water += care.water;
+      total.fertilizer += care.fertilizer;
+      if (pendingCare.sun + pendingCare.water + pendingCare.fertilizer > 0) total.unsettled += 1;
+      return total;
+    },
+    { sun: 0, water: 0, fertilizer: 0, unsettled: 0 }
+  );
+  const totalCare = totals.sun + totals.water + totals.fertilizer;
+  if (totalCare === 0) {
+    elements.settlementCopy.textContent = "今天还没有照料记录。去项目管理里写一句真实推进，就会积累今日照料。";
+    elements.settleToday.disabled = true;
+    return;
+  }
+  elements.settlementCopy.textContent =
+    `今日已积累：日照 ${totals.sun}、浇水 ${totals.water}、施肥 ${totals.fertilizer}。结算后会统一增加成长值。`;
+  elements.settleToday.disabled = totals.unsettled === 0;
+}
+
+function miniPlantMarkup(plant, index) {
+  const config = TYPE_CONFIG[plant.type];
+  const stage = stageOf(plant);
+  const column = index % 3;
+  const row = Math.floor(index / 3);
+  return `
+    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage}" data-overview-plant-id="${plant.id}" style="--x:${9 + column * 30}%;--y:${22 + row * 30}%">
+      <span class="mini-sprite" aria-hidden="true"></span>
+      <strong>${escapeText(plant.title)}</strong>
+      <em>${config.label} · ${stage.label}</em>
+    </button>
+  `;
+}
+
+function decorationMarkup(decoration) {
+  return `<span class="garden-decoration ${decoration.className}" title="${escapeText(decoration.label)}"></span>`;
+}
+
+function sceneEmptyText(zone) {
+  if (zone === "active") return "种下当前论文或课程后，这里会出现新的植物。";
+  if (zone === "harvested") return "已完成的成果会安放在温室里。";
+  return "暂停的项目会在夜晚花园里安静休息。";
+}
+
+function sceneMarkup(zone) {
+  const scenePlants = plantsIn(zone);
+  const ownedDecorations = zone === "active"
+    ? DECORATIONS.filter((decoration) => state.decorations.owned.includes(decoration.id))
+    : [];
+  const plantsMarkup = scenePlants.length > 0
+    ? scenePlants.map(miniPlantMarkup).join("")
+    : `<p class="overview-empty">${sceneEmptyText(zone)}</p>`;
+  return `
+    <section class="scene-card scene-${zone}" data-overview-zone="${zone}" aria-label="${ZONES[zone].title}">
+      <button type="button" class="scene-link" data-overview-zone="${zone}">
+        <span>${ZONES[zone].title}</span>
+        <strong>${scenePlants.length}</strong>
+      </button>
+      <div class="scene-sky" aria-hidden="true"></div>
+      <div class="scene-field">
+        ${ownedDecorations.map(decorationMarkup).join("")}
+        ${plantsMarkup}
+      </div>
+    </section>
+  `;
+}
+
+function renderOverview() {
+  const ownedDecorations = DECORATIONS.filter((decoration) => state.decorations.owned.includes(decoration.id));
+  elements.overviewGarden.innerHTML = `
+    <div class="overview-scenes">
+      ${sceneMarkup("active")}
+      ${sceneMarkup("harvested")}
+      ${sceneMarkup("dormant")}
+    </div>
+    ${ownedDecorations.length === 0 ? `<p class="overview-hint">买下装饰后，它们会先出现在正在生长的花园里。</p>` : ""}
+  `;
+}
+
+function renderShop() {
+  elements.shopGrid.innerHTML = DECORATIONS.map((decoration) => {
+    const owned = state.decorations.owned.includes(decoration.id);
+    const affordable = state.wallet.currentCoins >= decoration.price;
+    return `
+      <article class="shop-card">
+        <span class="shop-preview ${decoration.className}" aria-hidden="true"></span>
+        <h3>${escapeText(decoration.label)}</h3>
+        <p>${escapeText(decoration.description)}</p>
+        <footer>
+          <strong>${decoration.price} 金币</strong>
+          <button type="button" class="action-button" data-decoration-id="${decoration.id}" ${owned || !affordable ? "disabled" : ""}>
+            ${owned ? "已拥有" : "购买"}
+          </button>
+        </footer>
+      </article>
+    `;
+  }).join("");
+}
+
 function render() {
   renderCounts();
+  renderView();
+  renderSettlement();
+  renderOverview();
+  renderShop();
   renderZone();
 }
 
@@ -214,7 +391,7 @@ function activityHistoryMarkup(plant) {
     <article class="history-row">
       <strong>${escapeText(activity.activityLabel)} · ${escapeText(activity.care)}</strong>
       <p>${escapeText(activity.rawText)}</p>
-      <span>+${activity.growth} 成长 · +${activity.coins} 金币</span>
+      <span>${activityRewardText(activity)}</span>
     </article>
   `).join("");
 }
@@ -283,11 +460,114 @@ function applyActivity(plant, text, forcedActivityId = null) {
   return true;
 }
 
+function settlePendingCare(includeToday = false) {
+  const today = dateKey();
+  const settlements = [];
+  const plants = state.plants.map((plant) => {
+    if (!plant.careLog) return plant;
+    return Object.keys(plant.careLog).reduce((currentPlant, day) => {
+      if (day > today || (!includeToday && day === today)) return currentPlant;
+      const result = settleCareForDate(currentPlant, day);
+      if (result.settlement) {
+        settlements.push({
+          id: createId(),
+          ...result.settlement,
+          at: new Date().toISOString()
+        });
+      }
+      return result.plant;
+    }, plant);
+  });
+  if (settlements.length === 0) return false;
+  state = {
+    ...state,
+    plants,
+    settlements: [...settlements, ...state.settlements]
+  };
+  return true;
+}
+
+async function buyDecoration(decorationId) {
+  const decoration = DECORATIONS.find((item) => item.id === decorationId);
+  if (!decoration || state.decorations.owned.includes(decoration.id)) return;
+  if (state.wallet.currentCoins < decoration.price) return;
+  state = {
+    ...state,
+    wallet: {
+      ...state.wallet,
+      currentCoins: state.wallet.currentCoins - decoration.price
+    },
+    decorations: {
+      ...state.decorations,
+      owned: [...state.decorations.owned, decoration.id]
+    }
+  };
+  await storeAndRender();
+}
+
+function focusPlantCard(plantId) {
+  focusedPlantId = plantId;
+  window.clearTimeout(focusTimer);
+  render();
+  requestAnimationFrame(() => {
+    const card = document.querySelector(`#plant-${CSS.escape(plantId)}`);
+    card?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const input = card?.querySelector(".nurture-form input");
+    input?.focus();
+  });
+  focusTimer = window.setTimeout(() => {
+    focusedPlantId = null;
+    renderZone();
+  }, 2200);
+}
+
+function goToZone(zone) {
+  selectedView = "projects";
+  selectedZone = zone;
+  render();
+  elements.projectWorkbench.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function goToPlant(plant) {
+  selectedView = "projects";
+  selectedZone = plant.status;
+  render();
+  focusPlantCard(plant.id);
+}
+
+elements.viewTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    selectedView = tab.dataset.view;
+    render();
+  });
+});
+
 elements.tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     selectedZone = tab.dataset.zone;
     renderZone();
   });
+});
+
+elements.settleToday.addEventListener("click", async () => {
+  if (settlePendingCare(true)) await storeAndRender();
+});
+
+elements.shopGrid.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-decoration-id]");
+  if (!button) return;
+  await buyDecoration(button.dataset.decorationId);
+});
+
+elements.overviewGarden.addEventListener("click", (event) => {
+  const plantButton = event.target.closest("button[data-overview-plant-id]");
+  if (plantButton) {
+    const plant = state.plants.find((item) => item.id === plantButton.dataset.overviewPlantId);
+    if (plant) goToPlant(plant);
+    return;
+  }
+  const zoneTarget = event.target.closest("[data-overview-zone]");
+  if (zoneTarget) goToZone(zoneTarget.dataset.overviewZone);
 });
 
 document.querySelector("#open-create").addEventListener("click", () => openForm(false));
@@ -382,4 +662,5 @@ elements.grid.addEventListener("click", async (event) => {
 });
 
 updateVarieties();
+if (settlePendingCare(false)) await saveState(state);
 render();
