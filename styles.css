@@ -531,19 +531,21 @@ button {
   left: var(--x);
   top: var(--y);
   z-index: 3;
+  display: grid;
+  justify-items: center;
   width: 126px;
-  min-height: 142px;
   border: 0;
   padding: 0;
   background: transparent;
   box-shadow: none;
   text-align: center;
+  transform: translateX(-50%);
   filter: drop-shadow(3px 6px 0 rgb(38 60 50 / 28%));
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
 .overview-plant:hover {
-  transform: translateY(-6px);
+  transform: translateX(-50%) translateY(-6px);
   filter: drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
 }
 
@@ -563,7 +565,7 @@ button {
 }
 
 .overview-plant strong {
-  margin-top: -8px;
+  margin-top: 2px;
   font-size: 12px;
 }
 
@@ -575,11 +577,25 @@ button {
 }
 
 .map-plant-sprite {
+  display: block;
   width: 112px;
-  height: 112px;
+  height: 136px;
   margin: 0 auto;
   object-fit: contain;
+  object-position: center bottom;
   animation: mini-grow 3.4s steps(4, end) infinite;
+}
+
+.overview-plant.stage-seed .map-plant-sprite,
+.overview-plant.stage-sowing .map-plant-sprite {
+  width: 70px;
+  height: 72px;
+}
+
+.overview-plant.stage-sapling .map-plant-sprite,
+.overview-plant.stage-growing .map-plant-sprite {
+  width: 94px;
+  height: 146px;
 }
 
 .mini-sprite {
@@ -1840,12 +1856,23 @@ button {
   .overview-plant {
     top: calc(var(--y) + 2%);
     width: 100px;
-    min-height: 112px;
   }
 
   .map-plant-sprite {
     width: 80px;
-    height: 80px;
+    height: 98px;
+  }
+
+  .overview-plant.stage-seed .map-plant-sprite,
+  .overview-plant.stage-sowing .map-plant-sprite {
+    width: 54px;
+    height: 56px;
+  }
+
+  .overview-plant.stage-sapling .map-plant-sprite,
+  .overview-plant.stage-growing .map-plant-sprite {
+    width: 72px;
+    height: 112px;
   }
 
   .overview-plant strong,

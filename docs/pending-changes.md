@@ -44,6 +44,7 @@
 - Adjusted seed/sapling and sowing/growing sprite display boxes so tall pixel assets keep their intended proportions.
 - Moved overview plant labels below the sprite instead of overlapping the tree canopy or trunk.
 - Matched card and detail scene sapling/growing sprite proportions with the actual tall source assets.
+- Follow-up: reapplied the overview map portion after confirming the committed refresh still had the old `112px` square sprite box and negative label margin.
 
 ### Files Changed
 
