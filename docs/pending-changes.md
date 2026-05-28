@@ -60,6 +60,116 @@
 - For parallel Codex work, record each completed local fix or feature slice here before a combined review and push.
 - For generated art assets, also record the asset purpose, generated files, prompt/style constraints, and integration notes here.
 
+## 2026-05-28 - Design system and homepage polish
+
+### Summary
+
+- Refined the overall pixel garden interface based on the design audit.
+- Moved the primary "种下一株植物" action from the top header into the garden map controls so the homepage reads more like a playable garden scene.
+- Downgraded the backup export action visually, tightened the HUD styling, and added consistent focus-visible treatment for keyboard navigation.
+- Improved empty plot affordances with hover/focus planting labels and clearer empty garden copy.
+- Rebalanced the project workbench so plant cards feel more like compact research journal entries while the homepage remains the immersive garden overview.
+- Tightened mobile layout rules for the HUD, home actions, empty plots, overview plants, and plant cards.
+
+### Files Changed
+
+- `index.html`
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Ran `node --test scripts/domain.test.mjs`.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+- Confirmed the local server returned the app at `http://127.0.0.1:4173`.
+- Confirmed the served HTML includes the updated garden map, in-map planting action, and backup button styling hook.
+
+### Notes
+
+- No new image assets were generated for this slice.
+- Existing in-progress edits for plant edit/remove, destination landmarks, and sprite alignment were preserved and built upon.
+- Attempted direct Edge headless screenshot capture, but the command did not produce a screenshot file in this sandbox; verification fell back to local server and static checks.
+
+## 2026-05-28 - Plant edit and remove controls
+
+### Summary
+
+- Added card-level edit and remove actions for tree and flower records.
+- Reused the existing plant form for edits while preserving plant type, lifecycle stage, growth, milestones, and status.
+- Added remove logic that deletes the selected plant plus its activity and settlement records, so temporary test plants can be cleaned out.
+- Added a small Node test file covering editable fields and dependent-record removal.
+
+### Files Changed
+
+- `src/app.js`
+- `src/domain.js`
+- `styles.css`
+- `scripts/domain.test.mjs`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --test scripts/domain.test.mjs`.
+- Ran `node --check src/app.js`.
+
+### Notes
+
+- Browser automation could not be completed because the in-app browser runtime crashed during startup with `windows sandbox failed: spawn setup refresh`.
+- Existing unrelated local work in `src/app.js`, `styles.css`, and `docs/pending-changes.md` was left untouched.
+
+## 2026-05-28 - Overview destination landmark integration
+
+### Summary
+
+- Kept the 收获园 and 沉睡园 map buildings as clickable destination buttons that switch into their corresponding project zones.
+- Repositioned and restyled the two map buildings as quieter midground landmarks, with reduced scale, softer shading, foreground grass cover, and smaller sign treatment so they read as part of the background scene.
+- Added explicit `aria-label` and `title` text for the two destination buttons.
+
+### Files Changed
+
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Ran `git diff --check`; only existing line-ending warnings appeared for `src/app.js`, `styles.css`, and `docs/pending-changes.md`.
+- Confirmed the local server returned HTTP 200 at `http://127.0.0.1:4173`.
+- Captured a headless Edge screenshot of a temporary `.runtime` landmark fixture to verify the updated map landmark styling.
+
+### Notes
+
+- No new image assets were generated for this slice.
+- Existing unrelated local work was left untouched.
+
+## 2026-05-28 - Planted root grounding pass
+
+### Summary
+
+- Removed the overview map plant sprite bobbing that made trees read like floating stickers.
+- Added soil shadow, soil mound, and grass-edge layers under overview map plants so their roots appear seated in the ground.
+- Added a matching foreground root/soil layer to plant cards and detail scenes, so larger plant sprites are visually tucked into the scene instead of sitting on top of it.
+
+### Files Changed
+
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Captured a headless Edge screenshot of a temporary `.runtime` plant-root fixture showing mature, sapling, and seed stages on the overview map plus a plant card.
+- Ran `node --check src/app.js`.
+- Ran `git diff --check`; only existing line-ending warnings appeared for edited text files.
+
+### Notes
+
+- No new image assets were generated for this slice.
+- Existing unrelated local work was left untouched.
+
 ## 2026-05-28 - Plant sprite alignment and sizing
 
 ### Summary

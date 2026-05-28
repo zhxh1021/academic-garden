@@ -223,6 +223,33 @@ export function setPlantStatus(plant, status) {
   return { ...plant, status };
 }
 
+export function updatePlantBasics(plant, input) {
+  const title = input.title.trim();
+  return {
+    ...plant,
+    title,
+    variety: input.variety,
+    metadata: plant.type === "paper"
+      ? {
+          ...plant.metadata,
+          authorRole: input.authorRole
+        }
+      : {
+          ...plant.metadata,
+          term: input.term.trim()
+        }
+  };
+}
+
+export function removePlantRecords(state, plantId) {
+  return {
+    ...state,
+    plants: state.plants.filter((plant) => plant.id !== plantId),
+    activities: state.activities.filter((activity) => activity.plantId !== plantId),
+    settlements: state.settlements.filter((settlement) => settlement.plantId !== plantId)
+  };
+}
+
 export function updatePaperDetails(plant, details) {
   if (plant.type !== "paper") return plant;
   return {

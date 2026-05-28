@@ -9,9 +9,11 @@ import {
   dateKey,
   pendingCareForDate,
   recordActivity,
+  removePlantRecords,
   setPlantStatus,
   settleCareForDate,
   stageOf,
+  updatePlantBasics,
   updatePaperDetails,
   varietyLabel,
   varietySprite
@@ -49,6 +51,7 @@ let selectedZone = "active";
 let selectedView = "home";
 let nurturedPlantId = null;
 let focusedPlantId = null;
+let editingPlantId = null;
 let nurtureTimer = null;
 let focusTimer = null;
 
@@ -180,6 +183,7 @@ function plantSceneMarkup(plant, spriteClassName) {
   if (!sprite) return "";
   return `
     <span class="scene-glow"></span>
+    <span class="scene-root"></span>
     ${spriteImage(sprite, spriteClassName, varietyLabel(plant))}
   `;
 }
@@ -230,10 +234,12 @@ function plantMarkup(plant) {
         ` : ""}
         <footer class="card-actions">
           <button type="button" class="text-action" data-action="details" data-id="${plant.id}">查看详情</button>
+          <button type="button" class="text-action" data-action="edit" data-id="${plant.id}">编辑</button>
           ${plant.status === "active" && plant.type === "course" ? `<button type="button" class="action-button teaching" data-action="teach" data-id="${plant.id}">又上了一次课</button>` : ""}
           ${nextAction ? `<button type="button" class="action-button" data-action="advance" data-id="${plant.id}">${nextAction}</button>` : ""}
           ${plant.status === "active" ? `<button type="button" class="text-action" data-action="sleep" data-id="${plant.id}">暂时沉睡</button>` : ""}
           ${plant.status === "dormant" ? `<button type="button" class="action-button" data-action="wake" data-id="${plant.id}">重新唤醒</button>` : ""}
+          <button type="button" class="text-action danger-action" data-action="remove" data-id="${plant.id}">移除</button>
         </footer>
       </div>
     </article>
@@ -300,7 +306,7 @@ function miniPlantMarkup(plant, index) {
   const column = index % 4;
   const row = Math.floor(index / 4);
   return `
-    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage} ${sprite ? "has-asset-sprite" : ""}" data-overview-plant-id="${plant.id}" style="--x:${18 + column * 17}%;--y:${54 + row * 16}%">
+    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage} ${sprite ? "has-asset-sprite" : ""}" data-overview-plant-id="${plant.id}" style="--x:${18 + column * 17}%;--y:${54 + row * 16}%" aria-label="打开${escapeText(plant.title)}的项目记录" title="打开${escapeText(plant.title)}">
       ${sprite ? spriteImage(sprite, "map-plant-sprite", varietyLabel(plant)) : `<span class="mini-sprite" aria-hidden="true"></span>`}
       <strong>${escapeText(plant.title)}</strong>
       <em>${config.label} · ${stage.label}</em>
@@ -328,7 +334,7 @@ function emptyPlotMarkup() {
       <button type="button" class="empty-plot empty-plot-c" data-empty-plot aria-label="在这块空地种下一株植物">
         ${spriteImage("./assets/sprites/empty-plot-c.png", "empty-plot-art", "空地")}
       </button>
-      <p class="overview-empty">选择一块空地，种下第一株植物。</p>
+      <p class="overview-empty">点一块土壤，种下第一株学术植物。</p>
     </div>
   `;
 }
@@ -341,12 +347,12 @@ function renderOverview() {
     : emptyPlotMarkup();
   elements.overviewGarden.innerHTML = `
     <div class="map-sky" aria-hidden="true"></div>
-    <button type="button" class="map-house house-harvested" data-overview-zone="harvested">
+    <button type="button" class="map-house house-harvested" data-overview-zone="harvested" aria-label="切换到收获园" title="切换到收获园">
       ${spriteImage("./assets/sprites/house-greenhouse.png", "house-art", "收获园")}
       <strong>收获园</strong>
       <em>${plantsIn("harvested").length}</em>
     </button>
-    <button type="button" class="map-house house-dormant" data-overview-zone="dormant">
+    <button type="button" class="map-house house-dormant" data-overview-zone="dormant" aria-label="切换到沉睡园" title="切换到沉睡园">
       ${spriteImage("./assets/sprites/house-night-cottage.png", "house-art night-house", "沉睡园")}
       <strong>沉睡园</strong>
       <em>${plantsIn("dormant").length}</em>
@@ -399,14 +405,28 @@ function updateVarieties() {
   elements.courseFields.hidden = isPaper;
 }
 
-function openForm(historical) {
+function openForm(historical, plant = null) {
+  editingPlantId = plant?.id ?? null;
   elements.form.reset();
   elements.historical.value = String(historical);
-  elements.dialogKicker.textContent = historical ? "PAST HARVEST" : "NEW PLANT";
-  elements.dialogTitle.textContent = historical ? "导入历史成果" : "种下一株植物";
-  elements.historyNote.hidden = !historical;
-  elements.submitPlant.textContent = historical ? "放入收获园" : "种下植物";
+  elements.type.disabled = Boolean(plant);
+  elements.dialogKicker.textContent = plant ? "EDIT PLANT" : historical ? "PAST HARVEST" : "NEW PLANT";
+  elements.dialogTitle.textContent = plant ? "编辑植物" : historical ? "导入历史成果" : "种下一株植物";
+  elements.historyNote.hidden = !historical || Boolean(plant);
+  elements.submitPlant.textContent = plant ? "保存修改" : historical ? "放入收获园" : "种下植物";
+  if (plant) {
+    elements.form.elements.title.value = plant.title;
+    elements.type.value = plant.type;
+  }
   updateVarieties();
+  if (plant) {
+    elements.variety.value = plant.variety;
+    if (plant.type === "paper") {
+      elements.form.elements.authorRole.value = plant.metadata.authorRole ?? "primary";
+    } else {
+      elements.form.elements.term.value = plant.metadata.term ?? "";
+    }
+  }
   elements.dialog.showModal();
 }
 
@@ -617,15 +637,46 @@ document.querySelector("[data-home-action='projects']").addEventListener("click"
 document.querySelector("#open-create").addEventListener("click", () => openForm(false));
 document.querySelector("#import-history").addEventListener("click", () => openForm(true));
 document.querySelector("#export-button").addEventListener("click", () => downloadBackup(state));
-document.querySelector("#close-dialog").addEventListener("click", () => elements.dialog.close());
-document.querySelector("#cancel-dialog").addEventListener("click", () => elements.dialog.close());
+document.querySelector("#close-dialog").addEventListener("click", () => {
+  editingPlantId = null;
+  elements.type.disabled = false;
+  elements.dialog.close();
+});
+document.querySelector("#cancel-dialog").addEventListener("click", () => {
+  editingPlantId = null;
+  elements.type.disabled = false;
+  elements.dialog.close();
+});
 document.querySelector("#close-detail").addEventListener("click", () => elements.detailDialog.close());
 document.querySelector("#cancel-detail").addEventListener("click", () => elements.detailDialog.close());
+elements.dialog.addEventListener("close", () => {
+  editingPlantId = null;
+  elements.type.disabled = false;
+});
 elements.type.addEventListener("change", updateVarieties);
 
 elements.form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(elements.form);
+  if (editingPlantId) {
+    const plant = state.plants.find((item) => item.id === editingPlantId);
+    if (!plant) return;
+    const replacement = updatePlantBasics(plant, {
+      title: String(formData.get("title") ?? ""),
+      variety: String(formData.get("variety") ?? ""),
+      authorRole: String(formData.get("authorRole") ?? plant.metadata.authorRole ?? "primary"),
+      term: String(formData.get("term") ?? plant.metadata.term ?? "")
+    });
+    state = {
+      ...state,
+      plants: state.plants.map((item) => item.id === plant.id ? replacement : item)
+    };
+    editingPlantId = null;
+    elements.type.disabled = false;
+    elements.dialog.close();
+    await storeAndRender();
+    return;
+  }
   const plant = createPlant({
     title: formData.get("title"),
     type: formData.get("type"),
@@ -677,6 +728,16 @@ elements.grid.addEventListener("click", async (event) => {
   let replacement = plant;
   if (button.dataset.action === "details") {
     openDetails(plant);
+    return;
+  }
+  if (button.dataset.action === "edit") {
+    openForm(false, plant);
+    return;
+  }
+  if (button.dataset.action === "remove") {
+    if (!window.confirm(`确定移除「${plant.title}」吗？相关培育记录也会一起删除。`)) return;
+    state = removePlantRecords(state, plant.id);
+    await storeAndRender();
     return;
   }
   if (button.dataset.action === "advance") {

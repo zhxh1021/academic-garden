@@ -16,6 +16,10 @@
   --leaf-light: #71c653;
   --border: #263c32;
   --shadow: 4px 4px 0 var(--border);
+  --shadow-soft: 3px 3px 0 rgb(38 60 50 / 72%);
+  --hud-bg: rgb(255 248 226 / 88%);
+  --panel-bg: #fff7df;
+  --danger: #9e3d2f;
   font-family: Consolas, "Courier New", "Microsoft YaHei UI", monospace;
   color: var(--ink);
   background: var(--sky);
@@ -35,15 +39,34 @@ body {
   background-size: 24px 24px;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto 0 0;
+  z-index: -1;
+  height: 220px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgb(121 170 88 / 18%));
+}
+
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
 }
 
 .paper-glow {
@@ -69,7 +92,7 @@ button {
   justify-content: space-between;
   align-items: end;
   gap: 24px;
-  padding: 42px 0 27px;
+  padding: 34px 0 18px;
 }
 
 .eyebrow {
@@ -96,7 +119,7 @@ button {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
 }
 
 .view-switch {
@@ -104,7 +127,8 @@ button {
   gap: 8px;
   padding: 6px;
   border: 3px solid var(--border);
-  background: rgb(255 243 204 / 64%);
+  background: var(--hud-bg);
+  box-shadow: var(--shadow-soft);
 }
 
 .view-tab {
@@ -122,6 +146,10 @@ button {
   color: var(--cream);
 }
 
+.view-tab:not(.is-selected):hover {
+  background: rgb(255 243 204 / 72%);
+}
+
 .wallet {
   display: flex;
   align-items: center;
@@ -129,8 +157,8 @@ button {
   min-height: 48px;
   padding: 9px 15px;
   border: 3px solid var(--border);
-  background: var(--cream);
-  box-shadow: var(--shadow);
+  background: var(--hud-bg);
+  box-shadow: var(--shadow-soft);
 }
 
 .wallet::before {
@@ -159,6 +187,10 @@ button {
   border: 3px solid var(--border);
   box-shadow: var(--shadow);
   font-weight: bold;
+  transition:
+    transform 120ms steps(2, end),
+    box-shadow 120ms steps(2, end),
+    filter 120ms steps(2, end);
 }
 
 .primary-button,
@@ -168,6 +200,20 @@ button {
 
 .quiet-button {
   background: var(--paper);
+}
+
+.primary-button:hover,
+.quiet-button:hover,
+.action-button:hover {
+  filter: brightness(1.04) saturate(1.04);
+}
+
+.backup-button {
+  min-height: 42px;
+  padding: 8px 12px;
+  border-color: var(--grass-dark);
+  box-shadow: 2px 2px 0 var(--grass-dark);
+  color: var(--ink-soft);
 }
 
 .primary-button:active,
@@ -191,7 +237,9 @@ button {
   gap: 28px;
   padding: 28px 30px;
   border: 4px solid var(--border);
-  background: var(--paper);
+  background:
+    linear-gradient(90deg, rgb(121 170 88 / 10%), transparent 34%),
+    var(--panel-bg);
   box-shadow: 6px 6px 0 var(--border);
 }
 
@@ -216,6 +264,10 @@ button {
   padding-bottom: 44px;
 }
 
+.project-workbench {
+  gap: 22px;
+}
+
 .garden-home[hidden],
 .project-workbench[hidden] {
   display: none;
@@ -226,11 +278,11 @@ button {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  min-width: min(420px, 100%);
-  padding: 10px 12px;
+  min-width: min(390px, 100%);
+  padding: 9px 11px;
   border: 3px solid var(--border);
-  background: rgb(255 243 204 / 86%);
-  box-shadow: 3px 3px 0 var(--border);
+  background: var(--hud-bg);
+  box-shadow: var(--shadow-soft);
 }
 
 .settlement-card p:not(.eyebrow) {
@@ -243,9 +295,11 @@ button {
 .garden-board,
 .shop-section {
   position: relative;
-  padding: 18px;
+  padding: 14px;
   border: 4px solid var(--border);
-  background: rgb(253 241 208 / 62%);
+  background:
+    linear-gradient(180deg, rgb(255 248 226 / 36%), rgb(253 241 208 / 72%)),
+    var(--paper);
   box-shadow: var(--shadow);
 }
 
@@ -279,6 +333,10 @@ button {
   pointer-events: auto;
 }
 
+.home-actions .primary-button {
+  min-width: 154px;
+}
+
 .home-hud > * {
   pointer-events: auto;
 }
@@ -299,6 +357,11 @@ button {
     #91c765;
   overflow: hidden;
   image-rendering: pixelated;
+}
+
+.overview-garden:focus-within {
+  outline: 4px solid rgb(239 184 59 / 58%);
+  outline-offset: -10px;
 }
 
 .overview-garden::before {
@@ -352,58 +415,111 @@ button {
 
 .map-house {
   position: absolute;
-  z-index: 4;
-  top: 178px;
+  z-index: 2;
+  top: 238px;
   display: grid;
   justify-items: center;
-  gap: 2px;
+  width: 150px;
+  gap: 0;
   border: 0;
   padding: 0;
   background: transparent;
   color: var(--ink);
   font-weight: bold;
-  text-shadow: 2px 2px 0 rgb(255 243 204 / 70%);
-  transition: transform 160ms steps(2, end);
+  text-shadow: 1px 1px 0 rgb(255 243 204 / 46%);
+  transform: translateX(-50%);
+  transition: filter 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
 .map-house:hover {
-  transform: translateY(-3px);
+  filter: brightness(1.05) saturate(1.04);
+  transform: translateX(-50%);
+}
+
+.map-house:focus-visible {
+  outline-offset: 8px;
+}
+
+.map-house::before,
+.map-house::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.map-house::before {
+  z-index: 1;
+  left: 16%;
+  right: 16%;
+  bottom: 33px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgb(38 60 50 / 18%);
+  filter: blur(1px);
+}
+
+.map-house::after {
+  z-index: 3;
+  left: 8%;
+  right: 8%;
+  bottom: 35px;
+  height: 28px;
+  background:
+    radial-gradient(ellipse at 16% 88%, #82b95b 0 8px, transparent 9px),
+    radial-gradient(ellipse at 36% 92%, #6fae4f 0 7px, transparent 8px),
+    radial-gradient(ellipse at 58% 91%, #8fc46a 0 9px, transparent 10px),
+    radial-gradient(ellipse at 78% 90%, #5f9d47 0 7px, transparent 8px);
+  image-rendering: pixelated;
 }
 
 .house-harvested {
-  left: 60%;
+  left: 24%;
 }
 
 .house-dormant {
-  left: 74%;
+  left: 66%;
 }
 
 .map-house strong {
-  padding: 2px 6px;
-  border: 2px solid var(--border);
-  background: rgb(255 243 204 / 86%);
-  box-shadow: 2px 2px 0 var(--border);
+  position: relative;
+  z-index: 4;
+  margin-top: -8px;
+  padding: 2px 7px;
+  border: 2px solid #5c4530;
+  background: #d5b45f;
+  box-shadow: 1px 1px 0 rgb(38 60 50 / 55%);
+  color: #263c32;
   font-size: 10px;
 }
 
 .map-house em {
+  position: absolute;
+  z-index: 4;
+  right: 21px;
+  bottom: 39px;
   display: grid;
   place-content: center;
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   border: 2px solid var(--border);
   background: var(--gold);
-  font-size: 10px;
+  font-size: 9px;
   font-style: normal;
 }
 
 .house-art {
   position: relative;
+  z-index: 2;
   display: block;
-  width: 108px;
-  height: 92px;
+  width: 126px;
+  height: 108px;
   object-fit: contain;
-  filter: drop-shadow(2px 4px 0 rgb(38 60 50 / 20%));
+  opacity: 0.86;
+  filter:
+    saturate(0.9)
+    contrast(0.94)
+    brightness(0.98)
+    drop-shadow(0 5px 0 rgb(38 60 50 / 14%));
 }
 
 .greenhouse::before {
@@ -459,7 +575,12 @@ button {
 }
 
 .night-house {
-  filter: drop-shadow(0 0 5px rgb(246 237 189 / 42%));
+  filter:
+    saturate(0.9)
+    contrast(0.94)
+    brightness(0.98)
+    drop-shadow(0 0 5px rgb(246 237 189 / 30%))
+    drop-shadow(0 5px 0 rgb(38 60 50 / 14%));
 }
 
 .overview-empty {
@@ -470,9 +591,9 @@ button {
   width: min(360px, calc(100% - 40px));
   margin: 0;
   transform: translate(-50%, -50%);
-  padding: 8px 11px;
+  padding: 9px 12px;
   border: 2px solid var(--grass-dark);
-  background: rgb(255 243 204 / 88%);
+  background: var(--hud-bg);
   box-shadow: 2px 2px 0 rgb(38 60 50 / 42%);
   color: var(--ink-soft);
   text-align: center;
@@ -499,6 +620,23 @@ button {
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
+.empty-plot::after {
+  content: "种植";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  z-index: 2;
+  padding: 2px 6px;
+  border: 2px solid rgb(38 60 50 / 72%);
+  background: var(--hud-bg);
+  color: var(--grass-dark);
+  font-size: 10px;
+  font-weight: bold;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity 120ms steps(2, end), transform 120ms steps(2, end);
+}
+
 .empty-plot-art {
   display: block;
   width: 100%;
@@ -509,6 +647,12 @@ button {
 .empty-plot:hover {
   transform: translateY(-5px);
   filter: drop-shadow(3px 8px 0 rgb(38 60 50 / 26%));
+}
+
+.empty-plot:hover::after,
+.empty-plot:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .empty-plot-a {
@@ -544,13 +688,55 @@ button {
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
+.overview-plant::before,
+.overview-plant::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.overview-plant::before {
+  z-index: 1;
+  bottom: 51px;
+  width: 72px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgb(38 60 50 / 20%);
+  filter: blur(1px);
+}
+
+.overview-plant::after {
+  z-index: 3;
+  bottom: 50px;
+  width: 88px;
+  height: 28px;
+  background:
+    radial-gradient(ellipse at 50% 66%, #75452c 0 8px, transparent 9px),
+    radial-gradient(ellipse at 28% 74%, #9b6a42 0 10px, transparent 11px),
+    radial-gradient(ellipse at 55% 82%, #b07749 0 13px, transparent 14px),
+    radial-gradient(ellipse at 78% 76%, #75452c 0 9px, transparent 10px),
+    radial-gradient(ellipse at 15% 92%, #79aa58 0 8px, transparent 9px),
+    radial-gradient(ellipse at 54% 96%, #71c653 0 9px, transparent 10px),
+    radial-gradient(ellipse at 86% 91%, #477642 0 7px, transparent 8px);
+  image-rendering: pixelated;
+}
+
 .overview-plant:hover {
   transform: translateX(-50%) translateY(-6px);
   filter: drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
 }
 
+.overview-plant:focus-visible {
+  outline-offset: 9px;
+  filter: drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
+}
+
 .overview-plant strong,
 .overview-plant em {
+  position: relative;
+  z-index: 4;
   display: block;
   overflow: hidden;
   width: max-content;
@@ -565,7 +751,7 @@ button {
 }
 
 .overview-plant strong {
-  margin-top: 2px;
+  margin-top: 8px;
   font-size: 12px;
 }
 
@@ -577,13 +763,14 @@ button {
 }
 
 .map-plant-sprite {
+  position: relative;
+  z-index: 2;
   display: block;
   width: 112px;
   height: 136px;
   margin: 0 auto;
   object-fit: contain;
   object-position: center bottom;
-  animation: mini-grow 3.4s steps(4, end) infinite;
 }
 
 .overview-plant.stage-seed .map-plant-sprite,
@@ -596,6 +783,16 @@ button {
 .overview-plant.stage-growing .map-plant-sprite {
   width: 94px;
   height: 146px;
+}
+
+.overview-plant.stage-seed::before,
+.overview-plant.stage-sowing::before {
+  width: 50px;
+}
+
+.overview-plant.stage-seed::after,
+.overview-plant.stage-sowing::after {
+  width: 62px;
 }
 
 .mini-sprite {
@@ -768,7 +965,7 @@ button {
 .shop-card {
   padding: 16px;
   border: 3px solid var(--border);
-  background: var(--paper);
+  background: var(--panel-bg);
   box-shadow: 3px 3px 0 var(--border);
 }
 
@@ -936,8 +1133,9 @@ button {
   grid-template-columns: repeat(3, minmax(78px, 1fr));
   align-self: stretch;
   min-width: min(370px, 100%);
-  border: 3px solid var(--grass-dark);
-  background: #e7e5ae;
+  border: 3px solid var(--border);
+  background: var(--hud-bg);
+  box-shadow: var(--shadow-soft);
 }
 
 .garden-summary div {
@@ -948,7 +1146,7 @@ button {
 }
 
 .garden-summary div + div {
-  border-left: 3px dashed var(--grass-dark);
+  border-left: 3px dashed rgb(71 118 66 / 64%);
 }
 
 .garden-summary strong {
@@ -963,7 +1161,7 @@ button {
 .garden-nav {
   display: flex;
   gap: 12px;
-  margin: 34px 0;
+  margin: 6px 0 8px;
 }
 
 .garden-tab {
@@ -972,7 +1170,17 @@ button {
   gap: 13px;
   padding: 13px 18px;
   border: 3px solid var(--grass-dark);
-  background: rgb(255 243 204 / 55%);
+  background: rgb(255 248 226 / 72%);
+  box-shadow: 2px 2px 0 rgb(71 118 66 / 54%);
+  transition:
+    transform 120ms steps(2, end),
+    box-shadow 120ms steps(2, end),
+    background 120ms steps(2, end);
+}
+
+.garden-tab:hover {
+  transform: translateY(-2px);
+  background: var(--cream);
 }
 
 .garden-tab strong {
@@ -990,13 +1198,15 @@ button {
   background: var(--cream);
   box-shadow: var(--shadow);
   font-weight: bold;
+  transform: translateY(-2px);
 }
 
 .plot-header {
   display: flex;
   justify-content: space-between;
   align-items: end;
-  margin-bottom: 23px;
+  margin-bottom: 18px;
+  padding-top: 4px;
 }
 
 .plot-header h2 {
@@ -1019,21 +1229,29 @@ button {
   font-weight: bold;
 }
 
+.link-button:hover,
+.text-action:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
 .plant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(410px, 1fr));
+  gap: 18px;
   padding-bottom: 44px;
 }
 
 .plant-card {
   display: grid;
-  grid-template-columns: 122px 1fr;
-  gap: 16px;
-  min-height: 266px;
-  padding: 19px;
-  border: 4px solid var(--border);
-  background: var(--paper);
+  grid-template-columns: 108px 1fr;
+  gap: 17px;
+  min-height: 250px;
+  padding: 16px;
+  border: 3px solid var(--border);
+  background:
+    linear-gradient(90deg, rgb(121 170 88 / 9%), transparent 38%),
+    var(--panel-bg);
   box-shadow: var(--shadow);
   transition: transform 140ms steps(2, end);
 }
@@ -1050,7 +1268,7 @@ button {
 
 .plant-illustration {
   position: relative;
-  height: 192px;
+  height: 168px;
   border: 3px solid var(--grass-dark);
   background:
     linear-gradient(rgb(255 255 255 / 8%), rgb(255 255 255 / 8%)),
@@ -1063,8 +1281,8 @@ button {
 .scene-glow {
   position: absolute;
   left: 50%;
-  bottom: 26px;
-  width: 118px;
+  bottom: 22px;
+  width: 104px;
   height: 26px;
   transform: translateX(-50%);
   border-radius: 50%;
@@ -1072,13 +1290,32 @@ button {
   filter: blur(1px);
 }
 
+.scene-root {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 16px;
+  width: 104px;
+  height: 28px;
+  pointer-events: none;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 28% 72%, #9b6a42 0 12px, transparent 13px),
+    radial-gradient(ellipse at 52% 80%, #b07749 0 16px, transparent 17px),
+    radial-gradient(ellipse at 76% 74%, #75452c 0 10px, transparent 11px),
+    radial-gradient(ellipse at 15% 94%, #79aa58 0 10px, transparent 11px),
+    radial-gradient(ellipse at 54% 98%, #71c653 0 12px, transparent 13px),
+    radial-gradient(ellipse at 90% 92%, #477642 0 9px, transparent 10px);
+  image-rendering: pixelated;
+}
+
 .card-plant-sprite {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 22px;
-  width: 148px;
-  height: 148px;
+  bottom: 18px;
+  width: 128px;
+  height: 128px;
   object-fit: contain;
   transform: translateX(-50%);
   transform-origin: 50% 100%;
@@ -1087,14 +1324,14 @@ button {
 
 .tree.stage-seed .card-plant-sprite,
 .flower.stage-sowing .card-plant-sprite {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
 }
 
 .tree.stage-sapling .card-plant-sprite,
 .flower.stage-growing .card-plant-sprite {
-  width: 100px;
-  height: 150px;
+  width: 86px;
+  height: 132px;
 }
 
 .plant-illustration::before {
@@ -1374,7 +1611,14 @@ button {
     animation: none;
   }
 
-  .plant-card {
+  .plant-card,
+  .garden-tab,
+  .primary-button,
+  .quiet-button,
+  .action-button,
+  .empty-plot,
+  .overview-plant,
+  .map-house {
     transition: none;
   }
 }
@@ -1388,11 +1632,14 @@ button {
 
 .kind,
 .stage {
-  padding: 5px 8px;
-  font-size: 12px;
+  padding: 4px 7px;
+  border: 2px solid transparent;
+  font-size: 11px;
+  line-height: 1.2;
 }
 
 .kind {
+  border-color: rgb(71 118 66 / 42%);
   background: #dce7b2;
   color: var(--grass-dark);
 }
@@ -1403,8 +1650,8 @@ button {
 }
 
 .plant-content h3 {
-  margin: 13px 0 8px;
-  min-height: 43px;
+  margin: 11px 0 8px;
+  min-height: 0;
   font-size: 18px;
   line-height: 1.45;
 }
@@ -1421,7 +1668,7 @@ button {
   grid-template-columns: auto auto;
   justify-content: space-between;
   gap: 7px;
-  margin-bottom: 13px;
+  margin-bottom: 12px;
   font-size: 12px;
 }
 
@@ -1445,7 +1692,7 @@ button {
   margin: -2px 0 13px;
   padding: 8px;
   border: 2px dashed var(--grass-dark);
-  background: #fff8e2;
+  background: rgb(255 248 226 / 82%);
   font-size: 11px;
 }
 
@@ -1466,7 +1713,8 @@ button {
 .recent-care p {
   margin: 0;
   padding: 7px 8px;
-  background: #dfedb8;
+  border-left: 3px solid rgb(71 118 66 / 58%);
+  background: rgb(223 237 184 / 72%);
   color: var(--ink-soft);
   font-size: 11px;
   line-height: 1.5;
@@ -1489,7 +1737,7 @@ button {
 .nurture-form {
   display: grid;
   gap: 7px;
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   font-size: 12px;
   font-weight: bold;
 }
@@ -1512,7 +1760,8 @@ button {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
+  padding-top: 2px;
 }
 
 .action-button {
@@ -1528,6 +1777,15 @@ button {
 
 .text-action {
   font-size: 12px;
+}
+
+.danger-action {
+  color: var(--danger);
+}
+
+.danger-action:hover {
+  color: #6d2a23;
+  border-bottom-color: #6d2a23;
 }
 
 .empty-state {
@@ -1624,6 +1882,12 @@ button {
   height: 36px;
 }
 
+.detail-scene .scene-root {
+  bottom: 25px;
+  width: 170px;
+  height: 38px;
+}
+
 .detail-plant-sprite {
   position: absolute;
   z-index: 2;
@@ -1655,7 +1919,7 @@ button {
   margin-bottom: 22px;
   padding: 17px;
   border: 3px solid var(--grass-dark);
-  background: #fff7df;
+  background: var(--panel-bg);
 }
 
 .detail-paper h3,
@@ -1715,9 +1979,17 @@ button {
   resize: vertical;
 }
 
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  color: var(--ink-soft);
+  background: #e5ecbd;
+}
+
 .history-row {
   margin-bottom: 11px;
   padding: 10px;
+  border-left: 3px solid rgb(71 118 66 / 58%);
   background: #e5ecbd;
   font-size: 12px;
 }
@@ -1772,6 +2044,11 @@ button {
 
   .header-actions {
     flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .wallet {
+    flex: 1 1 130px;
   }
 
   .view-switch {
@@ -1786,6 +2063,7 @@ button {
   .garden-summary {
     margin-top: 0;
     min-height: 96px;
+    min-width: 0;
   }
 
   .home-hud {
@@ -1804,13 +2082,27 @@ button {
     align-items: stretch;
   }
 
+  .home-actions {
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .home-actions .primary-button {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
   .overview-garden {
-    min-height: 700px;
+    min-height: 760px;
+    background-position: center bottom;
   }
 
   .overview-empty {
-    left: 44%;
-    top: 81%;
+    left: 50%;
+    top: 79%;
     width: min(260px, calc(100% - 32px));
     padding: 7px 9px;
     font-size: 12px;
@@ -1823,39 +2115,76 @@ button {
 
   .empty-plot-a {
     left: 7%;
-    top: 55%;
+    top: 54%;
   }
 
   .empty-plot-b {
-    left: 29%;
+    left: 34%;
     top: 64%;
   }
 
   .empty-plot-c {
-    left: 11%;
-    top: 73%;
+    left: 58%;
+    top: 54%;
   }
 
   .map-house {
-    top: 300px;
+    top: 305px;
+    width: 94px;
   }
 
   .house-harvested {
-    left: 59%;
+    left: 28%;
   }
 
   .house-dormant {
-    left: 76%;
+    left: 70%;
   }
 
   .house-art {
-    width: 62px;
-    height: 52px;
+    width: 86px;
+    height: 74px;
+  }
+
+  .map-house::before {
+    bottom: 27px;
+    height: 13px;
+  }
+
+  .map-house::after {
+    bottom: 27px;
+    height: 21px;
+  }
+
+  .map-house strong {
+    margin-top: -6px;
+    padding: 1px 5px;
+    font-size: 9px;
+  }
+
+  .map-house em {
+    right: 9px;
+    bottom: 29px;
+    width: 17px;
+    height: 17px;
+    font-size: 8px;
   }
 
   .overview-plant {
     top: calc(var(--y) + 2%);
     width: 100px;
+  }
+
+  .overview-plant::before {
+    bottom: 47px;
+    width: 56px;
+    height: 14px;
+  }
+
+  .overview-plant::after {
+    bottom: 46px;
+    width: 64px;
+    height: 19px;
   }
 
   .map-plant-sprite {
@@ -1883,10 +2212,19 @@ button {
   .garden-nav {
     overflow-x: auto;
     padding-bottom: 7px;
+    margin-top: 0;
   }
 
   .garden-tab {
     flex: 0 0 auto;
+  }
+
+  .plant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plant-card {
+    grid-template-columns: 104px 1fr;
   }
 }
 
@@ -1907,7 +2245,22 @@ button {
   }
 
   .plant-illustration {
-    height: 130px;
+    height: 146px;
+  }
+
+  .card-plant-sprite {
+    width: 118px;
+    height: 118px;
+  }
+
+  .tree.stage-sapling .card-plant-sprite,
+  .flower.stage-growing .card-plant-sprite {
+    width: 78px;
+    height: 120px;
+  }
+
+  .home-actions {
+    grid-template-columns: 1fr;
   }
 
   .field-row {
