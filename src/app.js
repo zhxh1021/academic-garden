@@ -90,6 +90,7 @@ const elements = {
   detailKicker: document.querySelector("#detail-kicker"),
   detailTitle: document.querySelector("#detail-title"),
   detailStatus: document.querySelector("#detail-status"),
+  detailScene: document.querySelector("#detail-scene"),
   detailPaper: document.querySelector("#detail-paper"),
   detailCourse: document.querySelector("#detail-course"),
   detailActivities: document.querySelector("#detail-activities"),
@@ -174,6 +175,15 @@ function recentActivityMarkup(plant) {
   `;
 }
 
+function plantSceneMarkup(plant, spriteClassName) {
+  const sprite = varietySprite(plant);
+  if (!sprite) return "";
+  return `
+    <span class="scene-glow"></span>
+    ${spriteImage(sprite, spriteClassName, varietyLabel(plant))}
+  `;
+}
+
 function plantMarkup(plant) {
   const config = TYPE_CONFIG[plant.type];
   const stage = stageOf(plant);
@@ -183,18 +193,16 @@ function plantMarkup(plant) {
   return `
     <article id="plant-${plant.id}" class="plant-card ${config.icon} stage-${plant.stage} ${sprite ? "has-asset-sprite" : ""} ${plant.id === nurturedPlantId ? "is-nurtured" : ""} ${plant.id === focusedPlantId ? "is-focused" : ""}">
       <div class="plant-illustration" aria-hidden="true">
-        <span class="cloud"></span>
         <span class="care-particles"></span>
-        ${spriteImage(sprite, "card-plant-sprite", varietyLabel(plant))}
-        <span class="plant-sprite">
+        ${plantSceneMarkup(plant, "card-plant-sprite")}
+        ${sprite ? "" : `<span class="plant-sprite">
           <span class="stem"></span>
           <span class="trunk"></span>
           <span class="branch"></span>
           <span class="canopy"></span>
           <span class="blossom"></span>
           <span class="fruit"></span>
-        </span>
-        <span class="soil"></span>
+        </span>`}
       </div>
       <div class="plant-content">
         <div class="plant-topline">
@@ -422,6 +430,8 @@ function openDetails(plant) {
   elements.detailKicker.textContent = plant.type === "paper" ? "TREE JOURNAL" : "FLOWER JOURNAL";
   elements.detailTitle.textContent = plant.title;
   elements.detailStatus.textContent = `${TYPE_CONFIG[plant.type].label} · ${varietyLabel(plant)} · ${stage.label}`;
+  elements.detailScene.className = `detail-scene ${TYPE_CONFIG[plant.type].icon} stage-${plant.stage}`;
+  elements.detailScene.innerHTML = plantSceneMarkup(plant, "detail-plant-sprite");
   elements.detailActivities.innerHTML = activityHistoryMarkup(plant);
   const isPaper = plant.type === "paper";
   elements.detailPaper.hidden = !isPaper;
