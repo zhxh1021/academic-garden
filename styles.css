@@ -353,7 +353,7 @@ button {
 .map-house {
   position: absolute;
   z-index: 4;
-  top: 205px;
+  top: 178px;
   display: grid;
   justify-items: center;
   gap: 2px;
@@ -367,42 +367,43 @@ button {
 }
 
 .map-house:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
 }
 
 .house-harvested {
-  left: 55%;
+  left: 60%;
 }
 
 .house-dormant {
-  left: 76%;
+  left: 74%;
 }
 
 .map-house strong {
-  padding: 3px 7px;
+  padding: 2px 6px;
   border: 2px solid var(--border);
   background: rgb(255 243 204 / 86%);
   box-shadow: 2px 2px 0 var(--border);
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .map-house em {
   display: grid;
   place-content: center;
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
   border: 2px solid var(--border);
   background: var(--gold);
+  font-size: 10px;
   font-style: normal;
 }
 
 .house-art {
   position: relative;
   display: block;
-  width: 178px;
-  height: 154px;
+  width: 108px;
+  height: 92px;
   object-fit: contain;
-  filter: drop-shadow(4px 6px 0 rgb(38 60 50 / 32%));
+  filter: drop-shadow(2px 4px 0 rgb(38 60 50 / 20%));
 }
 
 .greenhouse::before {
@@ -458,7 +459,7 @@ button {
 }
 
 .night-house {
-  filter: drop-shadow(0 0 9px rgb(246 237 189 / 60%));
+  filter: drop-shadow(0 0 5px rgb(246 237 189 / 42%));
 }
 
 .overview-empty {
@@ -488,74 +489,41 @@ button {
 
 .empty-plot {
   position: absolute;
-  width: 116px;
-  height: 74px;
+  width: 176px;
+  height: 126px;
   border: 0;
   padding: 0;
   background: transparent;
-  filter: drop-shadow(3px 5px 0 rgb(38 60 50 / 24%));
+  filter: drop-shadow(2px 5px 0 rgb(38 60 50 / 18%));
   cursor: pointer;
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
-.empty-plot span,
-.empty-plot::before,
-.empty-plot::after {
-  position: absolute;
+.empty-plot-art {
   display: block;
-  content: "";
-}
-
-.empty-plot span {
-  inset: 13px 8px 11px;
-  border: 3px solid #7c6b42;
-  background:
-    linear-gradient(90deg, transparent 0 18px, rgb(92 70 39 / 26%) 19px 22px, transparent 23px),
-    linear-gradient(0deg, transparent 0 15px, rgb(92 70 39 / 22%) 16px 19px, transparent 20px),
-    repeating-linear-gradient(135deg, #c99a5b 0 9px, #bd8b4f 9px 18px);
-  background-size: 24px 100%, 100% 22px, auto;
-}
-
-.empty-plot::before {
-  left: 3px;
-  right: 3px;
-  top: 5px;
-  height: 18px;
-  background:
-    linear-gradient(135deg, transparent 0 10px, #9f7a45 11px 19px, transparent 20px) 0 0 / 34px 18px,
-    #d7ad70;
-  clip-path: polygon(9% 0, 100% 0, 91% 100%, 0 100%);
-}
-
-.empty-plot::after {
-  left: 22px;
-  right: 18px;
-  bottom: 4px;
-  height: 10px;
-  background:
-    radial-gradient(circle, #f0d38b 0 3px, transparent 4px) 0 1px / 18px 10px,
-    radial-gradient(circle, #6a9d4d 0 3px, transparent 4px) 8px 4px / 22px 10px;
-  opacity: 0.92;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .empty-plot:hover {
-  transform: translateY(-4px);
-  filter: drop-shadow(4px 8px 0 rgb(38 60 50 / 32%));
+  transform: translateY(-5px);
+  filter: drop-shadow(3px 8px 0 rgb(38 60 50 / 26%));
 }
 
 .empty-plot-a {
-  left: 19%;
-  top: 58%;
+  left: 14%;
+  top: 54%;
 }
 
 .empty-plot-b {
-  left: 33%;
-  top: 67%;
+  left: 31%;
+  top: 64%;
 }
 
 .empty-plot-c {
-  left: 47%;
-  top: 58%;
+  left: 48%;
+  top: 54%;
 }
 
 .overview-plant {
@@ -1785,22 +1753,22 @@ button {
   }
 
   .empty-plot {
-    width: 88px;
-    height: 58px;
+    width: 124px;
+    height: 88px;
   }
 
   .empty-plot-a {
-    left: 12%;
-    top: 57%;
+    left: 7%;
+    top: 55%;
   }
 
   .empty-plot-b {
-    left: 32%;
-    top: 63%;
+    left: 29%;
+    top: 64%;
   }
 
   .empty-plot-c {
-    left: 18%;
+    left: 11%;
     top: 73%;
   }
 
@@ -1809,16 +1777,16 @@ button {
   }
 
   .house-harvested {
-    left: 51%;
+    left: 59%;
   }
 
   .house-dormant {
-    left: 74%;
+    left: 76%;
   }
 
   .house-art {
-    width: 82px;
-    height: 66px;
+    width: 62px;
+    height: 52px;
   }
 
   .overview-plant {

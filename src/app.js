@@ -312,13 +312,13 @@ function emptyPlotMarkup() {
   return `
     <div class="empty-plots" aria-label="可种植空地">
       <button type="button" class="empty-plot empty-plot-a" data-empty-plot aria-label="在这块空地种下一株植物">
-        <span></span>
+        ${spriteImage("./assets/sprites/empty-plot-a.png", "empty-plot-art", "空地")}
       </button>
       <button type="button" class="empty-plot empty-plot-b" data-empty-plot aria-label="在这块空地种下一株植物">
-        <span></span>
+        ${spriteImage("./assets/sprites/empty-plot-b.png", "empty-plot-art", "空地")}
       </button>
       <button type="button" class="empty-plot empty-plot-c" data-empty-plot aria-label="在这块空地种下一株植物">
-        <span></span>
+        ${spriteImage("./assets/sprites/empty-plot-c.png", "empty-plot-art", "空地")}
       </button>
       <p class="overview-empty">选择一块空地，种下第一株植物。</p>
     </div>
