@@ -308,12 +308,29 @@ function decorationMarkup(decoration) {
   `;
 }
 
+function emptyPlotMarkup() {
+  return `
+    <div class="empty-plots" aria-label="可种植空地">
+      <button type="button" class="empty-plot empty-plot-a" data-empty-plot aria-label="在这块空地种下一株植物">
+        <span></span>
+      </button>
+      <button type="button" class="empty-plot empty-plot-b" data-empty-plot aria-label="在这块空地种下一株植物">
+        <span></span>
+      </button>
+      <button type="button" class="empty-plot empty-plot-c" data-empty-plot aria-label="在这块空地种下一株植物">
+        <span></span>
+      </button>
+      <p class="overview-empty">选择一块空地，种下第一株植物。</p>
+    </div>
+  `;
+}
+
 function renderOverview() {
   const activePlants = plantsIn("active");
   const ownedDecorations = DECORATIONS.filter((decoration) => state.decorations.owned.includes(decoration.id));
   const activePlantMarkup = activePlants.length > 0
     ? activePlants.map(miniPlantMarkup).join("")
-    : `<p class="overview-empty">前景花圃还空着，先种下一株植物。</p>`;
+    : emptyPlotMarkup();
   elements.overviewGarden.innerHTML = `
     <div class="map-sky" aria-hidden="true"></div>
     <button type="button" class="map-house house-harvested" data-overview-zone="harvested">
@@ -563,6 +580,11 @@ elements.shopGrid.addEventListener("click", async (event) => {
 });
 
 elements.overviewGarden.addEventListener("click", (event) => {
+  const emptyPlot = event.target.closest("[data-empty-plot]");
+  if (emptyPlot) {
+    openForm(false);
+    return;
+  }
   const plantButton = event.target.closest("button[data-overview-plant-id]");
   if (plantButton) {
     const plant = state.plants.find((item) => item.id === plantButton.dataset.overviewPlantId);

@@ -315,7 +315,7 @@ button {
 }
 
 .overview-garden::after {
-  content: "";
+  content: none;
   position: absolute;
   z-index: 1;
   left: -80px;
@@ -463,17 +463,99 @@ button {
 
 .overview-empty {
   position: absolute;
-  left: 31%;
-  top: 61%;
+  left: 34%;
+  top: 74%;
+  z-index: 4;
   width: min(360px, calc(100% - 40px));
   margin: 0;
   transform: translate(-50%, -50%);
-  padding: 18px;
-  border: 3px dashed var(--grass-dark);
-  background: var(--cream);
+  padding: 8px 11px;
+  border: 2px solid var(--grass-dark);
+  background: rgb(255 243 204 / 88%);
+  box-shadow: 2px 2px 0 rgb(38 60 50 / 42%);
   color: var(--ink-soft);
   text-align: center;
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.empty-plots {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+.empty-plot {
+  position: absolute;
+  width: 116px;
+  height: 74px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  filter: drop-shadow(3px 5px 0 rgb(38 60 50 / 24%));
+  cursor: pointer;
+  transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
+}
+
+.empty-plot span,
+.empty-plot::before,
+.empty-plot::after {
+  position: absolute;
+  display: block;
+  content: "";
+}
+
+.empty-plot span {
+  inset: 13px 8px 11px;
+  border: 3px solid #7c6b42;
+  background:
+    linear-gradient(90deg, transparent 0 18px, rgb(92 70 39 / 26%) 19px 22px, transparent 23px),
+    linear-gradient(0deg, transparent 0 15px, rgb(92 70 39 / 22%) 16px 19px, transparent 20px),
+    repeating-linear-gradient(135deg, #c99a5b 0 9px, #bd8b4f 9px 18px);
+  background-size: 24px 100%, 100% 22px, auto;
+}
+
+.empty-plot::before {
+  left: 3px;
+  right: 3px;
+  top: 5px;
+  height: 18px;
+  background:
+    linear-gradient(135deg, transparent 0 10px, #9f7a45 11px 19px, transparent 20px) 0 0 / 34px 18px,
+    #d7ad70;
+  clip-path: polygon(9% 0, 100% 0, 91% 100%, 0 100%);
+}
+
+.empty-plot::after {
+  left: 22px;
+  right: 18px;
+  bottom: 4px;
+  height: 10px;
+  background:
+    radial-gradient(circle, #f0d38b 0 3px, transparent 4px) 0 1px / 18px 10px,
+    radial-gradient(circle, #6a9d4d 0 3px, transparent 4px) 8px 4px / 22px 10px;
+  opacity: 0.92;
+}
+
+.empty-plot:hover {
+  transform: translateY(-4px);
+  filter: drop-shadow(4px 8px 0 rgb(38 60 50 / 32%));
+}
+
+.empty-plot-a {
+  left: 19%;
+  top: 58%;
+}
+
+.empty-plot-b {
+  left: 33%;
+  top: 67%;
+}
+
+.empty-plot-c {
+  left: 47%;
+  top: 58%;
 }
 
 .overview-plant {
@@ -851,12 +933,6 @@ button {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-}
-
-@keyframes overview-cloud {
-  to {
-    transform: translateX(620px);
-  }
 }
 
 @keyframes stars-twinkle {
@@ -1701,11 +1777,31 @@ button {
   }
 
   .overview-empty {
-    left: 38%;
-    top: 70%;
+    left: 44%;
+    top: 81%;
     width: min(260px, calc(100% - 32px));
-    padding: 12px;
-    font-size: 13px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .empty-plot {
+    width: 88px;
+    height: 58px;
+  }
+
+  .empty-plot-a {
+    left: 12%;
+    top: 57%;
+  }
+
+  .empty-plot-b {
+    left: 32%;
+    top: 63%;
+  }
+
+  .empty-plot-c {
+    left: 18%;
+    top: 73%;
   }
 
   .map-house {
