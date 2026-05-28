@@ -27,8 +27,12 @@ export const TYPE_CONFIG = {
     label: "树",
     icon: "tree",
     varieties: [
-      { id: "ginkgo", label: "银杏树" },
-      { id: "camphor", label: "香樟树" }
+      { id: "ginkgo", label: "银杏树", sprite: "./assets/sprites/tree-ginkgo.png" },
+      { id: "camphor", label: "香樟树", sprite: "./assets/sprites/tree-camphor.png" },
+      { id: "pine", label: "松树", sprite: "./assets/sprites/tree-pine.png" },
+      { id: "maple", label: "枫树", sprite: "./assets/sprites/tree-maple.png" },
+      { id: "willow", label: "柳树", sprite: "./assets/sprites/tree-willow.png" },
+      { id: "cherry", label: "樱花树", sprite: "./assets/sprites/tree-cherry.png" }
     ],
     stages: [
       { id: "seed", label: "种子", nextAction: "开始推进" },
@@ -42,8 +46,12 @@ export const TYPE_CONFIG = {
     label: "花",
     icon: "flower",
     varieties: [
-      { id: "daisy", label: "雏菊" },
-      { id: "hydrangea", label: "绣球花" }
+      { id: "daisy", label: "雏菊", sprite: "./assets/sprites/flower-daisy.png" },
+      { id: "hydrangea", label: "绣球花", sprite: "./assets/sprites/flower-hydrangea.png" },
+      { id: "sunflower", label: "向日葵", sprite: "./assets/sprites/flower-sunflower.png" },
+      { id: "lotus", label: "荷花", sprite: "./assets/sprites/flower-lotus.png" },
+      { id: "lavender", label: "薰衣草", sprite: "./assets/sprites/flower-lavender.png" },
+      { id: "rose", label: "玫瑰", sprite: "./assets/sprites/flower-rose.png" }
     ],
     stages: [
       { id: "sowing", label: "播种", nextAction: "开始教学" },
@@ -72,30 +80,38 @@ export const DECORATIONS = [
     label: "鹅卵石小径",
     price: 10,
     description: "给花园铺一段安静的小路。",
-    className: "decor-path"
+    className: "decor-path",
+    sprite: "./assets/sprites/decor-stone-path.png"
   },
   {
     id: "wood-bench",
     label: "木长椅",
     price: 16,
     description: "给完成思考后的自己留一个座位。",
-    className: "decor-bench"
+    className: "decor-bench",
+    sprite: "./assets/sprites/decor-wood-bench.png"
   },
   {
     id: "lamp",
     label: "小路灯",
     price: 22,
     description: "夜里也能看见正在长大的项目。",
-    className: "decor-lamp"
+    className: "decor-lamp",
+    sprite: "./assets/sprites/decor-lamp.png"
   },
   {
     id: "pond",
     label: "像素水池",
     price: 30,
     description: "让花园多一点清亮的呼吸。",
-    className: "decor-pond"
+    className: "decor-pond",
+    sprite: "./assets/sprites/decor-pond.png"
   }
 ];
+
+export const DEFAULT_UNLOCKED_VARIETIES = TYPE_CONFIG.paper.varieties
+  .concat(TYPE_CONFIG.course.varieties)
+  .map((variety) => variety.id);
 
 export const ACTIVITY_RULES = {
   paper: [
@@ -166,6 +182,14 @@ export function stageOf(plant) {
 
 export function varietyLabel(plant) {
   return TYPE_CONFIG[plant.type].varieties.find((item) => item.id === plant.variety)?.label ?? plant.variety;
+}
+
+export function varietySprite(plant) {
+  const variety = TYPE_CONFIG[plant.type].varieties.find((item) => item.id === plant.variety);
+  const stage = TYPE_CONFIG[plant.type].stages.find((item) => item.id === plant.stage);
+  if (!variety) return "";
+  if (stage) return `./assets/sprites/stages/${plant.type}-${variety.id}-${stage.id}.png`;
+  return variety.sprite ?? "";
 }
 
 export function advanceMilestone(plant) {

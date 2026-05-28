@@ -1,3 +1,5 @@
+import { DEFAULT_UNLOCKED_VARIETIES } from "./domain.js";
+
 const DATABASE_NAME = "academic-garden";
 const DATABASE_VERSION = 1;
 const STORE_NAME = "garden";
@@ -16,7 +18,7 @@ export function emptyState() {
     wallet: {
       currentCoins: 0,
       lifetimeCoins: 0,
-      unlockedVarieties: ["ginkgo", "daisy", "camphor", "hydrangea"]
+      unlockedVarieties: [...DEFAULT_UNLOCKED_VARIETIES]
     }
   };
 }

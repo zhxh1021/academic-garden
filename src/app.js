@@ -1,5 +1,6 @@
 import {
   DECORATIONS,
+  DEFAULT_UNLOCKED_VARIETIES,
   TYPE_CONFIG,
   ZONES,
   advanceMilestone,
@@ -12,7 +13,8 @@ import {
   settleCareForDate,
   stageOf,
   updatePaperDetails,
-  varietyLabel
+  varietyLabel,
+  varietySprite
 } from "./domain.js";
 import { downloadBackup, loadState, saveState } from "./store.js";
 
@@ -30,7 +32,9 @@ function normalizeState(snapshot) {
       ...snapshot.wallet,
       currentCoins: snapshot.wallet?.currentCoins ?? 0,
       lifetimeCoins: snapshot.wallet?.lifetimeCoins ?? 0,
-      unlockedVarieties: snapshot.wallet?.unlockedVarieties ?? ["ginkgo", "daisy", "camphor", "hydrangea"]
+      unlockedVarieties: [
+        ...new Set([...(snapshot.wallet?.unlockedVarieties ?? []), ...DEFAULT_UNLOCKED_VARIETIES])
+      ]
     }
   };
 }
@@ -115,6 +119,11 @@ function escapeText(value) {
   return element.innerHTML;
 }
 
+function spriteImage(src, className, alt = "") {
+  if (!src) return "";
+  return `<img class="asset-sprite ${className}" src="${src}" alt="${escapeText(alt)}" loading="lazy" />`;
+}
+
 function metadataText(plant) {
   if (plant.type === "paper") {
     const role = plant.metadata.authorRole === "primary" ? "主要作者" : "共同作者";
@@ -170,11 +179,13 @@ function plantMarkup(plant) {
   const stage = stageOf(plant);
   const nextAction = plant.status === "active" ? stage.nextAction : null;
   const lastMilestone = plant.milestones.at(-1);
+  const sprite = varietySprite(plant);
   return `
-    <article id="plant-${plant.id}" class="plant-card ${config.icon} stage-${plant.stage} ${plant.id === nurturedPlantId ? "is-nurtured" : ""} ${plant.id === focusedPlantId ? "is-focused" : ""}">
+    <article id="plant-${plant.id}" class="plant-card ${config.icon} stage-${plant.stage} ${sprite ? "has-asset-sprite" : ""} ${plant.id === nurturedPlantId ? "is-nurtured" : ""} ${plant.id === focusedPlantId ? "is-focused" : ""}">
       <div class="plant-illustration" aria-hidden="true">
         <span class="cloud"></span>
         <span class="care-particles"></span>
+        ${spriteImage(sprite, "card-plant-sprite", varietyLabel(plant))}
         <span class="plant-sprite">
           <span class="stem"></span>
           <span class="trunk"></span>
@@ -277,11 +288,12 @@ function renderSettlement() {
 function miniPlantMarkup(plant, index) {
   const config = TYPE_CONFIG[plant.type];
   const stage = stageOf(plant);
+  const sprite = varietySprite(plant);
   const column = index % 4;
   const row = Math.floor(index / 4);
   return `
-    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage}" data-overview-plant-id="${plant.id}" style="--x:${18 + column * 17}%;--y:${54 + row * 16}%">
-      <span class="mini-sprite" aria-hidden="true"></span>
+    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage} ${sprite ? "has-asset-sprite" : ""}" data-overview-plant-id="${plant.id}" style="--x:${18 + column * 17}%;--y:${54 + row * 16}%">
+      ${sprite ? spriteImage(sprite, "map-plant-sprite", varietyLabel(plant)) : `<span class="mini-sprite" aria-hidden="true"></span>`}
       <strong>${escapeText(plant.title)}</strong>
       <em>${config.label} · ${stage.label}</em>
     </button>
@@ -289,7 +301,11 @@ function miniPlantMarkup(plant, index) {
 }
 
 function decorationMarkup(decoration) {
-  return `<span class="garden-decoration ${decoration.className}" title="${escapeText(decoration.label)}"></span>`;
+  return `
+    <span class="garden-decoration ${decoration.className}" title="${escapeText(decoration.label)}">
+      ${spriteImage(decoration.sprite, "decor-sprite", decoration.label)}
+    </span>
+  `;
 }
 
 function renderOverview() {
@@ -301,12 +317,12 @@ function renderOverview() {
   elements.overviewGarden.innerHTML = `
     <div class="map-sky" aria-hidden="true"></div>
     <button type="button" class="map-house house-harvested" data-overview-zone="harvested">
-      <span class="house-art greenhouse" aria-hidden="true"></span>
+      ${spriteImage("./assets/sprites/house-greenhouse.png", "house-art", "收获园")}
       <strong>收获园</strong>
       <em>${plantsIn("harvested").length}</em>
     </button>
     <button type="button" class="map-house house-dormant" data-overview-zone="dormant">
-      <span class="house-art night-house" aria-hidden="true"></span>
+      ${spriteImage("./assets/sprites/house-night-cottage.png", "house-art night-house", "沉睡园")}
       <strong>沉睡园</strong>
       <em>${plantsIn("dormant").length}</em>
     </button>
@@ -323,7 +339,9 @@ function renderShop() {
     const affordable = state.wallet.currentCoins >= decoration.price;
     return `
       <article class="shop-card">
-        <span class="shop-preview ${decoration.className}" aria-hidden="true"></span>
+        <span class="shop-preview ${decoration.className}" aria-hidden="true">
+          ${spriteImage(decoration.sprite, "shop-sprite", decoration.label)}
+        </span>
         <h3>${escapeText(decoration.label)}</h3>
         <p>${escapeText(decoration.description)}</p>
         <footer>
