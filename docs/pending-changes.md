@@ -1,5 +1,29 @@
 # Pending Changes
 
+## 2026-05-28 - Paper tree stage sprite crop fix
+
+### Summary
+
+- Fixed paper tree stage sprites that contained two vertically separated sprite fragments in one PNG.
+- Cropped the `sapling`, `tree`, and `flower` stage assets for all six paper tree varieties to keep only the first valid sprite segment.
+- Confirmed `paper-ginkgo-tree.png` now contains a single tree instead of a split tree plus leftover lower fragment.
+
+### Files Changed
+
+- `assets/sprites/stages/paper-*-sapling.png`
+- `assets/sprites/stages/paper-*-tree.png`
+- `assets/sprites/stages/paper-*-flower.png`
+
+### Verification
+
+- Re-scanned alpha row segments for all updated PNGs; each file now reports one continuous segment.
+- Visually inspected `assets/sprites/stages/paper-ginkgo-tree.png`.
+
+### Notes
+
+- This fixes the card/detail split-tree artifact shown when rendering the broken stage asset.
+- Existing concurrent edits in `src/app.js` and `styles.css` were not modified as part of this asset fix.
+
 ## 2026-05-28 - Major garden art refresh rollup
 
 ### Summary
