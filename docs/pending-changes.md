@@ -1,5 +1,35 @@
 # Pending Changes
 
+## 2026-05-29 - Homepage destination affordance and empty plot art fix
+
+### Summary
+
+- Replaced the empty planting plot sprites with a new GPT-Image-2-generated v2 sheet and transparent cropped runtime assets.
+- Updated the homepage empty state to use `empty-plot-a-v2.png`, `empty-plot-b-v2.png`, and `empty-plot-c-v2.png`.
+- Tightened the harvested/dormant destination click targets around the painted background houses and replaced the hard focus box with a lighter hover/focus floating hint.
+
+### Files Changed
+
+- `assets/art/empty-plot-sheet-v2-source.png`
+- `assets/sprites/empty-plot-sheet-v2.png`
+- `assets/sprites/empty-plot-a-v2.png`
+- `assets/sprites/empty-plot-b-v2.png`
+- `assets/sprites/empty-plot-c-v2.png`
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Validated the new empty-plot PNGs have alpha channels and transparent corners.
+- Confirmed homepage code references the new v2 empty-plot assets.
+
+### Notes
+
+- Generated with the built-in image generation tool on a flat chroma-key background, then removed the key locally and sliced the sheet into runtime sprites.
+- Prompt constraints: high-quality sunny RPG garden pixel-art soil patches, refined grass rims, no labels, no UI, no heavy outlines, no sticker-like shadow.
+
 ## 2026-05-29 - Homepage integrated destination houses
 
 ### Summary

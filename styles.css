@@ -416,15 +416,15 @@ textarea:focus-visible {
 .map-house {
   position: absolute;
   z-index: 3;
-  top: 244px;
+  top: 256px;
   display: grid;
   justify-items: center;
   align-content: end;
-  width: 178px;
-  height: 118px;
+  width: 132px;
+  height: 92px;
   gap: 0;
   border: 0;
-  padding: 0 0 8px;
+  padding: 0;
   background: transparent;
   color: var(--ink);
   font-weight: bold;
@@ -439,8 +439,7 @@ textarea:focus-visible {
 }
 
 .map-house:focus-visible {
-  outline: 3px solid rgb(255 230 139 / 84%);
-  outline-offset: 4px;
+  outline: 0;
 }
 
 .map-house::before,
@@ -452,55 +451,58 @@ textarea:focus-visible {
 
 .map-house::before {
   z-index: 1;
-  inset: 8px 10px 18px;
-  border: 2px solid rgb(255 240 168 / 0%);
-  background: radial-gradient(ellipse at 50% 58%, rgb(255 236 142 / 0%), transparent 68%);
-  opacity: 0;
-  transition: opacity 160ms steps(2, end), border-color 160ms steps(2, end);
-}
-
-.map-house::after {
-  z-index: 1;
-  left: 22%;
-  right: 22%;
-  bottom: 18px;
+  left: 24%;
+  right: 24%;
+  bottom: 24px;
   height: 16px;
-  background:
-    radial-gradient(ellipse at 50% 80%, rgb(255 236 142 / 0%), transparent 70%);
-  image-rendering: pixelated;
+  border: 0;
+  background: radial-gradient(ellipse at 50% 70%, rgb(255 236 142 / 0%), transparent 72%);
   opacity: 0;
   transition: opacity 160ms steps(2, end);
 }
 
+.map-house::after {
+  z-index: 1;
+  left: 50%;
+  bottom: 12px;
+  width: 8px;
+  height: 8px;
+  background: rgb(255 230 139 / 0%);
+  image-rendering: pixelated;
+  opacity: 0;
+  transform: translateX(-50%) rotate(45deg);
+  transition: opacity 160ms steps(2, end), background 160ms steps(2, end);
+}
+
 .map-house:hover::before,
 .map-house:focus-visible::before {
-  border-color: rgb(255 240 168 / 42%);
-  background: radial-gradient(ellipse at 50% 58%, rgb(255 236 142 / 20%), transparent 68%);
+  background: radial-gradient(ellipse at 50% 70%, rgb(255 236 142 / 32%), transparent 72%);
   opacity: 1;
 }
 
 .map-house:hover::after,
 .map-house:focus-visible::after {
-  background: radial-gradient(ellipse at 50% 80%, rgb(255 236 142 / 24%), transparent 70%);
+  background: rgb(255 246 203 / 92%);
   opacity: 1;
 }
 
 .house-harvested {
-  left: 24%;
+  left: 23.5%;
 }
 
 .house-dormant {
-  left: 72%;
+  left: 72.5%;
 }
 
 .map-house strong {
   position: relative;
   z-index: 4;
   margin-top: 0;
-  padding: 2px 7px;
-  border: 2px solid #5c4530;
-  background: rgb(213 180 95 / 86%);
-  box-shadow: 1px 1px 0 rgb(38 60 50 / 55%);
+  padding: 5px 9px;
+  border: 1px solid rgb(92 69 48 / 34%);
+  border-radius: 7px;
+  background: rgb(255 246 203 / 92%);
+  box-shadow: 0 5px 12px rgb(38 60 50 / 18%);
   color: #263c32;
   font-size: 10px;
   opacity: 0;
@@ -511,14 +513,16 @@ textarea:focus-visible {
 .map-house em {
   position: absolute;
   z-index: 4;
-  right: 14px;
-  bottom: 16px;
+  right: 9px;
+  bottom: 5px;
   display: grid;
   place-content: center;
-  width: 19px;
+  min-width: 17px;
   height: 19px;
-  border: 2px solid var(--border);
-  background: rgb(239 184 59 / 86%);
+  padding: 0 4px;
+  border: 1px solid rgb(92 69 48 / 48%);
+  border-radius: 999px;
+  background: rgb(239 184 59 / 92%);
   font-size: 9px;
   font-style: normal;
   opacity: 0;
@@ -612,8 +616,8 @@ textarea:focus-visible {
 
 .overview-empty {
   position: absolute;
-  left: 34%;
-  top: 74%;
+  left: 35%;
+  top: 75%;
   z-index: 4;
   width: min(360px, calc(100% - 40px));
   margin: 0;
@@ -637,12 +641,12 @@ textarea:focus-visible {
 
 .empty-plot {
   position: absolute;
-  width: 176px;
-  height: 126px;
+  width: 214px;
+  height: 142px;
   border: 0;
   padding: 0;
   background: transparent;
-  filter: drop-shadow(2px 5px 0 rgb(38 60 50 / 18%));
+  filter: drop-shadow(0 9px 10px rgb(38 60 50 / 14%));
   cursor: pointer;
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
@@ -651,11 +655,13 @@ textarea:focus-visible {
   content: "种植";
   position: absolute;
   left: 50%;
-  bottom: 6px;
+  bottom: 10px;
   z-index: 2;
-  padding: 2px 6px;
-  border: 2px solid rgb(38 60 50 / 72%);
-  background: var(--hud-bg);
+  padding: 4px 8px;
+  border: 1px solid rgb(92 69 48 / 36%);
+  border-radius: 7px;
+  background: rgb(255 246 203 / 92%);
+  box-shadow: 0 5px 12px rgb(38 60 50 / 16%);
   color: var(--grass-dark);
   font-size: 10px;
   font-weight: bold;
@@ -672,8 +678,8 @@ textarea:focus-visible {
 }
 
 .empty-plot:hover {
-  transform: translateY(-5px);
-  filter: drop-shadow(3px 8px 0 rgb(38 60 50 / 26%));
+  transform: translateY(-3px);
+  filter: drop-shadow(0 12px 14px rgb(38 60 50 / 18%)) brightness(1.03);
 }
 
 .empty-plot:hover::after,
@@ -683,17 +689,17 @@ textarea:focus-visible {
 }
 
 .empty-plot-a {
-  left: 14%;
+  left: 13%;
   top: 54%;
 }
 
 .empty-plot-b {
-  left: 31%;
+  left: 30%;
   top: 64%;
 }
 
 .empty-plot-c {
-  left: 48%;
+  left: 49%;
   top: 54%;
 }
 
@@ -2136,38 +2142,38 @@ textarea:focus-visible {
   }
 
   .empty-plot {
-    width: 124px;
-    height: 88px;
+    width: 148px;
+    height: 98px;
   }
 
   .empty-plot-a {
-    left: 7%;
+    left: 5%;
     top: 54%;
   }
 
   .empty-plot-b {
-    left: 34%;
+    left: 32%;
     top: 64%;
   }
 
   .empty-plot-c {
-    left: 58%;
+    left: 57%;
     top: 54%;
   }
 
   .map-house {
-    top: 305px;
-    width: 118px;
-    height: 88px;
-    padding-bottom: 5px;
+    top: 315px;
+    width: 86px;
+    height: 68px;
+    padding-bottom: 0;
   }
 
   .house-harvested {
-    left: 27%;
+    left: 25%;
   }
 
   .house-dormant {
-    left: 72%;
+    left: 73%;
   }
 
   .house-art {
@@ -2176,26 +2182,30 @@ textarea:focus-visible {
   }
 
   .map-house::before {
-    inset: 6px 8px 14px;
+    left: 22%;
+    right: 22%;
+    bottom: 18px;
+    height: 12px;
   }
 
   .map-house::after {
-    left: 20%;
-    right: 20%;
-    bottom: 14px;
-    height: 13px;
+    left: 50%;
+    right: auto;
+    bottom: 10px;
+    width: 7px;
+    height: 7px;
   }
 
   .map-house strong {
-    padding: 1px 5px;
+    padding: 4px 7px;
     font-size: 9px;
   }
 
   .map-house em {
-    right: 5px;
-    bottom: 9px;
-    width: 17px;
-    height: 17px;
+    right: 1px;
+    bottom: 3px;
+    min-width: 16px;
+    height: 16px;
     font-size: 8px;
   }
 
