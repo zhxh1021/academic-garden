@@ -1,5 +1,9 @@
 {
   "name": "academic-garden",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "start:sync": "node server/server.mjs",
+    "test": "node --test scripts/domain.test.mjs scripts/server.test.mjs"
+  }
 }

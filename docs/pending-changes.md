@@ -29,6 +29,46 @@
 - Prompt constraints: preserve the 1536x1024 sunny pixel-art garden composition, integrate a warm harvest destination on the left path and a cooler quiet dormant cottage on the right path, keep both buildings distant, hazy, and free of labels or UI text.
 - Existing unrelated sync-backend work was left untouched.
 
+## 2026-05-29 - Personal sync backend
+
+### Summary
+
+- Added a small dependency-free Node backend for personal multi-device syncing.
+- The sync server protects the app with browser Basic Auth, serves the existing static frontend, and exposes `GET /api/garden` / `PUT /api/garden`.
+- Corrected the sync architecture for the existing GitHub Pages deployment: Pages keeps serving the frontend, while `sync-config.js` points the app at a separately deployed backend API.
+- Added cross-origin support for `https://zhxh1021.github.io` so the GitHub Pages frontend can call the backend API.
+- Cloud garden data is saved as a private JSON snapshot under `server/data/`, while the frontend keeps IndexedDB as local fallback and first-time migration source.
+- Added stale-version detection so a save from an older device state does not silently overwrite newer cloud data.
+- Added beginner-facing setup notes and a Windows launcher for the sync version.
+
+### Files Changed
+
+- `.gitignore`
+- `.env.example`
+- `package.json`
+- `server/server.mjs`
+- `src/store.js`
+- `sync-config.js`
+- `scripts/server.test.mjs`
+- `docs/backend-sync-plan.md`
+- `docs/pending-changes.md`
+- `启动同步版学术花园.cmd`
+
+### Verification
+
+- Ran `node --check server/server.mjs`.
+- Ran `node --check src/store.js`.
+- Ran `node --test scripts/server.test.mjs`.
+- Ran `node --test scripts/domain.test.mjs scripts/server.test.mjs`.
+- Started the sync server locally and confirmed authenticated requests returned `200` for `/` and an empty cloud snapshot for `/api/garden`.
+- Added and tested CORS preflight support for the GitHub Pages origin.
+
+### Notes
+
+- No external npm dependencies were added.
+- Existing local-only launcher and Python static server were left untouched.
+- Existing art assets and unrelated frontend layout files were left untouched.
+
 ## 2026-05-28 - Paper tree stage sprite crop fix
 
 ### Summary

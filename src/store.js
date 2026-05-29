@@ -4,6 +4,12 @@ const DATABASE_NAME = "academic-garden";
 const DATABASE_VERSION = 1;
 const STORE_NAME = "garden";
 const SNAPSHOT_KEY = "snapshot";
+const API_URL_STORAGE_KEY = "academicGardenApiBaseUrl";
+const API_USERNAME_STORAGE_KEY = "academicGardenApiUsername";
+const API_PASSWORD_SESSION_KEY = "academicGardenApiPassword";
+
+let cloudEnabled = false;
+let cloudVersion = null;
 
 export function emptyState() {
   return {
@@ -44,7 +50,7 @@ function transactionResult(transaction) {
   });
 }
 
-export async function loadState() {
+async function loadLocalState() {
   const database = await openDatabase();
   const transaction = database.transaction(STORE_NAME, "readonly");
   const request = transaction.objectStore(STORE_NAME).get(SNAPSHOT_KEY);
@@ -56,12 +62,142 @@ export async function loadState() {
   return snapshot ?? emptyState();
 }
 
-export async function saveState(state) {
+async function saveLocalState(state) {
   const database = await openDatabase();
   const transaction = database.transaction(STORE_NAME, "readwrite");
   transaction.objectStore(STORE_NAME).put(state, SNAPSHOT_KEY);
   await transactionResult(transaction);
   database.close();
+}
+
+function hasUserData(state) {
+  return (
+    state.plants.length > 0 ||
+    state.activities.length > 0 ||
+    state.settlements.length > 0 ||
+    state.decorations.owned.length > 0 ||
+    state.wallet.currentCoins > 0 ||
+    state.wallet.lifetimeCoins > 0
+  );
+}
+
+function configuredApiBaseUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const queryApiUrl = params.get("gardenApi");
+  if (queryApiUrl) {
+    localStorage.setItem(API_URL_STORAGE_KEY, queryApiUrl);
+    return queryApiUrl;
+  }
+  return (
+    window.ACADEMIC_GARDEN_SYNC?.apiBaseUrl ||
+    localStorage.getItem(API_URL_STORAGE_KEY) ||
+    ""
+  );
+}
+
+function cloudEndpoint() {
+  const apiBaseUrl = configuredApiBaseUrl().trim().replace(/\/$/, "");
+  return apiBaseUrl ? `${apiBaseUrl}/api/garden` : "./api/garden";
+}
+
+function isConfiguredCloudEndpoint() {
+  return configuredApiBaseUrl().trim() !== "";
+}
+
+function cloudAuthHeaders() {
+  if (!isConfiguredCloudEndpoint()) return {};
+  let username = localStorage.getItem(API_USERNAME_STORAGE_KEY);
+  if (!username) {
+    username = window.prompt("请输入云端同步用户名", "garden") || "";
+    if (!username) return null;
+    localStorage.setItem(API_USERNAME_STORAGE_KEY, username);
+  }
+
+  let password = sessionStorage.getItem(API_PASSWORD_SESSION_KEY) || "";
+  if (!password) {
+    password = window.prompt("请输入云端同步密码") || "";
+    if (!password) return null;
+    sessionStorage.setItem(API_PASSWORD_SESSION_KEY, password);
+  }
+  return {
+    authorization: `Basic ${window.btoa(`${username}:${password}`)}`
+  };
+}
+
+async function loadCloudGarden() {
+  const authHeaders = cloudAuthHeaders();
+  if (!authHeaders) throw new Error("Cloud login was cancelled.");
+  const response = await fetch(cloudEndpoint(), {
+    method: "GET",
+    headers: { accept: "application/json", ...authHeaders },
+    cache: "no-store"
+  });
+  if (response.status === 401) {
+    sessionStorage.removeItem(API_PASSWORD_SESSION_KEY);
+    throw new Error("Cloud login failed.");
+  }
+  if (!response.ok) {
+    throw new Error(`Cloud garden is unavailable: ${response.status}`);
+  }
+  return response.json();
+}
+
+async function saveCloudGarden(state) {
+  const authHeaders = cloudAuthHeaders();
+  if (!authHeaders) return false;
+  const response = await fetch(cloudEndpoint(), {
+    method: "PUT",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      ...authHeaders
+    },
+    body: JSON.stringify({ state, version: cloudVersion })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    sessionStorage.removeItem(API_PASSWORD_SESSION_KEY);
+    window.alert("云端同步登录失败。请刷新页面后重新输入密码。");
+    return false;
+  }
+  if (response.status === 409) {
+    window.alert("云端花园已经在另一台设备更新过。请先导出当前备份，然后刷新页面重新加载云端数据。");
+    return false;
+  }
+  if (!response.ok) {
+    window.alert(`云端保存失败：${payload.error ?? response.status}`);
+    return false;
+  }
+  cloudVersion = payload.version;
+  return true;
+}
+
+export async function loadState() {
+  const localState = await loadLocalState();
+  try {
+    const cloudGarden = await loadCloudGarden();
+    cloudEnabled = true;
+    cloudVersion = cloudGarden.version;
+    if (cloudGarden.isEmpty && hasUserData(localState)) {
+      const shouldUpload = window.confirm("检测到这台电脑里已有本地花园。要把它上传到云端，作为多端同步的初始数据吗？");
+      if (shouldUpload) {
+        await saveCloudGarden(localState);
+        return localState;
+      }
+    }
+    await saveLocalState(cloudGarden.state);
+    return cloudGarden.state;
+  } catch {
+    cloudEnabled = false;
+    cloudVersion = null;
+    return localState;
+  }
+}
+
+export async function saveState(state) {
+  await saveLocalState(state);
+  if (!cloudEnabled) return;
+  await saveCloudGarden(state);
 }
 
 export function downloadBackup(state) {
