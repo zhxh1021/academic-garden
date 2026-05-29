@@ -721,7 +721,6 @@ textarea:focus-visible {
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
-.overview-plant::before,
 .overview-plant::after {
   content: "";
   position: absolute;
@@ -731,28 +730,15 @@ textarea:focus-visible {
 }
 
 .overview-plant::before {
-  z-index: 1;
-  bottom: 51px;
-  width: 72px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgb(38 60 50 / 20%);
-  filter: blur(1px);
+  content: none;
 }
 
 .overview-plant::after {
   z-index: 3;
-  bottom: 50px;
-  width: 88px;
-  height: 28px;
-  background:
-    radial-gradient(ellipse at 50% 66%, #75452c 0 8px, transparent 9px),
-    radial-gradient(ellipse at 28% 74%, #9b6a42 0 10px, transparent 11px),
-    radial-gradient(ellipse at 55% 82%, #b07749 0 13px, transparent 14px),
-    radial-gradient(ellipse at 78% 76%, #75452c 0 9px, transparent 10px),
-    radial-gradient(ellipse at 15% 92%, #79aa58 0 8px, transparent 9px),
-    radial-gradient(ellipse at 54% 96%, #71c653 0 9px, transparent 10px),
-    radial-gradient(ellipse at 86% 91%, #477642 0 7px, transparent 8px);
+  bottom: 47px;
+  width: 98px;
+  height: 31px;
+  background: url("./assets/sprites/plant-ground-base-v1.png") center / contain no-repeat;
   image-rendering: pixelated;
 }
 
@@ -820,12 +806,14 @@ textarea:focus-visible {
 
 .overview-plant.stage-seed::before,
 .overview-plant.stage-sowing::before {
-  width: 50px;
+  content: none;
 }
 
 .overview-plant.stage-seed::after,
 .overview-plant.stage-sowing::after {
-  width: 62px;
+  bottom: 48px;
+  width: 72px;
+  height: 23px;
 }
 
 .mini-sprite {
@@ -2215,15 +2203,13 @@ textarea:focus-visible {
   }
 
   .overview-plant::before {
-    bottom: 47px;
-    width: 56px;
-    height: 14px;
+    content: none;
   }
 
   .overview-plant::after {
-    bottom: 46px;
-    width: 64px;
-    height: 19px;
+    bottom: 45px;
+    width: 72px;
+    height: 23px;
   }
 
   .map-plant-sprite {

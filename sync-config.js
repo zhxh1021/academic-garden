@@ -1,3 +1,3 @@
 window.ACADEMIC_GARDEN_SYNC = {
-  apiBaseUrl: ""
+  apiBaseUrl: "https://api.acagarden.site"
 };
