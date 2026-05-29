@@ -348,12 +348,10 @@ function renderOverview() {
   elements.overviewGarden.innerHTML = `
     <div class="map-sky" aria-hidden="true"></div>
     <button type="button" class="map-house house-harvested" data-overview-zone="harvested" aria-label="切换到收获园" title="切换到收获园">
-      ${spriteImage("./assets/sprites/house-greenhouse.png", "house-art", "收获园")}
       <strong>收获园</strong>
       <em>${plantsIn("harvested").length}</em>
     </button>
     <button type="button" class="map-house house-dormant" data-overview-zone="dormant" aria-label="切换到沉睡园" title="切换到沉睡园">
-      ${spriteImage("./assets/sprites/house-night-cottage.png", "house-art night-house", "沉睡园")}
       <strong>沉睡园</strong>
       <em>${plantsIn("dormant").length}</em>
     </button>

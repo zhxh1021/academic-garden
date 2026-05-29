@@ -353,7 +353,7 @@ textarea:focus-visible {
   border: 4px solid var(--grass-dark);
   background:
     linear-gradient(rgb(255 255 255 / 5%), rgb(255 255 255 / 5%)),
-    url("./assets/art/garden-background-v2.png") center / cover no-repeat,
+    url("./assets/art/garden-background-v3.png") center / cover no-repeat,
     #91c765;
   overflow: hidden;
   image-rendering: pixelated;
@@ -415,29 +415,32 @@ textarea:focus-visible {
 
 .map-house {
   position: absolute;
-  z-index: 2;
-  top: 238px;
+  z-index: 3;
+  top: 244px;
   display: grid;
   justify-items: center;
-  width: 150px;
+  align-content: end;
+  width: 178px;
+  height: 118px;
   gap: 0;
   border: 0;
-  padding: 0;
+  padding: 0 0 8px;
   background: transparent;
   color: var(--ink);
   font-weight: bold;
-  text-shadow: 1px 1px 0 rgb(255 243 204 / 46%);
+  text-shadow: 1px 1px 0 rgb(255 243 204 / 58%);
   transform: translateX(-50%);
   transition: filter 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
 .map-house:hover {
-  filter: brightness(1.05) saturate(1.04);
+  filter: brightness(1.06) saturate(1.04);
   transform: translateX(-50%);
 }
 
 .map-house:focus-visible {
-  outline-offset: 8px;
+  outline: 3px solid rgb(255 230 139 / 84%);
+  outline-offset: 4px;
 }
 
 .map-house::before,
@@ -449,27 +452,37 @@ textarea:focus-visible {
 
 .map-house::before {
   z-index: 1;
-  left: 16%;
-  right: 16%;
-  bottom: 33px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgb(38 60 50 / 18%);
-  filter: blur(1px);
+  inset: 8px 10px 18px;
+  border: 2px solid rgb(255 240 168 / 0%);
+  background: radial-gradient(ellipse at 50% 58%, rgb(255 236 142 / 0%), transparent 68%);
+  opacity: 0;
+  transition: opacity 160ms steps(2, end), border-color 160ms steps(2, end);
 }
 
 .map-house::after {
-  z-index: 3;
-  left: 8%;
-  right: 8%;
-  bottom: 35px;
-  height: 28px;
+  z-index: 1;
+  left: 22%;
+  right: 22%;
+  bottom: 18px;
+  height: 16px;
   background:
-    radial-gradient(ellipse at 16% 88%, #82b95b 0 8px, transparent 9px),
-    radial-gradient(ellipse at 36% 92%, #6fae4f 0 7px, transparent 8px),
-    radial-gradient(ellipse at 58% 91%, #8fc46a 0 9px, transparent 10px),
-    radial-gradient(ellipse at 78% 90%, #5f9d47 0 7px, transparent 8px);
+    radial-gradient(ellipse at 50% 80%, rgb(255 236 142 / 0%), transparent 70%);
   image-rendering: pixelated;
+  opacity: 0;
+  transition: opacity 160ms steps(2, end);
+}
+
+.map-house:hover::before,
+.map-house:focus-visible::before {
+  border-color: rgb(255 240 168 / 42%);
+  background: radial-gradient(ellipse at 50% 58%, rgb(255 236 142 / 20%), transparent 68%);
+  opacity: 1;
+}
+
+.map-house:hover::after,
+.map-house:focus-visible::after {
+  background: radial-gradient(ellipse at 50% 80%, rgb(255 236 142 / 24%), transparent 70%);
+  opacity: 1;
 }
 
 .house-harvested {
@@ -477,34 +490,48 @@ textarea:focus-visible {
 }
 
 .house-dormant {
-  left: 66%;
+  left: 72%;
 }
 
 .map-house strong {
   position: relative;
   z-index: 4;
-  margin-top: -8px;
+  margin-top: 0;
   padding: 2px 7px;
   border: 2px solid #5c4530;
-  background: #d5b45f;
+  background: rgb(213 180 95 / 86%);
   box-shadow: 1px 1px 0 rgb(38 60 50 / 55%);
   color: #263c32;
   font-size: 10px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
 .map-house em {
   position: absolute;
   z-index: 4;
-  right: 21px;
-  bottom: 39px;
+  right: 14px;
+  bottom: 16px;
   display: grid;
   place-content: center;
   width: 19px;
   height: 19px;
   border: 2px solid var(--border);
-  background: var(--gold);
+  background: rgb(239 184 59 / 86%);
   font-size: 9px;
   font-style: normal;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
+}
+
+.map-house:hover strong,
+.map-house:focus-visible strong,
+.map-house:hover em,
+.map-house:focus-visible em {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .house-art {
@@ -2130,15 +2157,17 @@ textarea:focus-visible {
 
   .map-house {
     top: 305px;
-    width: 94px;
+    width: 118px;
+    height: 88px;
+    padding-bottom: 5px;
   }
 
   .house-harvested {
-    left: 28%;
+    left: 27%;
   }
 
   .house-dormant {
-    left: 70%;
+    left: 72%;
   }
 
   .house-art {
@@ -2147,24 +2176,24 @@ textarea:focus-visible {
   }
 
   .map-house::before {
-    bottom: 27px;
-    height: 13px;
+    inset: 6px 8px 14px;
   }
 
   .map-house::after {
-    bottom: 27px;
-    height: 21px;
+    left: 20%;
+    right: 20%;
+    bottom: 14px;
+    height: 13px;
   }
 
   .map-house strong {
-    margin-top: -6px;
     padding: 1px 5px;
     font-size: 9px;
   }
 
   .map-house em {
-    right: 9px;
-    bottom: 29px;
+    right: 5px;
+    bottom: 9px;
     width: 17px;
     height: 17px;
     font-size: 8px;

@@ -1,5 +1,34 @@
 # Pending Changes
 
+## 2026-05-29 - Homepage integrated destination houses
+
+### Summary
+
+- Replaced the homepage map background with `garden-background-v3.png`, generated from the existing garden scene with the two destination houses painted directly into the distant landscape.
+- Kept the old harvested/dormant house sprite files available for future detail-scene decoration, but removed them from the homepage overview markup.
+- Converted the two homepage destination buttons into transparent click targets with subtle hover/focus labels and count badges.
+
+### Files Changed
+
+- `assets/art/garden-background-v3.png`
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `assets/art/garden-background-v3.png`.
+- Ran `node --check src/app.js`.
+- Confirmed `http://127.0.0.1:4173/` returned HTTP 200.
+- Confirmed `http://127.0.0.1:4173/assets/art/garden-background-v3.png` returned HTTP 200.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+
+### Notes
+
+- Generated with the built-in image generation tool using the current `garden-background-v2.png` as the visual reference.
+- Prompt constraints: preserve the 1536x1024 sunny pixel-art garden composition, integrate a warm harvest destination on the left path and a cooler quiet dormant cottage on the right path, keep both buildings distant, hazy, and free of labels or UI text.
+- Existing unrelated sync-backend work was left untouched.
+
 ## 2026-05-28 - Paper tree stage sprite crop fix
 
 ### Summary
