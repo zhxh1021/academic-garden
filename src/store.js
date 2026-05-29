@@ -6,7 +6,7 @@ const STORE_NAME = "garden";
 const SNAPSHOT_KEY = "snapshot";
 const API_URL_STORAGE_KEY = "academicGardenApiBaseUrl";
 const API_USERNAME_STORAGE_KEY = "academicGardenApiUsername";
-const API_PASSWORD_SESSION_KEY = "academicGardenApiPassword";
+const API_PASSWORD_STORAGE_KEY = "academicGardenApiPassword";
 
 let cloudEnabled = false;
 let cloudVersion = null;
@@ -113,11 +113,11 @@ function cloudAuthHeaders() {
     localStorage.setItem(API_USERNAME_STORAGE_KEY, username);
   }
 
-  let password = sessionStorage.getItem(API_PASSWORD_SESSION_KEY) || "";
+  let password = localStorage.getItem(API_PASSWORD_STORAGE_KEY) || "";
   if (!password) {
     password = window.prompt("请输入云端同步密码") || "";
     if (!password) return null;
-    sessionStorage.setItem(API_PASSWORD_SESSION_KEY, password);
+    localStorage.setItem(API_PASSWORD_STORAGE_KEY, password);
   }
   return {
     authorization: `Basic ${window.btoa(`${username}:${password}`)}`
@@ -133,7 +133,7 @@ async function loadCloudGarden() {
     cache: "no-store"
   });
   if (response.status === 401) {
-    sessionStorage.removeItem(API_PASSWORD_SESSION_KEY);
+    localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
     throw new Error("Cloud login failed.");
   }
   if (!response.ok) {
@@ -156,7 +156,7 @@ async function saveCloudGarden(state) {
   });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
-    sessionStorage.removeItem(API_PASSWORD_SESSION_KEY);
+    localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
     window.alert("云端同步登录失败。请刷新页面后重新输入密码。");
     return false;
   }

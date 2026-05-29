@@ -1,5 +1,28 @@
 # Pending Changes
 
+## 2026-05-29 - Remember sync login on device
+
+### Summary
+
+- Changed the cloud sync password cache from session-only storage to device-local storage.
+- After a successful prompt, the same browser device can keep syncing without asking for the password after every browser restart.
+- Login failures still clear the saved password so the next refresh can ask again.
+
+### Files Changed
+
+- `src/store.js`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/store.js`.
+- Ran `node --test scripts/domain.test.mjs scripts/server.test.mjs`.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+
+### Notes
+
+- A polished in-page login/settings panel is intentionally left for a later UI pass.
+
 ## 2026-05-29 - GitHub Pages sync endpoint
 
 ### Summary
