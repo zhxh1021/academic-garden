@@ -163,11 +163,12 @@ textarea:focus-visible {
 
 .wallet::before {
   content: "";
-  width: 20px;
-  height: 20px;
-  border: 3px solid var(--gold-dark);
-  border-radius: 50%;
-  background: var(--gold);
+  width: 28px;
+  height: 28px;
+  background: url("./assets/sprites/coin-v1.png") center / contain no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 2px 0 rgb(38 60 50 / 24%));
+  flex: 0 0 auto;
 }
 
 .wallet-label {
@@ -347,6 +348,78 @@ textarea:focus-visible {
 
 .home-hud > * {
   pointer-events: auto;
+}
+
+.farm-scene-bar {
+  position: absolute;
+  z-index: 18;
+  top: 92px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.farm-scene-bar > * {
+  pointer-events: auto;
+}
+
+.farm-scene-bar h2 {
+  margin: 0;
+  padding: 4px 8px;
+  border: 3px solid rgb(38 60 50 / 76%);
+  background: rgb(255 248 226 / 82%);
+  box-shadow: 3px 3px 0 rgb(38 60 50 / 36%);
+  font-size: 18px;
+}
+
+.farm-move-toggle.is-active {
+  border-color: var(--gold-dark);
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.farm-zone-switch {
+  position: absolute;
+  z-index: 18;
+  left: 50%;
+  bottom: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(92px, 1fr));
+  gap: 8px;
+  width: min(430px, calc(100% - 260px));
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.farm-zone-tab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 7px 9px;
+  border: 3px solid var(--border);
+  background: rgb(255 248 226 / 88%);
+  box-shadow: 3px 3px 0 rgb(38 60 50 / 58%);
+  font-size: 12px;
+}
+
+.farm-zone-tab.is-selected {
+  background: var(--grass-dark);
+  color: var(--cream);
+}
+
+.farm-zone-tab strong {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  background: rgb(255 248 226 / 88%);
+  color: var(--ink);
 }
 
 .asset-sprite {
@@ -622,100 +695,117 @@ textarea:focus-visible {
     drop-shadow(0 5px 0 rgb(38 60 50 / 14%));
 }
 
-.overview-empty {
+.farm-cell {
   position: absolute;
-  left: 35%;
-  top: 75%;
-  z-index: 4;
-  width: min(360px, calc(100% - 40px));
-  margin: 0;
-  transform: translate(-50%, -50%);
-  padding: 9px 12px;
-  border: 2px solid var(--grass-dark);
-  background: var(--hud-bg);
-  box-shadow: 2px 2px 0 rgb(38 60 50 / 42%);
-  color: var(--ink-soft);
-  text-align: center;
-  font-size: 13px;
-  line-height: 1.5;
-  pointer-events: none;
+  left: var(--x);
+  top: var(--y);
+  z-index: var(--z);
+  display: contents;
 }
 
-.empty-plots {
+.farm-plot {
   position: absolute;
-  inset: 0;
-  z-index: 3;
-}
-
-.empty-plot {
-  position: absolute;
-  width: 214px;
-  height: 142px;
+  left: var(--x);
+  top: var(--y);
+  z-index: var(--z);
+  width: 148px;
+  height: 92px;
   border: 0;
   padding: 0;
   background: transparent;
-  filter: drop-shadow(0 9px 10px rgb(38 60 50 / 14%));
-  cursor: pointer;
-  transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(3px 5px 0 rgb(38 60 50 / 16%));
 }
 
-.empty-plot::after {
-  content: "种植";
+.farm-plot::before {
+  content: "";
+  position: absolute;
+  inset: 8px 6px 10px;
+  border: 4px solid rgb(117 69 44 / 58%);
+  border-radius: 22px 28px 18px 26px / 16px 18px 20px 18px;
+  background:
+    radial-gradient(ellipse at 24% 34%, rgb(255 210 134 / 28%) 0 15px, transparent 16px),
+    radial-gradient(ellipse at 70% 60%, rgb(91 59 37 / 16%) 0 11px, transparent 12px),
+    linear-gradient(135deg, #c98952, #a9663e 62%, #8d5738);
+  box-shadow:
+    inset 10px 6px 0 rgb(255 219 143 / 12%),
+    inset -8px -7px 0 rgb(91 59 37 / 14%);
+}
+
+.farm-plot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 34px / 21px;
+  background:
+    radial-gradient(ellipse at 12% 78%, #79aa58 0 12px, transparent 13px),
+    radial-gradient(ellipse at 86% 76%, #71c653 0 10px, transparent 11px),
+    radial-gradient(ellipse at 50% 92%, #477642 0 8px, transparent 9px);
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+.farm-plot span {
   position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: 18px;
   z-index: 2;
-  padding: 4px 8px;
-  border: 1px solid rgb(92 69 48 / 36%);
-  border-radius: 7px;
-  background: rgb(255 246 203 / 92%);
-  box-shadow: 0 5px 12px rgb(38 60 50 / 16%);
+  padding: 3px 7px;
+  border: 2px solid rgb(38 60 50 / 62%);
+  background: rgb(255 248 226 / 88%);
   color: var(--grass-dark);
   font-size: 10px;
   font-weight: bold;
   opacity: 0;
-  transform: translateX(-50%) translateY(4px);
-  transition: opacity 120ms steps(2, end), transform 120ms steps(2, end);
+  transform: translateX(-50%) translateY(5px);
+  transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
-.empty-plot-art {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.farm-plot.can-plant:hover,
+.farm-plot.can-plant:focus-visible,
+.farm-plot:not(:disabled):hover,
+.farm-plot:not(:disabled):focus-visible {
+  filter: drop-shadow(4px 8px 0 rgb(38 60 50 / 22%)) brightness(1.04);
 }
 
-.empty-plot:hover {
-  transform: translateY(-3px);
-  filter: drop-shadow(0 12px 14px rgb(38 60 50 / 18%)) brightness(1.03);
-}
-
-.empty-plot:hover::after,
-.empty-plot:focus-visible::after {
+.farm-plot.can-plant:hover span,
+.farm-plot.can-plant:focus-visible span,
+.farm-plot:not(:disabled):hover span,
+.farm-plot:not(:disabled):focus-visible span {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 
-.empty-plot-a {
-  left: 13%;
-  top: 54%;
+.farm-plot.is-occupied {
+  pointer-events: none;
 }
 
-.empty-plot-b {
-  left: 30%;
-  top: 64%;
+.farm-plot.is-occupied span {
+  display: none;
 }
 
-.empty-plot-c {
-  left: 49%;
-  top: 54%;
+.farm-plot:disabled {
+  cursor: default;
+}
+
+.decoration-slot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: var(--z);
+  width: 78px;
+  height: 48px;
+  border: 2px dashed rgb(38 60 50 / 14%);
+  border-radius: 50%;
+  background: rgb(255 248 226 / 12%);
+  transform: translate(-50%, -50%) skewX(-14deg);
 }
 
 .overview-plant {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  z-index: 3;
+  z-index: calc(var(--z) + 2);
   display: grid;
   justify-items: center;
   width: 126px;
@@ -729,25 +819,30 @@ textarea:focus-visible {
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
+.overview-plant::before,
 .overview-plant::after {
   content: "";
   position: absolute;
   left: 50%;
   pointer-events: none;
   transform: translateX(-50%);
+  image-rendering: pixelated;
 }
 
 .overview-plant::before {
-  content: none;
+  z-index: 1;
+  bottom: 47px;
+  width: 110px;
+  height: 21px;
+  background: url("./assets/sprites/plant-ground-base-v2-back.png") center / contain no-repeat;
 }
 
 .overview-plant::after {
   z-index: 3;
-  bottom: 47px;
-  width: 98px;
-  height: 31px;
-  background: url("./assets/sprites/plant-ground-base-v1.png") center / contain no-repeat;
-  image-rendering: pixelated;
+  bottom: 48px;
+  width: 96px;
+  height: 18px;
+  background: url("./assets/sprites/plant-ground-base-v2-front.png") center bottom / contain no-repeat;
 }
 
 .overview-plant:hover {
@@ -758,6 +853,11 @@ textarea:focus-visible {
 .overview-plant:focus-visible {
   outline-offset: 9px;
   filter: drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
+}
+
+.overview-plant.is-moving {
+  filter: drop-shadow(0 0 0 var(--gold)) drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
+  transform: translateX(-50%) translateY(-8px);
 }
 
 .overview-plant strong,
@@ -814,14 +914,16 @@ textarea:focus-visible {
 
 .overview-plant.stage-seed::before,
 .overview-plant.stage-sowing::before {
-  content: none;
+  bottom: 48px;
+  width: 76px;
+  height: 14px;
 }
 
 .overview-plant.stage-seed::after,
 .overview-plant.stage-sowing::after {
   bottom: 48px;
-  width: 72px;
-  height: 23px;
+  width: 66px;
+  height: 12px;
 }
 
 .mini-sprite {
@@ -883,7 +985,12 @@ textarea:focus-visible {
 
 .garden-decoration {
   position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: var(--z);
   display: block;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .decor-sprite {
@@ -894,13 +1001,8 @@ textarea:focus-visible {
 }
 
 .decor-path {
-  left: 17%;
-  bottom: 36px;
-  width: 230px;
-  height: 30px;
-  background:
-    radial-gradient(circle, #e7d3aa 0 8px, transparent 9px) 0 0 / 34px 24px,
-    radial-gradient(circle, #c2ad89 0 7px, transparent 8px) 14px 8px / 34px 24px;
+  width: 168px;
+  height: 188px;
 }
 
 .decor-path:has(.decor-sprite),
@@ -910,10 +1012,6 @@ textarea:focus-visible {
   border: 0;
   background: transparent;
   box-shadow: none;
-}
-
-.decor-path:has(.decor-sprite) {
-  height: 72px;
 }
 
 .decor-path:has(.decor-sprite)::before,
@@ -928,10 +1026,8 @@ textarea:focus-visible {
 }
 
 .decor-bench {
-  right: 18%;
-  bottom: 96px;
-  width: 112px;
-  height: 62px;
+  width: 148px;
+  height: 132px;
   border-top: 10px solid #9f6337;
   border-bottom: 10px solid #9f6337;
 }
@@ -955,10 +1051,8 @@ textarea:focus-visible {
 }
 
 .decor-lamp {
-  left: 8%;
-  top: 82px;
-  width: 62px;
-  height: 104px;
+  width: 70px;
+  height: 126px;
   background: #4a4539;
 }
 
@@ -975,14 +1069,32 @@ textarea:focus-visible {
 }
 
 .decor-pond {
-  right: 8%;
-  bottom: 26px;
-  width: 152px;
-  height: 84px;
+  width: 138px;
+  height: 118px;
   border: 5px solid #6d8b80;
   border-radius: 50%;
   background: #6bbbd4;
   box-shadow: inset 14px 7px 0 #90d7df;
+}
+
+.decor-path:has(.decor-sprite),
+.decor-bench:has(.decor-sprite),
+.decor-lamp:has(.decor-sprite),
+.decor-pond:has(.decor-sprite) {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.decor-path:has(.decor-sprite)::before,
+.decor-path:has(.decor-sprite)::after,
+.decor-bench:has(.decor-sprite)::before,
+.decor-bench:has(.decor-sprite)::after,
+.decor-lamp:has(.decor-sprite)::before,
+.decor-lamp:has(.decor-sprite)::after,
+.decor-pond:has(.decor-sprite)::before,
+.decor-pond:has(.decor-sprite)::after {
+  content: none;
 }
 
 .shop-grid {
@@ -1000,28 +1112,48 @@ textarea:focus-visible {
 
 .shop-preview {
   position: relative;
-  display: block;
-  width: 116px;
-  height: 70px;
+  display: grid;
+  place-items: center;
+  width: 168px;
+  max-width: 100%;
+  height: 112px;
   margin-bottom: 13px;
-  overflow: hidden;
-  background: #dce7b2;
-  border: 2px dashed rgb(71 118 66 / 55%);
+  overflow: visible;
+  background: transparent;
+  border: 0;
 }
 
 .shop-sprite {
-  width: 100%;
-  height: 100%;
+  position: relative;
+  z-index: 2;
+  width: min(100%, var(--shop-sprite-width, 126px));
+  height: min(100%, var(--shop-sprite-height, 96px));
   object-fit: contain;
+  filter: drop-shadow(2px 4px 0 rgb(38 60 50 / 20%));
 }
 
 .shop-preview:has(.shop-sprite) {
   display: grid;
   place-content: center;
-  background: #dce7b2;
+  background: transparent;
 }
 
-.shop-preview:has(.shop-sprite)::before,
+.shop-preview:has(.shop-sprite)::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: auto;
+  bottom: -6px;
+  z-index: 1;
+  width: 164px;
+  height: 96px;
+  border: 0;
+  transform: translateX(-50%);
+  background: url("./assets/sprites/shop-preview-ground-v1.png") center bottom / contain no-repeat;
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
 .shop-preview:has(.shop-sprite)::after {
   content: none;
 }
@@ -1038,91 +1170,28 @@ textarea:focus-visible {
 }
 
 .shop-preview.decor-path {
-  width: 116px;
-  height: 70px;
-  background:
-    radial-gradient(circle, #e7d3aa 0 5px, transparent 6px) 13px 24px / 23px 18px,
-    radial-gradient(circle, #bca77f 0 4px, transparent 5px) 24px 31px / 23px 18px,
-    #dce7b2;
+  --shop-sprite-width: 92px;
+  --shop-sprite-height: 104px;
 }
 
 .shop-preview.decor-bench {
-  width: 116px;
-  height: 70px;
+  --shop-sprite-width: 138px;
+  --shop-sprite-height: 98px;
   border-top: 0;
   border-bottom: 0;
-  background: #dce7b2;
-}
-
-.shop-preview.decor-bench::before {
-  content: "";
-  position: absolute;
-  left: 23px;
-  top: 28px;
-  width: 70px;
-  height: 8px;
-  background: #9f6337;
-  box-shadow: 0 15px 0 #9f6337, 8px 23px 0 -2px #75452c, 54px 23px 0 -2px #75452c;
-}
-
-.shop-preview.decor-bench::after {
-  content: "";
-  position: absolute;
-  left: 28px;
-  top: 22px;
-  width: 60px;
-  height: 4px;
-  background: #b87943;
 }
 
 .shop-preview.decor-lamp {
-  width: 116px;
-  height: 70px;
-  background: #dce7b2;
-}
-
-.shop-preview.decor-lamp::before {
-  content: "";
-  position: absolute;
-  left: 53px;
-  top: 23px;
-  width: 7px;
-  height: 39px;
-  background: #4a4539;
-}
-
-.shop-preview.decor-lamp::after {
-  content: "";
-  position: absolute;
-  left: 40px;
-  top: 10px;
-  width: 32px;
-  height: 21px;
-  border: 3px solid #4a4539;
-  background: #ffe48b;
-  box-shadow: 0 0 0 5px rgb(255 228 139 / 25%);
+  --shop-sprite-width: 92px;
+  --shop-sprite-height: 108px;
 }
 
 .shop-preview.decor-pond {
-  width: 116px;
-  height: 70px;
+  --shop-sprite-width: 136px;
+  --shop-sprite-height: 96px;
   border-radius: 0;
-  border: 2px dashed rgb(71 118 66 / 55%);
-  background: #dce7b2;
+  border: 0;
   box-shadow: none;
-}
-
-.shop-preview.decor-pond::before {
-  content: "";
-  position: absolute;
-  left: 21px;
-  top: 18px;
-  width: 76px;
-  height: 34px;
-  border: 4px solid #6d8b80;
-  border-radius: 50%;
-  background: #6bbbd4;
-  box-shadow: inset 11px 5px 0 #90d7df;
 }
 
 .shop-card h3 {
@@ -1324,17 +1393,11 @@ textarea:focus-visible {
   z-index: 3;
   left: 50%;
   bottom: 16px;
-  width: 104px;
-  height: 28px;
+  width: 118px;
+  height: 22px;
   pointer-events: none;
   transform: translateX(-50%);
-  background:
-    radial-gradient(ellipse at 28% 72%, #9b6a42 0 12px, transparent 13px),
-    radial-gradient(ellipse at 52% 80%, #b07749 0 16px, transparent 17px),
-    radial-gradient(ellipse at 76% 74%, #75452c 0 10px, transparent 11px),
-    radial-gradient(ellipse at 15% 94%, #79aa58 0 10px, transparent 11px),
-    radial-gradient(ellipse at 54% 98%, #71c653 0 12px, transparent 13px),
-    radial-gradient(ellipse at 90% 92%, #477642 0 9px, transparent 10px);
+  background: url("./assets/sprites/plant-ground-base-v2-front.png") center bottom / contain no-repeat;
   image-rendering: pixelated;
 }
 
@@ -2129,6 +2192,41 @@ textarea:focus-visible {
     background-position: center bottom;
   }
 
+  .farm-scene-bar {
+    top: 198px;
+    left: 16px;
+    right: 16px;
+  }
+
+  .farm-scene-bar h2 {
+    font-size: 15px;
+  }
+
+  .farm-zone-switch {
+    bottom: 96px;
+    width: calc(100% - 32px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .farm-zone-tab {
+    min-height: 38px;
+    padding: 6px;
+    font-size: 10px;
+  }
+
+  .farm-plot {
+    left: calc((var(--x) - 50%) * 0.78 + 50%);
+    top: calc(var(--y) + 1%);
+    width: 112px;
+    height: 72px;
+  }
+
+  .decoration-slot,
+  .garden-decoration {
+    left: calc((var(--x) - 50%) * 0.82 + 50%);
+    top: calc(var(--y) + 1%);
+  }
+
   .overview-empty {
     left: 50%;
     top: 79%;
@@ -2143,17 +2241,17 @@ textarea:focus-visible {
   }
 
   .empty-plot-a {
-    left: 5%;
+    left: 18%;
     top: 54%;
   }
 
   .empty-plot-b {
-    left: 32%;
+    left: 42%;
     top: 64%;
   }
 
   .empty-plot-c {
-    left: 57%;
+    left: 62%;
     top: 54%;
   }
 
@@ -2206,18 +2304,21 @@ textarea:focus-visible {
   }
 
   .overview-plant {
-    top: calc(var(--y) + 2%);
+    left: calc((var(--x) - 50%) * 0.78 + 50%);
+    top: calc(var(--y) + 1%);
     width: 100px;
   }
 
   .overview-plant::before {
-    content: none;
+    bottom: 45px;
+    width: 82px;
+    height: 16px;
   }
 
   .overview-plant::after {
-    bottom: 45px;
+    bottom: 46px;
     width: 72px;
-    height: 23px;
+    height: 13px;
   }
 
   .map-plant-sprite {

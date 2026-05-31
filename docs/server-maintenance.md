@@ -91,6 +91,12 @@ Export a browser JSON backup before restoring if there is any chance the current
 
 Use this only after the local changes have been pushed to GitHub or uploaded to the server.
 
+Codex is responsible for telling the user whether a change needs this step. As a working rule:
+
+- GitHub Pages-only changes do not need OpenClaw deployment.
+- Backend/API/service/backup-script changes do need OpenClaw deployment.
+- Ambiguous sync changes should be treated as needing an explicit Codex yes/no note.
+
 ```bash
 cd /opt/academic-garden
 git pull

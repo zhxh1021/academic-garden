@@ -1,5 +1,60 @@
 # Pending Changes
 
+## 2026-05-31 - OpenClaw deployment reminder convention
+
+### Summary
+
+- Documented the shared convention that Codex should tell the user when a change requires OpenClaw to deploy server-side updates.
+- Added examples separating GitHub Pages-only changes from backend/API/service changes.
+- Updated the server maintenance guide so OpenClaw deployment is a Codex-explicit yes/no step rather than something the user has to infer.
+
+### Files Changed
+
+- `AGENTS.md`
+- `docs/server-maintenance.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Documentation-only change; reviewed the added instructions in both files.
+
+### Notes
+
+- Existing grid farm, art asset, and backend maintenance entries were left intact.
+
+## 2026-05-31 - Unified grid farm scene structure
+
+### Summary
+
+- Reworked the garden overview into a shared grid-based farm scene for active, harvested, and dormant zones.
+- Added stable 9-plot placement data for plants, including old-data migration by zone and creation order.
+- Added plant move mode for moving a plant to an empty plot or swapping two plants within the same zone.
+- Added decoration slot data with default placements so unlocked decorations render from fixed grid slots while leaving room for future free placement UI.
+- Changed shop copy from purchase ownership language to decoration unlock language.
+- Kept the current valley background and existing runtime sprites in place; this slice builds the scene/data skeleton so future background repainting can replace the art without changing interaction rules.
+
+### Files Changed
+
+- `src/domain.js`
+- `src/app.js`
+- `styles.css`
+- `scripts/domain.test.mjs`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Ran `node --test scripts/domain.test.mjs scripts/server.test.mjs`.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+- Confirmed the local static server returned HTTP 200 at `http://127.0.0.1:4173/`.
+
+### Notes
+
+- No new image assets were generated in this slice.
+- The new grid reserves 9 plant plots per zone and 10 decoration/expansion slots.
+- Decoration free-placement UI is intentionally left for a future slice; the data shape now has `decorations.placements`.
+- Existing art asset transparency work, sync status UI, backend sync work, and sprite files were left intact.
+
 ## 2026-05-31 - Backend reliability and sync maintenance
 
 ### Summary
@@ -37,6 +92,54 @@
 ### Notes
 
 - Existing unrelated art asset edits were left untouched.
+
+## 2026-05-30 - Art asset transparency and layout QA pass
+
+### Summary
+
+- Cleared chroma-key magenta from all app-ready runtime decoration, tree, and flower sprites under `assets/sprites/`.
+- Added a GPT-Image-2-generated wallet coin sprite and replaced the CSS-drawn coin in the HUD.
+- Added a GPT-Image-2-generated shop preview grass base and removed CSS-drawn shop decoration substitutes so the shop previews use real sprites.
+- Rebalanced homepage placement rules so active plants and empty plots sit in the central planting area, while path, lamp, bench, and pond decorations reserve separate map zones.
+- Cropped the lamp sprite to remove unrelated sheet fragments, moved the pond out of the bottom action-button area, and switched mature/blooming homepage plants to higher-detail variety sprites.
+- Reset inherited CSS fallback styling on sprite-backed shop previews so the lamp card does not show a hard rectangular pseudo-element frame.
+- Added explicit art asset rules documenting source-vs-runtime assets, transparency checks, shared usage points, map layout zones, and shop preview rules.
+
+### Files Changed
+
+- `assets/sprites/decor-lamp.png`
+- `assets/sprites/decor-pond.png`
+- `assets/sprites/decor-stone-path.png`
+- `assets/sprites/decor-wood-bench.png`
+- `assets/sprites/flower-*.png`
+- `assets/sprites/tree-*.png`
+- `assets/art/coin-v1-source.png`
+- `assets/sprites/coin-v1.png`
+- `assets/art/shop-preview-ground-v1-source.png`
+- `assets/sprites/shop-preview-ground-v1.png`
+- `assets/art/plant-ground-base-v2-source.png`
+- `assets/sprites/plant-ground-base-v2-back.png`
+- `assets/sprites/plant-ground-base-v2-front.png`
+- `src/app.js`
+- `styles.css`
+- `docs/art-asset-rules.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python .runtime\scan_assets.py`; no magenta pixels remained in `assets/sprites/`.
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+- Confirmed the local server returned HTTP 200 at `http://127.0.0.1:4173/`.
+- Reran `.runtime\render-qa.cjs` through the cached Playwright package with the local Edge channel; it rendered one overview, two active plants, four decoration sprites, and four shop sprites, and saved refreshed screenshots under `.runtime\render-qa-home-populated.png` and `.runtime\render-qa-shop.png`.
+
+### Notes
+
+- Generated coin and shop preview base with the built-in image generation tool on a flat magenta chroma-key background, then removed the key locally.
+- Source sheets and generated source files under `assets/art/` intentionally retain chroma-key backgrounds for future slicing/editing; runtime files under `assets/sprites/` must be transparent.
+- The rendered QA screenshots exposed a cropped-lamp problem, a pond/button overlap, low-detail mature map plants, and a hard frame behind the shop lamp preview; those were addressed and verified in the refreshed screenshots.
+- Existing unrelated sync/backend work was left untouched.
 
 ## 2026-05-29 - Remember sync login on device
 

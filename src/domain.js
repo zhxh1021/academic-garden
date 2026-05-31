@@ -109,6 +109,41 @@ export const DECORATIONS = [
   }
 ];
 
+export const PLOT_COUNT = 9;
+export const GARDEN_ZONES = ["active", "harvested", "dormant"];
+
+export const ZONE_PLOTS = [
+  { id: "plot-0", column: 0, row: 0, x: 36, y: 48, z: 4 },
+  { id: "plot-1", column: 1, row: 0, x: 50, y: 47, z: 5 },
+  { id: "plot-2", column: 2, row: 0, x: 64, y: 48, z: 6 },
+  { id: "plot-3", column: 0, row: 1, x: 33, y: 61, z: 7 },
+  { id: "plot-4", column: 1, row: 1, x: 49, y: 62, z: 8 },
+  { id: "plot-5", column: 2, row: 1, x: 65, y: 61, z: 9 },
+  { id: "plot-6", column: 0, row: 2, x: 30, y: 75, z: 10 },
+  { id: "plot-7", column: 1, row: 2, x: 48, y: 76, z: 11 },
+  { id: "plot-8", column: 2, row: 2, x: 66, y: 75, z: 12 }
+];
+
+export const DECORATION_SLOTS = [
+  { id: "front-path", x: 18, y: 79, z: 13, accepts: ["stone-path"] },
+  { id: "right-bench", x: 78, y: 66, z: 10, accepts: ["wood-bench"] },
+  { id: "left-lamp", x: 14, y: 50, z: 8, accepts: ["lamp"] },
+  { id: "right-water", x: 86, y: 78, z: 14, accepts: ["pond"] },
+  { id: "rear-sign", x: 28, y: 42, z: 3, accepts: [] },
+  { id: "rear-storage", x: 72, y: 40, z: 3, accepts: [] },
+  { id: "left-flowerbed", x: 22, y: 61, z: 7, accepts: [] },
+  { id: "right-flowerbed", x: 81, y: 55, z: 7, accepts: [] },
+  { id: "front-left-small", x: 10, y: 70, z: 12, accepts: [] },
+  { id: "front-right-small", x: 92, y: 70, z: 12, accepts: [] }
+];
+
+const DEFAULT_DECORATION_SLOT_BY_ID = {
+  "stone-path": "front-path",
+  "wood-bench": "right-bench",
+  lamp: "left-lamp",
+  pond: "right-water"
+};
+
 export const DEFAULT_UNLOCKED_VARIETIES = TYPE_CONFIG.paper.varieties
   .concat(TYPE_CONFIG.course.varieties)
   .map((variety) => variety.id);
@@ -156,6 +191,7 @@ export function createPlant(input) {
     type: input.type,
     variety: input.variety,
     status: historical ? "harvested" : "active",
+    plotIndex: Number.isInteger(input.plotIndex) ? input.plotIndex : null,
     stage: initialStage(input.type, historical),
     growth: historical ? 100 : 0,
     createdAt: now,
@@ -174,6 +210,73 @@ export function createPlant(input) {
       ? [{ id: createId(), kind: "history_import", label: "导入历史成果", at: now }]
       : []
   };
+}
+
+function isValidPlotIndex(plotIndex) {
+  return Number.isInteger(plotIndex) && plotIndex >= 0 && plotIndex < PLOT_COUNT;
+}
+
+function creationTime(plant) {
+  return Date.parse(plant.createdAt ?? "") || 0;
+}
+
+export function assignGardenLayout(plants) {
+  const byId = new Map(plants.map((plant) => [plant.id, { ...plant }]));
+  GARDEN_ZONES.forEach((zone) => {
+    const zonePlants = plants
+      .filter((plant) => plant.status === zone)
+      .sort((a, b) => creationTime(a) - creationTime(b) || String(a.id).localeCompare(String(b.id)));
+    const used = new Set();
+    zonePlants.forEach((plant) => {
+      const candidate = plant.plotIndex;
+      const keepsCandidate = isValidPlotIndex(candidate) && !used.has(candidate);
+      if (keepsCandidate) {
+        used.add(candidate);
+        byId.get(plant.id).plotIndex = candidate;
+        return;
+      }
+      const nextIndex = Array.from({ length: PLOT_COUNT }, (_, index) => index)
+        .find((index) => !used.has(index));
+      byId.get(plant.id).plotIndex = nextIndex ?? null;
+      if (nextIndex !== undefined) used.add(nextIndex);
+    });
+  });
+  return plants.map((plant) => byId.get(plant.id) ?? plant);
+}
+
+export function firstOpenPlotIndex(plants, zone) {
+  const used = new Set(
+    plants
+      .filter((plant) => plant.status === zone && isValidPlotIndex(plant.plotIndex))
+      .map((plant) => plant.plotIndex)
+  );
+  return Array.from({ length: PLOT_COUNT }, (_, index) => index)
+    .find((index) => !used.has(index)) ?? null;
+}
+
+export function movePlantToPlot(plants, plantId, targetPlotIndex) {
+  if (!isValidPlotIndex(targetPlotIndex)) return plants;
+  const source = plants.find((plant) => plant.id === plantId);
+  if (!source || !GARDEN_ZONES.includes(source.status)) return plants;
+  const sourcePlotIndex = source.plotIndex;
+  const target = plants.find((plant) =>
+    plant.status === source.status &&
+    plant.id !== source.id &&
+    plant.plotIndex === targetPlotIndex
+  );
+  return plants.map((plant) => {
+    if (plant.id === source.id) return { ...plant, plotIndex: targetPlotIndex };
+    if (target && plant.id === target.id) return { ...plant, plotIndex: sourcePlotIndex };
+    return plant;
+  });
+}
+
+export function defaultDecorationPlacements(ownedDecorationIds) {
+  return ownedDecorationIds.flatMap((decorationId) => {
+    const slotId = DEFAULT_DECORATION_SLOT_BY_ID[decorationId];
+    if (!slotId) return [];
+    return GARDEN_ZONES.map((zone) => ({ zone, slotId, decorationId }));
+  });
 }
 
 export function stageOf(plant) {
