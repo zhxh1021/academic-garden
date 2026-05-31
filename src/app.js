@@ -18,7 +18,7 @@ import {
   varietyLabel,
   varietySprite
 } from "./domain.js";
-import { downloadBackup, loadState, saveState } from "./store.js";
+import { clearSyncLogin, downloadBackup, getSyncStatus, loadState, saveState } from "./store.js";
 
 function normalizeState(snapshot) {
   return {
@@ -57,6 +57,7 @@ let focusTimer = null;
 
 const elements = {
   coinCount: document.querySelector("#coin-count"),
+  syncStatus: document.querySelector("#sync-status"),
   viewTabs: [...document.querySelectorAll(".view-tab")],
   gardenHome: document.querySelector("#garden-home"),
   projectWorkbench: document.querySelector("#project-workbench"),
@@ -115,6 +116,23 @@ function renderCounts() {
     <div><strong>${plantsIn("harvested").length}</strong><span>已有收获</span></div>
     <div><strong>${totalGrowth}</strong><span>累计成长</span></div>
   `;
+}
+
+function renderSyncStatus() {
+  const sync = getSyncStatus();
+  if (!elements.syncStatus) return;
+  if (!sync.configured) {
+    elements.syncStatus.textContent = "同步：本地";
+    elements.syncStatus.title = "当前使用浏览器本地数据";
+    return;
+  }
+  if (sync.connected) {
+    elements.syncStatus.textContent = `同步：已连接 v${sync.version}`;
+    elements.syncStatus.title = sync.updatedAt ? `云端已连接，最近更新：${sync.updatedAt}` : "云端已连接";
+    return;
+  }
+  elements.syncStatus.textContent = sync.hasSavedLogin ? "同步：待连接" : "同步：未登录";
+  elements.syncStatus.title = "点击清除本设备保存的云端同步登录";
 }
 
 function escapeText(value) {
@@ -386,6 +404,7 @@ function renderShop() {
 
 function render() {
   renderCounts();
+  renderSyncStatus();
   renderView();
   renderSettlement();
   renderOverview();
@@ -635,6 +654,16 @@ document.querySelector("[data-home-action='projects']").addEventListener("click"
 document.querySelector("#open-create").addEventListener("click", () => openForm(false));
 document.querySelector("#import-history").addEventListener("click", () => openForm(true));
 document.querySelector("#export-button").addEventListener("click", () => downloadBackup(state));
+elements.syncStatus?.addEventListener("click", () => {
+  if (!getSyncStatus().configured) {
+    window.alert("当前没有配置云端同步地址，正在使用本地浏览器数据。");
+    return;
+  }
+  const shouldClear = window.confirm("清除这台设备保存的云端同步登录吗？下次刷新页面会重新要求输入账号和密码。");
+  if (!shouldClear) return;
+  clearSyncLogin();
+  renderSyncStatus();
+});
 document.querySelector("#close-dialog").addEventListener("click", () => {
   editingPlantId = null;
   elements.type.disabled = false;

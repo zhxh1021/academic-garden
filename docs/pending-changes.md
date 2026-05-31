@@ -1,5 +1,43 @@
 # Pending Changes
 
+## 2026-05-31 - Backend reliability and sync maintenance
+
+### Summary
+
+- Added a dependency-free garden data backup script with configurable backup directory and retention count.
+- Documented Tencent Cloud maintenance commands, backup setup, restore steps, health checks, and safe OpenClaw operating boundaries.
+- Expanded `/api/health` to report storage readability, writability, version, and last cloud update time without returning garden contents.
+- Added a small header sync status button that shows local/connected/pending state and lets the user clear saved sync login on the current device.
+
+### Files Changed
+
+- `.env.example`
+- `.gitignore`
+- `index.html`
+- `package.json`
+- `scripts/backup_garden.mjs`
+- `scripts/server.test.mjs`
+- `server/server.mjs`
+- `src/app.js`
+- `src/store.js`
+- `styles.css`
+- `docs/server-maintenance.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check server/server.mjs`.
+- Ran `node --check scripts/backup_garden.mjs`.
+- Ran `node --check src/store.js`.
+- Ran `node --check src/app.js`.
+- Ran `node --test scripts/domain.test.mjs scripts/server.test.mjs`.
+- Ran `node scripts/backup_garden.mjs` against a `.runtime/backup-test` data file and confirmed a backup JSON was created.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+
+### Notes
+
+- Existing unrelated art asset edits were left untouched.
+
 ## 2026-05-29 - Remember sync login on device
 
 ### Summary

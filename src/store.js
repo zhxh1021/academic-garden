@@ -10,6 +10,7 @@ const API_PASSWORD_STORAGE_KEY = "academicGardenApiPassword";
 
 let cloudEnabled = false;
 let cloudVersion = null;
+let cloudUpdatedAt = null;
 
 export function emptyState() {
   return {
@@ -104,6 +105,28 @@ function isConfiguredCloudEndpoint() {
   return configuredApiBaseUrl().trim() !== "";
 }
 
+export function getSyncStatus() {
+  return {
+    configured: isConfiguredCloudEndpoint(),
+    connected: cloudEnabled,
+    hasSavedLogin: Boolean(
+      localStorage.getItem(API_USERNAME_STORAGE_KEY) &&
+      localStorage.getItem(API_PASSWORD_STORAGE_KEY)
+    ),
+    apiBaseUrl: configuredApiBaseUrl().trim(),
+    version: cloudVersion,
+    updatedAt: cloudUpdatedAt
+  };
+}
+
+export function clearSyncLogin() {
+  localStorage.removeItem(API_USERNAME_STORAGE_KEY);
+  localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
+  cloudEnabled = false;
+  cloudVersion = null;
+  cloudUpdatedAt = null;
+}
+
 function cloudAuthHeaders() {
   if (!isConfiguredCloudEndpoint()) return {};
   let username = localStorage.getItem(API_USERNAME_STORAGE_KEY);
@@ -169,6 +192,7 @@ async function saveCloudGarden(state) {
     return false;
   }
   cloudVersion = payload.version;
+  cloudUpdatedAt = payload.updatedAt;
   return true;
 }
 
@@ -178,6 +202,7 @@ export async function loadState() {
     const cloudGarden = await loadCloudGarden();
     cloudEnabled = true;
     cloudVersion = cloudGarden.version;
+    cloudUpdatedAt = cloudGarden.updatedAt;
     if (cloudGarden.isEmpty && hasUserData(localState)) {
       const shouldUpload = window.confirm("检测到这台电脑里已有本地花园。要把它上传到云端，作为多端同步的初始数据吗？");
       if (shouldUpload) {
@@ -190,6 +215,7 @@ export async function loadState() {
   } catch {
     cloudEnabled = false;
     cloudVersion = null;
+    cloudUpdatedAt = null;
     return localState;
   }
 }

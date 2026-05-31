@@ -208,12 +208,20 @@ textarea:focus-visible {
   filter: brightness(1.04) saturate(1.04);
 }
 
-.backup-button {
+.backup-button,
+.sync-button {
   min-height: 42px;
   padding: 8px 12px;
   border-color: var(--grass-dark);
   box-shadow: 2px 2px 0 var(--grass-dark);
   color: var(--ink-soft);
+}
+
+.sync-button {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .primary-button:active,

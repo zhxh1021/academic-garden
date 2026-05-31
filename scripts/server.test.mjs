@@ -75,6 +75,21 @@ test("saves and reloads the cloud garden snapshot", async () => {
   });
 });
 
+test("reports storage health without leaking garden contents", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/health`, {
+      headers: { authorization: authHeader() }
+    });
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.equal(payload.ok, true);
+    assert.equal(payload.storage.writable, true);
+    assert.equal(payload.storage.readable, true);
+    assert.equal(payload.garden.version, 0);
+    assert.equal("state" in payload, false);
+  });
+});
+
 test("rejects stale cloud garden saves", async () => {
   await withServer(async (baseUrl) => {
     const load = await fetch(`${baseUrl}/api/garden`, {

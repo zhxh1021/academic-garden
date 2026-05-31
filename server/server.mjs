@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -186,10 +186,51 @@ function isEmptyGarden(state) {
   );
 }
 
+async function healthSnapshot(config) {
+  const directory = resolve(config.dataPath, "..");
+  const result = {
+    ok: true,
+    storage: {
+      exists: false,
+      readable: false,
+      writable: false
+    },
+    garden: {
+      version: 0,
+      updatedAt: null
+    }
+  };
+  try {
+    await mkdir(directory, { recursive: true });
+    const probePath = join(directory, `.health-${Date.now()}.tmp`);
+    await writeFile(probePath, "ok", "utf-8");
+    await unlink(probePath);
+    result.storage.writable = true;
+  } catch {
+    result.ok = false;
+  }
+  try {
+    const fileStat = await stat(config.dataPath);
+    result.storage.exists = fileStat.isFile();
+  } catch (error) {
+    if (error.code !== "ENOENT") result.ok = false;
+  }
+  try {
+    const garden = await loadGarden(config.dataPath);
+    result.storage.readable = true;
+    result.garden.version = garden.version;
+    result.garden.updatedAt = garden.updatedAt;
+  } catch {
+    result.ok = false;
+  }
+  return result;
+}
+
 async function handleApi(request, response, config) {
   if (!requireAuth(request, response, config)) return;
   if (request.url === "/api/health" && request.method === "GET") {
-    sendJson(response, 200, { ok: true });
+    const health = await healthSnapshot(config);
+    sendJson(response, health.ok ? 200 : 503, health);
     return;
   }
   if (request.url === "/api/garden" && request.method === "GET") {
