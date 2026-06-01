@@ -81,7 +81,7 @@ export const DECORATIONS = [
     price: 10,
     description: "给花园铺一段安静的小路。",
     className: "decor-path",
-    sprite: "./assets/sprites/decor-stone-path.png"
+    sprite: "./assets/sprites/decor-stepping-stones-v5.png"
   },
   {
     id: "wood-bench",
@@ -113,28 +113,28 @@ export const PLOT_COUNT = 9;
 export const GARDEN_ZONES = ["active", "harvested", "dormant"];
 
 export const ZONE_PLOTS = [
-  { id: "plot-0", column: 0, row: 0, x: 36, y: 48, z: 4 },
-  { id: "plot-1", column: 1, row: 0, x: 50, y: 47, z: 5 },
-  { id: "plot-2", column: 2, row: 0, x: 64, y: 48, z: 6 },
-  { id: "plot-3", column: 0, row: 1, x: 33, y: 61, z: 7 },
-  { id: "plot-4", column: 1, row: 1, x: 49, y: 62, z: 8 },
-  { id: "plot-5", column: 2, row: 1, x: 65, y: 61, z: 9 },
-  { id: "plot-6", column: 0, row: 2, x: 30, y: 75, z: 10 },
-  { id: "plot-7", column: 1, row: 2, x: 48, y: 76, z: 11 },
-  { id: "plot-8", column: 2, row: 2, x: 66, y: 75, z: 12 }
+  { id: "plot-0", column: 0, row: 0, x: 36, y: 46, z: 4 },
+  { id: "plot-1", column: 1, row: 0, x: 50, y: 45, z: 5 },
+  { id: "plot-2", column: 2, row: 0, x: 64, y: 46, z: 6 },
+  { id: "plot-3", column: 0, row: 1, x: 33, y: 62, z: 7 },
+  { id: "plot-4", column: 1, row: 1, x: 49, y: 63, z: 8 },
+  { id: "plot-5", column: 2, row: 1, x: 65, y: 62, z: 9 },
+  { id: "plot-6", column: 0, row: 2, x: 30, y: 78, z: 10 },
+  { id: "plot-7", column: 1, row: 2, x: 48, y: 79, z: 11 },
+  { id: "plot-8", column: 2, row: 2, x: 66, y: 78, z: 12 }
 ];
 
 export const DECORATION_SLOTS = [
-  { id: "front-path", x: 18, y: 79, z: 13, accepts: ["stone-path"] },
-  { id: "right-bench", x: 78, y: 66, z: 10, accepts: ["wood-bench"] },
-  { id: "left-lamp", x: 14, y: 50, z: 8, accepts: ["lamp"] },
-  { id: "right-water", x: 86, y: 78, z: 14, accepts: ["pond"] },
-  { id: "rear-sign", x: 28, y: 42, z: 3, accepts: [] },
-  { id: "rear-storage", x: 72, y: 40, z: 3, accepts: [] },
-  { id: "left-flowerbed", x: 22, y: 61, z: 7, accepts: [] },
-  { id: "right-flowerbed", x: 81, y: 55, z: 7, accepts: [] },
-  { id: "front-left-small", x: 10, y: 70, z: 12, accepts: [] },
-  { id: "front-right-small", x: 92, y: 70, z: 12, accepts: [] }
+  { id: "front-path", x: 20, y: 82, z: 13, accepts: ["stone-path"] },
+  { id: "right-bench", x: 76, y: 67, z: 10, accepts: ["wood-bench"] },
+  { id: "left-lamp", x: 22, y: 55, z: 8, accepts: ["lamp"] },
+  { id: "right-water", x: 84, y: 80, z: 14, accepts: ["pond"] },
+  { id: "rear-sign", x: 32, y: 39, z: 3, accepts: [] },
+  { id: "rear-storage", x: 68, y: 39, z: 3, accepts: [] },
+  { id: "left-flowerbed", x: 20, y: 66, z: 7, accepts: [] },
+  { id: "right-flowerbed", x: 80, y: 55, z: 7, accepts: [] },
+  { id: "front-left-small", x: 34, y: 82, z: 12, accepts: [] },
+  { id: "front-right-small", x: 68, y: 82, z: 12, accepts: [] }
 ];
 
 const DEFAULT_DECORATION_SLOT_BY_ID = {
@@ -275,8 +275,52 @@ export function defaultDecorationPlacements(ownedDecorationIds) {
   return ownedDecorationIds.flatMap((decorationId) => {
     const slotId = DEFAULT_DECORATION_SLOT_BY_ID[decorationId];
     if (!slotId) return [];
-    return GARDEN_ZONES.map((zone) => ({ zone, slotId, decorationId }));
+    return [{ zone: "active", slotId, decorationId }];
   });
+}
+
+export function mergeDefaultDecorationPlacements(placements, ownedDecorationIds) {
+  const owned = new Set(ownedDecorationIds);
+  const normalized = placements.filter((placement) =>
+    owned.has(placement.decorationId) &&
+    GARDEN_ZONES.includes(placement.zone) &&
+    DECORATION_SLOTS.some((slot) => slot.id === placement.slotId)
+  );
+  const existing = new Set(normalized.map((placement) => placement.decorationId));
+  const missing = defaultDecorationPlacements(ownedDecorationIds)
+    .filter((placement) => !existing.has(placement.decorationId));
+  return [...normalized, ...missing];
+}
+
+function uniqueDecorationSlots(placements, zone) {
+  const used = new Set();
+  return [...placements].reverse().filter((placement) => {
+    if (placement.zone !== zone) return true;
+    if (used.has(placement.slotId)) return false;
+    used.add(placement.slotId);
+    return true;
+  }).reverse();
+}
+
+export function moveDecorationToSlot(placements, zone, decorationId, targetSlotId) {
+  if (!GARDEN_ZONES.includes(zone) || !DECORATION_SLOTS.some((slot) => slot.id === targetSlotId)) return placements;
+  const source = placements.find((placement) =>
+    placement.zone === zone &&
+    placement.decorationId === decorationId
+  );
+  if (!source) return uniqueDecorationSlots(placements, zone);
+  const target = placements.find((placement) =>
+    placement.zone === zone &&
+    placement.decorationId !== decorationId &&
+    placement.slotId === targetSlotId
+  );
+  const moved = placements.map((placement) => {
+    if (placement.zone !== zone) return placement;
+    if (placement.decorationId === decorationId) return { ...placement, slotId: targetSlotId };
+    if (target && placement.decorationId === target.decorationId) return { ...placement, slotId: source.slotId };
+    return placement;
+  });
+  return uniqueDecorationSlots(moved, zone);
 }
 
 export function stageOf(plant) {

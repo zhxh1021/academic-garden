@@ -11,8 +11,9 @@ import {
   careSummaryForDate,
   createPlant,
   dateKey,
-  defaultDecorationPlacements,
   firstOpenPlotIndex,
+  mergeDefaultDecorationPlacements,
+  moveDecorationToSlot,
   movePlantToPlot,
   pendingCareForDate,
   recordActivity,
@@ -42,7 +43,7 @@ function normalizeState(snapshot) {
     decorations: {
       ...decorations,
       owned: ownedDecorations,
-      placements: decorations.placements ?? defaultDecorationPlacements(ownedDecorations)
+      placements: mergeDefaultDecorationPlacements(decorations.placements ?? [], ownedDecorations)
     },
     wallet: {
       ...snapshot.wallet,
@@ -68,8 +69,9 @@ let nurturedPlantId = null;
 let focusedPlantId = null;
 let editingPlantId = null;
 let pendingPlotIndex = null;
-let isMovingPlants = false;
+let moveMode = false;
 let movingPlantId = null;
+let movingDecorationId = null;
 let nurtureTimer = null;
 let focusTimer = null;
 
@@ -167,6 +169,34 @@ function escapeText(value) {
 function spriteImage(src, className, alt = "") {
   if (!src) return "";
   return `<img class="asset-sprite ${className}" src="${src}" alt="${escapeText(alt)}" loading="lazy" />`;
+}
+
+function decorationSlotLabel(slotId) {
+  const labels = {
+    "front-path": "前景小径格",
+    "right-bench": "右侧休息格",
+    "left-lamp": "左侧路灯格",
+    "right-water": "右下水边格"
+  };
+  return labels[slotId] ?? "地图自由格";
+}
+
+function defaultDecorationSlot(decorationId) {
+  return DECORATION_SLOTS.find((slot) => slot.accepts.includes(decorationId)) ??
+    DECORATION_SLOTS.find((slot) => slot.accepts.length === 0);
+}
+
+function placementForNewDecoration(placements, zone, decorationId) {
+  const occupiedSlots = new Set(
+    placements
+      .filter((placement) => placement.zone === zone)
+      .map((placement) => placement.slotId)
+  );
+  const preferred = defaultDecorationSlot(decorationId);
+  const slot = preferred && !occupiedSlots.has(preferred.id)
+    ? preferred
+    : DECORATION_SLOTS.find((item) => !occupiedSlots.has(item.id));
+  return slot ? { zone, slotId: slot.id, decorationId } : null;
 }
 
 function metadataText(plant) {
@@ -344,12 +374,10 @@ function miniPlantMarkup(plant, plot) {
   const config = TYPE_CONFIG[plant.type];
   const stage = stageOf(plant);
   const sprite = varietySprite(plant);
-  const variety = config.varieties.find((item) => item.id === plant.variety);
-  const mapSprite = ["tree", "flower", "fruit", "bloom", "seed_saved"].includes(stage.id)
-    ? variety?.sprite ?? sprite
-    : sprite;
+  const mapSprite = sprite;
+  const actionLabel = moveMode ? `移动${plant.title}` : `打开${plant.title}的项目记录`;
   return `
-    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage} ${mapSprite ? "has-asset-sprite" : ""} ${movingPlantId === plant.id ? "is-moving" : ""}" data-overview-plant-id="${plant.id}" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z}" aria-label="${movingPlantId ? `移动${escapeText(plant.title)}` : `打开${escapeText(plant.title)}的项目记录`}" title="${escapeText(plant.title)}">
+    <button type="button" class="overview-plant ${config.icon} stage-${plant.stage} plot-row-${plot.row} ${mapSprite ? "has-asset-sprite" : ""} ${movingPlantId === plant.id ? "is-moving" : ""}" data-overview-plant-id="${plant.id}" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z}" aria-label="${escapeText(actionLabel)}" title="${escapeText(plant.title)}">
       ${mapSprite ? spriteImage(mapSprite, "map-plant-sprite", varietyLabel(plant)) : `<span class="mini-sprite" aria-hidden="true"></span>`}
       <strong>${escapeText(plant.title)}</strong>
       <em>${config.label} · ${stage.label}</em>
@@ -362,25 +390,44 @@ function decorationMarkup(placement) {
   const slot = DECORATION_SLOTS.find((item) => item.id === placement.slotId);
   if (!decoration || !slot) return "";
   return `
-    <span class="garden-decoration ${decoration.className}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z}" title="${escapeText(decoration.label)}">
+    <button type="button" class="garden-decoration ${decoration.className} ${movingDecorationId === decoration.id ? "is-moving" : ""}" data-decoration-placement-id="${decoration.id}" data-decoration-slot-id="${slot.id}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z}" aria-label="${moveMode ? `移动${escapeText(decoration.label)}` : escapeText(decoration.label)}" title="${escapeText(decoration.label)}">
       ${spriteImage(decoration.sprite, "decor-sprite", decoration.label)}
-    </span>
-  `;
-}
-
-function emptyPlotMarkup(plot, isOccupied) {
-  const canPlant = selectedFarmZone === "active" && !isOccupied;
-  const idleCopy = selectedFarmZone === "active" ? "空地" : "预留";
-  return `
-    <button type="button" class="farm-plot ${isOccupied ? "is-occupied" : ""} ${canPlant ? "can-plant" : ""}" data-plot-index="${plot.index}" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z - 1}" ${canPlant || movingPlantId ? "" : "disabled"} aria-label="${canPlant ? "在这块空地种下一株植物" : `${zoneLabel(selectedFarmZone)}${idleCopy} ${plot.index + 1}`}">
-      <span>${canPlant ? "种植" : idleCopy}</span>
     </button>
   `;
 }
 
-function decorationPlaceholdersMarkup() {
-  return DECORATION_SLOTS.map((slot) => `
-    <span class="decoration-slot" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z - 1}" aria-hidden="true"></span>
+function emptyPlotMarkup(plot) {
+  const canPlant = selectedFarmZone === "active" && !moveMode;
+  const canMoveHere = moveMode && Boolean(movingPlantId);
+  const plotStateClass = canMoveHere ? "is-drop-target" : canPlant ? "can-plant" : "is-reserved";
+  const idleCopy = selectedFarmZone === "active" ? "空地" : "预留";
+  const plotLabel = canPlant ? "在这块空地种下一株植物" : `${zoneLabel(selectedFarmZone)}${idleCopy} ${plot.index + 1}`;
+  const buttonCopy = canMoveHere ? "移到这里" : canPlant ? "种植" : idleCopy;
+  return `
+    <button type="button" class="farm-plot ${plotStateClass}" data-plot-index="${plot.index}" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z - 1}" ${canPlant || canMoveHere ? "" : "disabled"} aria-label="${escapeText(plotLabel)}">
+      <span>${buttonCopy}</span>
+    </button>
+  `;
+}
+
+function decorationPlaceholdersMarkup(occupiedSlotIds) {
+  return DECORATION_SLOTS
+    .filter((slot) => !occupiedSlotIds.has(slot.id))
+    .map((slot) => `
+    <button type="button" class="decoration-slot ${moveMode ? "is-grid-visible" : ""} ${moveMode && movingDecorationId ? "is-drop-target" : ""}" data-decoration-slot-id="${slot.id}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z - 1}" ${moveMode && movingDecorationId ? "" : "disabled"} aria-label="移动装饰到这里">
+      <span>装饰格</span>
+    </button>
+  `).join("");
+}
+
+function gardenDestinationMarkup() {
+  return GARDEN_ZONES
+    .filter((zone) => zone !== selectedFarmZone)
+    .map((zone) => `
+    <button type="button" class="map-house house-${selectedFarmZone}-to-${zone}" data-overview-zone="${zone}" aria-label="切换到${zoneLabel(zone)}" title="${zoneLabel(zone)}">
+      <strong>${zoneLabel(zone)}</strong>
+      <em>${plantsIn(zone).length}</em>
+    </button>
   `).join("");
 }
 
@@ -404,6 +451,10 @@ function renderOverview() {
   const zone = ZONES[selectedFarmZone];
   const zoneDecorationPlacements = (state.decorations.placements ?? [])
     .filter((placement) => placement.zone === selectedFarmZone && state.decorations.owned.includes(placement.decorationId));
+  const occupiedDecorationSlots = new Set(zoneDecorationPlacements.map((placement) => placement.slotId));
+  const moveLabel = !moveMode ? "移动" : movingPlantId || movingDecorationId ? "取消移动" : "退出移动";
+  elements.overviewGarden.dataset.currentZone = selectedFarmZone;
+  elements.overviewGarden.dataset.moveMode = moveMode ? "true" : "false";
   elements.overviewGarden.innerHTML = `
     <div class="map-sky" aria-hidden="true"></div>
     <div class="farm-scene-bar">
@@ -411,25 +462,31 @@ function renderOverview() {
         <p class="eyebrow">${zone.kicker}</p>
         <h2>${zone.title}</h2>
       </div>
-      <button type="button" class="quiet-button farm-move-toggle ${isMovingPlants ? "is-active" : ""}" data-farm-action="move">
-        ${isMovingPlants ? movingPlantId ? "取消移动" : "退出移动" : "移动植物"}
-      </button>
     </div>
-    <nav class="farm-zone-switch" aria-label="切换花园区域">
-      ${GARDEN_ZONES.map(farmZoneButtonMarkup).join("")}
-    </nav>
+    ${gardenDestinationMarkup()}
     <div class="map-field">
-      ${decorationPlaceholdersMarkup()}
+      ${decorationPlaceholdersMarkup(occupiedDecorationSlots)}
       ${zoneDecorationPlacements.map(decorationMarkup).join("")}
       ${ZONE_PLOTS.map((plot, index) => {
         const plant = zonePlants.get(index);
         return `
           <div class="farm-cell" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z}">
-            ${emptyPlotMarkup({ ...plot, index }, Boolean(plant))}
+            ${plant ? "" : emptyPlotMarkup({ ...plot, index })}
             ${plant ? miniPlantMarkup(plant, plot) : ""}
           </div>
         `;
       }).join("")}
+    </div>
+    <div class="farm-toolbar">
+      <nav class="farm-zone-switch" aria-label="切换花园区域">
+        ${GARDEN_ZONES.map(farmZoneButtonMarkup).join("")}
+      </nav>
+      <div class="farm-toolbar-actions">
+        <button type="button" class="primary-button" data-farm-action="plant">种植</button>
+        <button type="button" class="quiet-button farm-move-toggle ${moveMode ? "is-active" : ""}" data-farm-action="move">${moveLabel}</button>
+        <button type="button" class="quiet-button" data-home-action="shop">装饰商店</button>
+        <button type="button" class="quiet-button" data-home-action="projects">项目管理</button>
+      </div>
     </div>
   `;
 }
@@ -438,17 +495,19 @@ function renderShop() {
   elements.shopGrid.innerHTML = DECORATIONS.map((decoration) => {
     const owned = state.decorations.owned.includes(decoration.id);
     const affordable = state.wallet.currentCoins >= decoration.price;
+    const slot = DECORATION_SLOTS.find((item) => item.accepts.includes(decoration.id));
     return `
-      <article class="shop-card">
+      <article class="shop-card ${owned ? "is-owned" : ""}">
         <span class="shop-preview ${decoration.className}" aria-hidden="true">
           ${spriteImage(decoration.sprite, "shop-sprite", decoration.label)}
         </span>
+        <span class="shop-placement-note">地图装饰格 · ${decorationSlotLabel(slot?.id)}</span>
         <h3>${escapeText(decoration.label)}</h3>
         <p>${escapeText(decoration.description)}</p>
         <footer>
-          <strong>${decoration.price} 金币</strong>
+          <strong>${owned ? "已拥有" : `${decoration.price} 金币`}</strong>
           <button type="button" class="action-button" data-decoration-id="${decoration.id}" ${owned || !affordable ? "disabled" : ""}>
-            ${owned ? "已解锁" : "解锁"}
+            ${owned ? "去地图移动" : affordable ? "解锁" : "金币不足"}
           </button>
         </footer>
       </article>
@@ -613,6 +672,8 @@ async function buyDecoration(decorationId) {
   const decoration = DECORATIONS.find((item) => item.id === decorationId);
   if (!decoration || state.decorations.owned.includes(decoration.id)) return;
   if (state.wallet.currentCoins < decoration.price) return;
+  const existingPlacements = state.decorations.placements ?? [];
+  const newPlacement = placementForNewDecoration(existingPlacements, selectedFarmZone, decoration.id);
   state = {
     ...state,
     wallet: {
@@ -622,7 +683,7 @@ async function buyDecoration(decorationId) {
     decorations: {
       ...state.decorations,
       owned: [...state.decorations.owned, decoration.id],
-      placements: defaultDecorationPlacements([...state.decorations.owned, decoration.id])
+      placements: newPlacement ? [...existingPlacements, newPlacement] : existingPlacements
     }
   };
   await storeAndRender();
@@ -728,30 +789,99 @@ elements.shopGrid.addEventListener("click", async (event) => {
   await buyDecoration(button.dataset.decorationId);
 });
 
+function exitMoveMode() {
+  moveMode = false;
+  movingPlantId = null;
+  movingDecorationId = null;
+}
+
 elements.overviewGarden.addEventListener("click", (event) => {
   const farmZone = event.target.closest("[data-farm-zone]");
   if (farmZone) {
     selectedFarmZone = farmZone.dataset.farmZone;
-    isMovingPlants = false;
-    movingPlantId = null;
+    exitMoveMode();
     renderOverview();
     return;
   }
-  const farmAction = event.target.closest("[data-farm-action='move']");
-  if (farmAction) {
-    isMovingPlants = !isMovingPlants;
-    movingPlantId = null;
+  const plantAction = event.target.closest("[data-farm-action='plant']");
+  if (plantAction) {
+    exitMoveMode();
+    openForm(false);
     renderOverview();
+    return;
+  }
+  const shopAction = event.target.closest("[data-home-action='shop']");
+  if (shopAction) {
+    elements.shopSection.classList.toggle("is-collapsed");
+    if (!elements.shopSection.classList.contains("is-collapsed")) {
+      elements.shopSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    return;
+  }
+  const projectsAction = event.target.closest("[data-home-action='projects']");
+  if (projectsAction) {
+    exitMoveMode();
+    goToZone(selectedFarmZone);
+    return;
+  }
+  const moveAction = event.target.closest("[data-farm-action='move']");
+  if (moveAction) {
+    moveMode = !moveMode;
+    movingPlantId = null;
+    movingDecorationId = null;
+    renderOverview();
+    return;
+  }
+  const decorationButton = event.target.closest("button[data-decoration-placement-id]");
+  if (decorationButton) {
+    if (!moveMode) return;
+    if (movingDecorationId) {
+      state = {
+        ...state,
+        decorations: {
+          ...state.decorations,
+          placements: moveDecorationToSlot(
+            state.decorations.placements ?? [],
+            selectedFarmZone,
+            movingDecorationId,
+            decorationButton.dataset.decorationSlotId
+          )
+        }
+      };
+      exitMoveMode();
+      void storeAndRender();
+      return;
+    }
+    movingPlantId = null;
+    movingDecorationId = decorationButton.dataset.decorationPlacementId;
+    renderOverview();
+    return;
+  }
+  const decorationSlot = event.target.closest("button.decoration-slot[data-decoration-slot-id]");
+  if (decorationSlot && moveMode && movingDecorationId) {
+    state = {
+      ...state,
+      decorations: {
+        ...state.decorations,
+        placements: moveDecorationToSlot(
+          state.decorations.placements ?? [],
+          selectedFarmZone,
+          movingDecorationId,
+          decorationSlot.dataset.decorationSlotId
+        )
+      }
+    };
+    exitMoveMode();
+    void storeAndRender();
     return;
   }
   const plotButton = event.target.closest("[data-plot-index]");
-  if (plotButton && isMovingPlants && movingPlantId) {
+  if (plotButton && moveMode && movingPlantId) {
     state = {
       ...state,
       plants: movePlantToPlot(state.plants, movingPlantId, Number(plotButton.dataset.plotIndex))
     };
-    isMovingPlants = false;
-    movingPlantId = null;
+    exitMoveMode();
     void storeAndRender();
     return;
   }
@@ -759,18 +889,18 @@ elements.overviewGarden.addEventListener("click", (event) => {
   if (plantButton) {
     const plant = state.plants.find((item) => item.id === plantButton.dataset.overviewPlantId);
     if (!plant) return;
-    if (isMovingPlants && movingPlantId) {
+    if (moveMode && movingPlantId) {
       state = {
         ...state,
         plants: movePlantToPlot(state.plants, movingPlantId, plant.plotIndex)
       };
-      isMovingPlants = false;
-      movingPlantId = null;
+      exitMoveMode();
       void storeAndRender();
       return;
     }
-    if (isMovingPlants) {
+    if (moveMode) {
       movingPlantId = plant.id;
+      movingDecorationId = null;
       renderOverview();
       return;
     }
@@ -778,23 +908,28 @@ elements.overviewGarden.addEventListener("click", (event) => {
     return;
   }
   if (plotButton && selectedFarmZone === "active") {
+    exitMoveMode();
     openForm(false, null, Number(plotButton.dataset.plotIndex));
     return;
   }
   const zoneTarget = event.target.closest("[data-overview-zone]");
-  if (zoneTarget) goToZone(zoneTarget.dataset.overviewZone);
+  if (zoneTarget) {
+    selectedFarmZone = zoneTarget.dataset.overviewZone;
+    exitMoveMode();
+    renderOverview();
+  }
 });
 
-document.querySelector("[data-home-action='shop']").addEventListener("click", () => {
+document.querySelector("[data-home-action='shop']")?.addEventListener("click", () => {
   elements.shopSection.classList.toggle("is-collapsed");
   if (!elements.shopSection.classList.contains("is-collapsed")) {
     elements.shopSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 });
 
-document.querySelector("[data-home-action='projects']").addEventListener("click", () => goToZone("active"));
+document.querySelector("[data-home-action='projects']")?.addEventListener("click", () => goToZone("active"));
 
-document.querySelector("#open-create").addEventListener("click", () => openForm(false));
+document.querySelector("#open-create")?.addEventListener("click", () => openForm(false));
 document.querySelector("#import-history").addEventListener("click", () => openForm(true));
 document.querySelector("#export-button").addEventListener("click", () => downloadBackup(state));
 elements.syncStatus?.addEventListener("click", openSyncDialog);

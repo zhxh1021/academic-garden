@@ -1,5 +1,214 @@
 # Pending Changes
 
+## 2026-06-02 - Homepage farm v5 entrance, tree, and decoration scope fixes
+
+### Summary
+
+- Changed homepage map destination entrances so each farm zone renders links to the other two zones, with zone-specific hot-zone classes instead of reusing the active-zone pair.
+- Kept destination clicks inside the homepage farm map; clicking a map entrance switches `selectedFarmZone` and does not open the project-management view.
+- Repositioned and shrank destination hot zones so their labels and count badges appear together near the entrance marker without sitting on the first row of plants.
+- Adjusted overview plot coordinates and row-based mature plant sizing so back-row trees are smaller/higher while front-row plants remain fuller and bottom-anchored.
+- Replaced the foreground path decoration sprite with a smaller v5 stepping-stone asset and tuned runtime decoration sizes so bench, pond, lamp, and path align more closely with decoration slot circles.
+- Updated decoration placement behavior so owned decorations remain a shared global library, while each placement belongs to one zone; buying a decoration places it only in the current farm zone.
+
+### Files Changed
+
+- `src/app.js`
+- `src/domain.js`
+- `scripts/domain.test.mjs`
+- `styles.css`
+- `assets/sprites/decor-stepping-stones-v5.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Added `assets/sprites/decor-stepping-stones-v5.png` as a compact pixel stepping-stone foreground decoration for the v5 floor.
+- The asset is transparent PNG runtime art under `assets/sprites/`; no intermediate sheet was needed.
+- Style constraints: small, low-profile tan stones with light grass tufts, sized to sit just larger than a decoration slot rather than covering the painted v5 ground.
+
+### Verification
+
+- Ran initial checks: `git status --short`; `git diff -- src/app.js styles.css index.html src/domain.js scripts/domain.test.mjs docs/pending-changes.md`; `node --check src\app.js`; `node --test scripts\domain.test.mjs scripts\server.test.mjs`.
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`; 22 tests passed.
+- Started local preview at `http://127.0.0.1:4173/`.
+- Used bundled Playwright with Microsoft Edge to verify desktop and 390px mobile rendering:
+  - active, harvested, and dormant use the v5 background files;
+  - each zone exposes exactly two map entrances to the other zones;
+  - entrance clicks switch the homepage farm map and leave project management hidden;
+  - hovered/focused entrance label and count badge appear together;
+  - homepage mature plants stay inside the map, with back rows reduced and front rows larger;
+  - project-card and detail plant sprites stay inside their scene frames;
+  - active/harvested/dormant decorations render only in their placed zone;
+  - the bench renders complete at runtime and the new foreground stepping stones replace the old tall path.
+
+### Notes
+
+- Existing parallel work in `AGENTS.md`, `index.html`, existing v4/v5 art files, and prior sprite cleanup files was left untouched.
+- This slice is GitHub Pages frontend/domain UI work. OpenClaw deploy needed: no.
+
+## 2026-06-01 - Homepage farm v5 visual interaction closure
+
+### Summary
+
+- Fixed homepage overview plant sprite selection so map plants use their real stage assets instead of falling back to a shared variety sprite for mature, flowering, and harvested stages.
+- Repositioned the active-garden harvested/dormant entrance hot-zone labels and count badges so hover/focus reads like a small map marker near each destination.
+- Increased mature-stage map presence while keeping the sprite bottom anchored to the same plot coordinate system.
+- Widened project-card plant scenes and enlarged detail scenes so mature tree sprites fit fully in the card/detail artwork instead of being clipped by the scene frame.
+- Reworked decoration slots toward visible map grid targets in movement mode, adjusted slot coordinates to sit better on the v5 path/edge/water areas, and kept decoration moves using the same slot coordinate as the rendered drop target.
+- Improved decoration shop cards with clearer map-slot badges, owned/locked state copy, and more explicit relationship between purchased decorations and map placement.
+- Tightened the mobile farm toolbar so the four core controls fit as a grid instead of clipping the final action.
+
+### Files Changed
+
+- `src/app.js`
+- `src/domain.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `git status --short` before editing and reviewed `git diff -- src/app.js styles.css index.html src/domain.js scripts/domain.test.mjs docs/pending-changes.md`.
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`; 21 tests passed.
+- Ran `git diff --check`; only existing Windows line-ending warnings were reported.
+- Started local preview at `http://127.0.0.1:4173/`.
+- Browser plugin preview failed with the existing Windows sandbox error `spawn setup refresh`; used bundled Playwright with Microsoft Edge as the rendered fallback.
+- Rendered QA verified:
+  - active, harvested, and dormant zones still use the v5 background files;
+  - active-garden entrance hover labels and badges appear near their destination paths;
+  - homepage tree and flower stages use distinct `assets/sprites/stages/...` images for tree/flower/fruit/bloom/seed_saved;
+  - mature map trees are larger while roots stay anchored to the plot coordinates;
+  - project-card mature tree sprite fits inside the widened card scene, and detail mature tree fits inside the detail scene;
+  - decoration movement mode exposes visible empty decoration grid slots and keeps drop coordinates aligned with the rendered slots;
+  - decoration shop opens and shows slot relation, price/owned state, and move-placement copy;
+  - 390px mobile preview keeps the toolbar controls visible without horizontal clipping.
+
+### Notes
+
+- Existing parallel work in `AGENTS.md`, `index.html`, `scripts/domain.test.mjs`, sprite cleanup assets, and the v4/v5 art files was left in place and not reverted.
+- This slice is GitHub Pages frontend/domain UI work. OpenClaw deploy needed: no.
+
+## 2026-06-01 - Homepage v5 recovery and preview stabilization
+
+### Summary
+
+- Repaired the interrupted `src/app.js` mojibake and broken string literals that prevented the homepage JavaScript from parsing.
+- Kept the homepage farm v5 visual direction active for the active, harvested, and dormant gardens.
+- Fixed the active-garden destination hot zones so clicking harvested or dormant switches the homepage farm zone in place instead of jumping into the project-management view.
+- Kept the farm toolbar rendered inside the overview map with three-zone switching, planting, movement, decoration shop, and project management actions.
+- Removed the CSS-drawn runtime dirt patch from empty plot targets so the painted v5 background pits remain the visual source of truth; hover/drop feedback now stays as transparent hit targets plus a centered outline.
+
+### Files Changed
+
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `git status --short` and reviewed `git diff -- src/app.js styles.css index.html src/domain.js scripts/domain.test.mjs docs/pending-changes.md` before editing.
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`; 21 tests passed.
+- Ran `git diff --check`; only existing Windows line-ending warnings were reported.
+- Started the local static server at `http://127.0.0.1:4173/`.
+- Browser plugin preview failed with Windows sandbox error `spawn setup refresh`; Playwright CLI initially needed sandbox escalation, then Microsoft Edge was used as the rendered fallback.
+- Rendered preview verified:
+  - active uses `garden-background-active-v5.png`;
+  - harvested uses `garden-background-harvested-v5.png`;
+  - dormant uses `garden-background-dormant-v5.png`;
+  - homepage summary and sync status render instead of staying empty/checking;
+  - toolbar includes three-zone switching, planting, movement, decoration shop, and project management;
+  - active hot zones expose harvested and dormant destinations, and harvested click switches the homepage farm zone without hiding the homepage;
+  - empty plot runtime `::before` content/background is `none`;
+  - 390px mobile toolbar buttons report no overlap.
+
+### Notes
+
+- Existing parallel work in `AGENTS.md`, `index.html`, `src/domain.js`, `scripts/domain.test.mjs`, sprite assets, and the v4/v5 art files was left in place and not reverted.
+- This slice is GitHub Pages frontend recovery work. OpenClaw deploy needed: no.
+
+## 2026-06-01 - Low-conflict UI visual refinement pass
+
+### Summary
+
+- Added a CSS-only refinement layer that softens the interface chrome while preserving the pixel RPG garden direction.
+- Split typography treatment so Chinese body copy uses a softer UI font while labels, buttons, counters, and pixel-style headings keep the monospace character.
+- Reduced secondary button, HUD, toolbar, and tab visual weight so the garden art remains the first visual priority.
+- Tightened shop cards toward a compact item-card feel with steadier image, copy, price, and owned-button alignment.
+
+### Files Changed
+
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+- Started the local static server with the bundled Python runtime at `http://127.0.0.1:4173/`.
+- Attempted a headless Edge screenshot for visual verification, but Edge exited without producing the screenshot file in this sandbox, so this pass was verified by CSS/static diff review rather than a fresh rendered screenshot.
+
+### Notes
+
+- This slice intentionally avoids `index.html`, `src/app.js`, and `src/domain.js` to reduce conflict with concurrent main-interface work.
+- No new visual assets were generated.
+- This is GitHub Pages frontend CSS work. OpenClaw deploy needed: no.
+
+## 2026-06-01 - Homepage grid farm asset and movement completion
+
+### Summary
+
+- Wired the homepage overview to three generated v4 garden backgrounds for active, harvested, and dormant zones.
+- Removed the remaining CSS-drawn and sprite-drawn plot surfaces from the homepage map; empty farm plots are now transparent click targets over the circular pits already painted into each background.
+- Kept planted plots visually clear by rendering no empty plot button once a plant occupies that plot, and removed the extra homepage plant ground-base overlays so plants sit directly on the painted background pits.
+- Extended the movement mode so decorations behave like movable map objects: select an owned decoration, move it to an empty decoration slot, or swap it with another decoration in the same zone.
+- Reworked the map toolbar into one compact control strip for zone switching, planting, movement, the decoration shop, and project management; mobile uses a stacked toolbar with horizontally scrollable actions rather than overlapping buttons.
+- Cleared the last chroma-key magenta pixels from the two reused plant ground-base v2 runtime sprites.
+
+### Files Changed
+
+- `index.html`
+- `src/app.js`
+- `src/domain.js`
+- `styles.css`
+- `scripts/domain.test.mjs`
+- `assets/art/garden-background-active-v4.png`
+- `assets/art/garden-background-harvested-v4.png`
+- `assets/art/garden-background-dormant-v4.png`
+- `assets/sprites/plant-ground-base-v2-back.png`
+- `assets/sprites/plant-ground-base-v2-front.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- The three v4 backgrounds are GPT-Image-2-style pixel-art valley farm scenes using a shared 9-plot structure.
+- Prompt/style constraints carried through integration: no labels or UI text in the art, active garden keeps the two rear destination paths visible, harvested garden uses a warm orchard palette, dormant garden uses a quiet twilight palette, and all three leave clear foreground plot space for runtime sprites.
+- The v4 backgrounds remain under `assets/art/` as full scene art; the homepage now uses their painted pit circles instead of overlaying app-ready empty plot sprites.
+- No new slicing was needed for the v4 backgrounds. Runtime integration is via CSS background switching on `.overview-garden[data-current-zone]`.
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Ran `node --test scripts/domain.test.mjs scripts/server.test.mjs`; 21 tests passed.
+- Started a local static server with the bundled Python runtime at `http://127.0.0.1:4173/`.
+- Browser plugin startup failed with Windows sandbox error `spawn setup refresh`; Playwright package fallback was unavailable because bundled `playwright` lacked `playwright-core`.
+- Used Edge via Chrome DevTools Protocol as a fallback rendered QA path.
+- Rendered QA verified:
+  - active background uses `garden-background-active-v4.png`;
+  - harvested background uses `garden-background-harvested-v4.png`;
+  - dormant background uses `garden-background-dormant-v4.png`;
+  - empty plot hit targets report `plotBackground: none`, so the only visible pits are the ones baked into the current garden background;
+  - planting into plot 2 reduced empty plots from 7 to 6 and saved the new plant with `plotIndex: 2`;
+  - moving `active-tree` saved it at `plotIndex: 8`;
+  - moving the lamp decoration saved its active placement at `front-left-small`;
+  - desktop and 390px mobile toolbar checks reported no button overlaps.
+- Ran a PNG color-key scan across the three v4 backgrounds, empty plot v2 sprites, and plant ground-base v2 sprites; all scanned files now report `magenta: 0`.
+
+### Notes
+
+- Existing backend/auth/sync-login work in `.env.example`, `package.json`, `server/`, `src/store.js`, `src/sync-auth.js`, `scripts/server.test.mjs`, `scripts/sync-auth.test.mjs`, and related docs was left untouched.
+- This slice is GitHub Pages frontend and asset work. OpenClaw deploy needed: no.
+
 ## 2026-06-01 - Frontend cloud sync login panel
 
 ### Summary

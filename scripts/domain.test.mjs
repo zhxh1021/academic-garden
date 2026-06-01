@@ -6,6 +6,8 @@ import {
   createPlant,
   defaultDecorationPlacements,
   firstOpenPlotIndex,
+  mergeDefaultDecorationPlacements,
+  moveDecorationToSlot,
   movePlantToPlot,
   removePlantRecords,
   updatePlantBasics
@@ -147,15 +149,81 @@ test("moves a plant to an empty plot or swaps with another plant in the same zon
   assert.equal(swapped.find((plant) => plant.id === "c").plotIndex, 1);
 });
 
-test("creates default decoration placements for owned decorations", () => {
+test("creates one default decoration placement per owned decoration", () => {
   const placements = defaultDecorationPlacements(["lamp", "pond"]);
 
   assert.deepEqual(placements, [
     { zone: "active", slotId: "left-lamp", decorationId: "lamp" },
-    { zone: "harvested", slotId: "left-lamp", decorationId: "lamp" },
-    { zone: "dormant", slotId: "left-lamp", decorationId: "lamp" },
+    { zone: "active", slotId: "right-water", decorationId: "pond" }
+  ]);
+});
+
+test("keeps owned decorations global while placements belong to one zone", () => {
+  const placements = [
+    { zone: "harvested", slotId: "front-left-small", decorationId: "lamp" }
+  ];
+
+  const merged = mergeDefaultDecorationPlacements(placements, ["lamp", "pond"]);
+
+  assert.deepEqual(merged, [
+    { zone: "harvested", slotId: "front-left-small", decorationId: "lamp" },
+    { zone: "active", slotId: "right-water", decorationId: "pond" }
+  ]);
+});
+
+test("does not repair missing defaults by copying to all three zones", () => {
+  const merged = mergeDefaultDecorationPlacements([], ["lamp"]);
+
+  assert.deepEqual(merged, [
+    { zone: "active", slotId: "left-lamp", decorationId: "lamp" }
+  ]);
+});
+
+test("moves a decoration to an empty slot within the same zone", () => {
+  const placements = [
+    { zone: "active", slotId: "left-lamp", decorationId: "lamp" },
+    { zone: "harvested", slotId: "left-lamp", decorationId: "lamp" }
+  ];
+
+  const moved = moveDecorationToSlot(placements, "active", "lamp", "front-left-small");
+
+  assert.deepEqual(moved, [
+    { zone: "active", slotId: "front-left-small", decorationId: "lamp" },
+    { zone: "harvested", slotId: "left-lamp", decorationId: "lamp" }
+  ]);
+});
+
+test("swaps two decorations in one zone without affecting other zones", () => {
+  const placements = [
+    { zone: "active", slotId: "left-lamp", decorationId: "lamp" },
     { zone: "active", slotId: "right-water", decorationId: "pond" },
-    { zone: "harvested", slotId: "right-water", decorationId: "pond" },
     { zone: "dormant", slotId: "right-water", decorationId: "pond" }
+  ];
+
+  const moved = moveDecorationToSlot(placements, "active", "lamp", "right-water");
+
+  assert.deepEqual(moved, [
+    { zone: "active", slotId: "right-water", decorationId: "lamp" },
+    { zone: "active", slotId: "left-lamp", decorationId: "pond" },
+    { zone: "dormant", slotId: "right-water", decorationId: "pond" }
+  ]);
+});
+
+test("repairs duplicate decoration slots within a zone during moves", () => {
+  const placements = [
+    { zone: "active", slotId: "left-lamp", decorationId: "lamp" },
+    { zone: "active", slotId: "left-lamp", decorationId: "pond" },
+    { zone: "active", slotId: "right-bench", decorationId: "wood-bench" }
+  ];
+
+  const moved = moveDecorationToSlot(placements, "active", "lamp", "right-bench");
+  const activeSlots = moved
+    .filter((placement) => placement.zone === "active")
+    .map((placement) => placement.slotId);
+
+  assert.equal(new Set(activeSlots).size, activeSlots.length);
+  assert.deepEqual(moved, [
+    { zone: "active", slotId: "right-bench", decorationId: "lamp" },
+    { zone: "active", slotId: "left-lamp", decorationId: "wood-bench" }
   ]);
 });

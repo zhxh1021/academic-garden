@@ -331,15 +331,7 @@ textarea:focus-visible {
 }
 
 .home-actions {
-  position: absolute;
-  z-index: 8;
-  right: 30px;
-  bottom: 30px;
-  display: flex;
-  justify-content: end;
-  gap: 12px;
-  margin: 0;
-  pointer-events: auto;
+  display: none;
 }
 
 .home-actions .primary-button {
@@ -364,7 +356,7 @@ textarea:focus-visible {
 }
 
 .farm-scene-bar > * {
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .farm-scene-bar h2 {
@@ -383,16 +375,48 @@ textarea:focus-visible {
 }
 
 .farm-zone-switch {
-  position: absolute;
-  z-index: 18;
-  left: 50%;
-  bottom: 18px;
   display: grid;
   grid-template-columns: repeat(3, minmax(92px, 1fr));
   gap: 8px;
-  width: min(430px, calc(100% - 260px));
-  transform: translateX(-50%);
+  flex: 1 1 390px;
+  min-width: min(390px, 100%);
   pointer-events: auto;
+}
+
+.farm-toolbar {
+  position: absolute;
+  z-index: 24;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  border: 3px solid rgb(38 60 50 / 78%);
+  background: rgb(255 248 226 / 90%);
+  box-shadow: 4px 4px 0 rgb(38 60 50 / 48%);
+  overflow-x: auto;
+  pointer-events: auto;
+  scrollbar-width: thin;
+}
+
+.farm-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.farm-toolbar .primary-button,
+.farm-toolbar .quiet-button {
+  min-height: 42px;
+  padding: 8px 11px;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 var(--border);
 }
 
 .farm-zone-tab {
@@ -434,10 +458,26 @@ textarea:focus-visible {
   border: 4px solid var(--grass-dark);
   background:
     linear-gradient(rgb(255 255 255 / 5%), rgb(255 255 255 / 5%)),
-    url("./assets/art/garden-background-v3.png") center / cover no-repeat,
+    url("./assets/art/garden-background-active-v5.png") center / 100% 100% no-repeat,
     #91c765;
   overflow: hidden;
   image-rendering: pixelated;
+}
+
+.overview-garden[data-current-zone="harvested"] {
+  border-color: #9b6a28;
+  background:
+    linear-gradient(rgb(255 255 255 / 4%), rgb(255 226 133 / 8%)),
+    url("./assets/art/garden-background-harvested-v5.png") center / 100% 100% no-repeat,
+    #caa64a;
+}
+
+.overview-garden[data-current-zone="dormant"] {
+  border-color: #4b5a86;
+  background:
+    linear-gradient(rgb(175 191 255 / 6%), rgb(24 34 69 / 8%)),
+    url("./assets/art/garden-background-dormant-v5.png") center / 100% 100% no-repeat,
+    #314c6a;
 }
 
 .overview-garden:focus-within {
@@ -496,13 +536,14 @@ textarea:focus-visible {
 
 .map-house {
   position: absolute;
-  z-index: 3;
-  top: 256px;
+  z-index: 17;
+  left: var(--house-x);
+  top: var(--house-y);
   display: grid;
   justify-items: center;
-  align-content: end;
-  width: 132px;
-  height: 92px;
+  align-content: start;
+  width: 108px;
+  height: 72px;
   gap: 0;
   border: 0;
   padding: 0;
@@ -516,7 +557,7 @@ textarea:focus-visible {
 
 .map-house:hover {
   filter: brightness(1.06) saturate(1.04);
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
 }
 
 .map-house:focus-visible {
@@ -534,7 +575,7 @@ textarea:focus-visible {
   z-index: 1;
   left: 24%;
   right: 24%;
-  bottom: 24px;
+  bottom: 14px;
   height: 16px;
   border: 0;
   background: radial-gradient(ellipse at 50% 70%, rgb(255 236 142 / 0%), transparent 72%);
@@ -545,7 +586,7 @@ textarea:focus-visible {
 .map-house::after {
   z-index: 1;
   left: 50%;
-  bottom: 12px;
+  bottom: 7px;
   width: 8px;
   height: 8px;
   background: rgb(255 230 139 / 0%);
@@ -567,17 +608,41 @@ textarea:focus-visible {
   opacity: 1;
 }
 
-.house-harvested {
-  left: 23.5%;
+.house-active-to-harvested {
+  --house-x: 29%;
+  --house-y: 24%;
 }
 
-.house-dormant {
-  left: 72.5%;
+.house-active-to-dormant {
+  --house-x: 70%;
+  --house-y: 24%;
+}
+
+.house-harvested-to-active {
+  --house-x: 25%;
+  --house-y: 25%;
+}
+
+.house-harvested-to-dormant {
+  --house-x: 72%;
+  --house-y: 25%;
+}
+
+.house-dormant-to-active {
+  --house-x: 28%;
+  --house-y: 26%;
+}
+
+.house-dormant-to-harvested {
+  --house-x: 67%;
+  --house-y: 26%;
 }
 
 .map-house strong {
-  position: relative;
+  position: absolute;
   z-index: 4;
+  left: 50%;
+  bottom: calc(100% - 8px);
   margin-top: 0;
   padding: 5px 9px;
   border: 1px solid rgb(92 69 48 / 34%);
@@ -587,15 +652,15 @@ textarea:focus-visible {
   color: #263c32;
   font-size: 10px;
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateX(-50%) translateY(6px);
   transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
 .map-house em {
   position: absolute;
   z-index: 4;
-  right: 9px;
-  bottom: 5px;
+  left: calc(50% + 48px);
+  bottom: calc(100% - 8px);
   display: grid;
   place-content: center;
   min-width: 17px;
@@ -607,16 +672,29 @@ textarea:focus-visible {
   font-size: 9px;
   font-style: normal;
   opacity: 0;
-  transform: translateY(4px);
+  transform: translate(-50%, 6px);
   transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
 .map-house:hover strong,
+.map-house:focus strong,
 .map-house:focus-visible strong,
 .map-house:hover em,
+.map-house:focus em,
 .map-house:focus-visible em {
   opacity: 1;
-  transform: translateY(0);
+}
+
+.map-house:hover strong,
+.map-house:focus strong,
+.map-house:focus-visible strong {
+  transform: translateX(-50%) translateY(0);
+}
+
+.map-house:hover em,
+.map-house:focus em,
+.map-house:focus-visible em {
+  transform: translate(-50%, 0);
 }
 
 .house-art {
@@ -714,35 +792,36 @@ textarea:focus-visible {
   padding: 0;
   background: transparent;
   transform: translate(-50%, -50%);
-  filter: drop-shadow(3px 5px 0 rgb(38 60 50 / 16%));
+  cursor: pointer;
 }
 
-.farm-plot::before {
-  content: "";
-  position: absolute;
-  inset: 8px 6px 10px;
-  border: 4px solid rgb(117 69 44 / 58%);
-  border-radius: 22px 28px 18px 26px / 16px 18px 20px 18px;
-  background:
-    radial-gradient(ellipse at 24% 34%, rgb(255 210 134 / 28%) 0 15px, transparent 16px),
-    radial-gradient(ellipse at 70% 60%, rgb(91 59 37 / 16%) 0 11px, transparent 12px),
-    linear-gradient(135deg, #c98952, #a9663e 62%, #8d5738);
-  box-shadow:
-    inset 10px 6px 0 rgb(255 219 143 / 12%),
-    inset -8px -7px 0 rgb(91 59 37 / 14%);
-}
-
+.farm-plot::before,
 .farm-plot::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 34px / 21px;
-  background:
-    radial-gradient(ellipse at 12% 78%, #79aa58 0 12px, transparent 13px),
-    radial-gradient(ellipse at 86% 76%, #71c653 0 10px, transparent 11px),
-    radial-gradient(ellipse at 50% 92%, #477642 0 8px, transparent 9px);
-  opacity: 0.88;
   pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.farm-plot::before {
+  content: none;
+}
+
+.farm-plot::after {
+  left: 50%;
+  top: 50%;
+  width: 88px;
+  height: 44px;
+  border: 3px dashed rgb(239 184 59 / 0%);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) skewX(-10deg);
+  transition: opacity 160ms steps(2, end), border-color 160ms steps(2, end);
+}
+
+.farm-plot.can-plant::before,
+.farm-plot.is-drop-target::before {
+  content: none;
 }
 
 .farm-plot span {
@@ -765,7 +844,15 @@ textarea:focus-visible {
 .farm-plot.can-plant:focus-visible,
 .farm-plot:not(:disabled):hover,
 .farm-plot:not(:disabled):focus-visible {
-  filter: drop-shadow(4px 8px 0 rgb(38 60 50 / 22%)) brightness(1.04);
+  outline: 0;
+}
+
+.farm-plot.can-plant:hover::after,
+.farm-plot.can-plant:focus-visible::after,
+.farm-plot:not(:disabled):hover::after,
+.farm-plot:not(:disabled):focus-visible::after {
+  border-color: rgb(239 184 59 / 82%);
+  opacity: 1;
 }
 
 .farm-plot.can-plant:hover span,
@@ -799,9 +886,49 @@ textarea:focus-visible {
   border-radius: 50%;
   background: rgb(255 248 226 / 12%);
   transform: translate(-50%, -50%) skewX(-14deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.decoration-slot.is-grid-visible {
+  opacity: 0.72;
+  border-color: rgb(38 60 50 / 36%);
+  background: rgb(255 248 226 / 24%);
+  box-shadow: 0 0 0 2px rgb(255 248 226 / 36%);
+}
+
+.decoration-slot.is-drop-target {
+  opacity: 1;
+  pointer-events: auto;
+  border-color: rgb(239 184 59 / 82%);
+  background: rgb(255 248 226 / 34%);
+}
+
+.decoration-slot span {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  z-index: 1;
+  padding: 2px 5px;
+  border: 2px solid rgb(38 60 50 / 52%);
+  background: rgb(255 248 226 / 88%);
+  color: var(--grass-dark);
+  font-size: 9px;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
+}
+
+.decoration-slot.is-drop-target:hover span,
+.decoration-slot.is-drop-target:focus-visible span {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .overview-plant {
+  --map-sprite-h: 150px;
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -814,39 +941,13 @@ textarea:focus-visible {
   background: transparent;
   box-shadow: none;
   text-align: center;
-  transform: translateX(-50%);
+  transform: translate(-50%, calc(-1 * var(--map-sprite-h)));
   filter: drop-shadow(3px 6px 0 rgb(38 60 50 / 28%));
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
-.overview-plant::before,
-.overview-plant::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  pointer-events: none;
-  transform: translateX(-50%);
-  image-rendering: pixelated;
-}
-
-.overview-plant::before {
-  z-index: 1;
-  bottom: 47px;
-  width: 110px;
-  height: 21px;
-  background: url("./assets/sprites/plant-ground-base-v2-back.png") center / contain no-repeat;
-}
-
-.overview-plant::after {
-  z-index: 3;
-  bottom: 48px;
-  width: 96px;
-  height: 18px;
-  background: url("./assets/sprites/plant-ground-base-v2-front.png") center bottom / contain no-repeat;
-}
-
 .overview-plant:hover {
-  transform: translateX(-50%) translateY(-6px);
+  transform: translate(-50%, calc(-1 * var(--map-sprite-h) - 6px));
   filter: drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
 }
 
@@ -857,7 +958,7 @@ textarea:focus-visible {
 
 .overview-plant.is-moving {
   filter: drop-shadow(0 0 0 var(--gold)) drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
-  transform: translateX(-50%) translateY(-8px);
+  transform: translate(-50%, calc(-1 * var(--map-sprite-h) - 8px));
 }
 
 .overview-plant strong,
@@ -893,11 +994,16 @@ textarea:focus-visible {
   position: relative;
   z-index: 2;
   display: block;
-  width: 112px;
-  height: 136px;
+  width: 124px;
+  height: 150px;
   margin: 0 auto;
   object-fit: contain;
   object-position: center bottom;
+}
+
+.overview-plant.stage-seed,
+.overview-plant.stage-sowing {
+  --map-sprite-h: 72px;
 }
 
 .overview-plant.stage-seed .map-plant-sprite,
@@ -906,24 +1012,66 @@ textarea:focus-visible {
   height: 72px;
 }
 
+.overview-plant.stage-sapling,
+.overview-plant.stage-growing {
+  --map-sprite-h: 146px;
+}
+
 .overview-plant.stage-sapling .map-plant-sprite,
 .overview-plant.stage-growing .map-plant-sprite {
   width: 94px;
   height: 146px;
 }
 
-.overview-plant.stage-seed::before,
-.overview-plant.stage-sowing::before {
-  bottom: 48px;
-  width: 76px;
-  height: 14px;
+.overview-plant.stage-tree,
+.overview-plant.stage-flower,
+.overview-plant.stage-fruit,
+.overview-plant.stage-bloom,
+.overview-plant.stage-seed_saved {
+  --map-sprite-h: 162px;
 }
 
-.overview-plant.stage-seed::after,
-.overview-plant.stage-sowing::after {
-  bottom: 48px;
-  width: 66px;
-  height: 12px;
+.overview-plant.stage-tree .map-plant-sprite,
+.overview-plant.stage-flower .map-plant-sprite,
+.overview-plant.stage-fruit .map-plant-sprite,
+.overview-plant.stage-bloom .map-plant-sprite,
+.overview-plant.stage-seed_saved .map-plant-sprite {
+  width: 150px;
+  height: 162px;
+}
+
+.overview-plant.plot-row-0.stage-tree,
+.overview-plant.plot-row-0.stage-flower,
+.overview-plant.plot-row-0.stage-fruit,
+.overview-plant.plot-row-0.stage-bloom,
+.overview-plant.plot-row-0.stage-seed_saved {
+  --map-sprite-h: 132px;
+}
+
+.overview-plant.plot-row-0.stage-tree .map-plant-sprite,
+.overview-plant.plot-row-0.stage-flower .map-plant-sprite,
+.overview-plant.plot-row-0.stage-fruit .map-plant-sprite,
+.overview-plant.plot-row-0.stage-bloom .map-plant-sprite,
+.overview-plant.plot-row-0.stage-seed_saved .map-plant-sprite {
+  width: 122px;
+  height: 132px;
+}
+
+.overview-plant.plot-row-1.stage-tree,
+.overview-plant.plot-row-1.stage-flower,
+.overview-plant.plot-row-1.stage-fruit,
+.overview-plant.plot-row-1.stage-bloom,
+.overview-plant.plot-row-1.stage-seed_saved {
+  --map-sprite-h: 148px;
+}
+
+.overview-plant.plot-row-1.stage-tree .map-plant-sprite,
+.overview-plant.plot-row-1.stage-flower .map-plant-sprite,
+.overview-plant.plot-row-1.stage-fruit .map-plant-sprite,
+.overview-plant.plot-row-1.stage-bloom .map-plant-sprite,
+.overview-plant.plot-row-1.stage-seed_saved .map-plant-sprite {
+  width: 136px;
+  height: 148px;
 }
 
 .mini-sprite {
@@ -989,8 +1137,22 @@ textarea:focus-visible {
   top: var(--y);
   z-index: var(--z);
   display: block;
-  pointer-events: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: auto;
   transform: translate(-50%, -50%);
+  transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
+}
+
+.garden-decoration:hover,
+.garden-decoration:focus-visible {
+  filter: brightness(1.06) drop-shadow(0 0 0 var(--gold));
+}
+
+.garden-decoration.is-moving {
+  filter: drop-shadow(0 0 0 var(--gold)) drop-shadow(3px 7px 0 rgb(38 60 50 / 28%));
+  transform: translate(-50%, -56%);
 }
 
 .decor-sprite {
@@ -1001,8 +1163,8 @@ textarea:focus-visible {
 }
 
 .decor-path {
-  width: 168px;
-  height: 188px;
+  width: 96px;
+  height: 64px;
 }
 
 .decor-path:has(.decor-sprite),
@@ -1026,8 +1188,8 @@ textarea:focus-visible {
 }
 
 .decor-bench {
-  width: 148px;
-  height: 132px;
+  width: 104px;
+  height: 78px;
   border-top: 10px solid #9f6337;
   border-bottom: 10px solid #9f6337;
 }
@@ -1051,8 +1213,8 @@ textarea:focus-visible {
 }
 
 .decor-lamp {
-  width: 70px;
-  height: 126px;
+  width: 48px;
+  height: 102px;
   background: #4a4539;
 }
 
@@ -1069,8 +1231,8 @@ textarea:focus-visible {
 }
 
 .decor-pond {
-  width: 138px;
-  height: 118px;
+  width: 104px;
+  height: 76px;
   border: 5px solid #6d8b80;
   border-radius: 50%;
   background: #6bbbd4;
@@ -1108,6 +1270,10 @@ textarea:focus-visible {
   border: 3px solid var(--border);
   background: var(--panel-bg);
   box-shadow: 3px 3px 0 var(--border);
+}
+
+.shop-card.is-owned {
+  border-color: rgb(71 118 66 / 72%);
 }
 
 .shop-preview {
@@ -1148,7 +1314,7 @@ textarea:focus-visible {
   width: 164px;
   height: 96px;
   border: 0;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   background: url("./assets/sprites/shop-preview-ground-v1.png") center bottom / contain no-repeat;
   box-shadow: none;
   image-rendering: pixelated;
@@ -1170,25 +1336,25 @@ textarea:focus-visible {
 }
 
 .shop-preview.decor-path {
-  --shop-sprite-width: 92px;
-  --shop-sprite-height: 104px;
+  --shop-sprite-width: 112px;
+  --shop-sprite-height: 74px;
 }
 
 .shop-preview.decor-bench {
-  --shop-sprite-width: 138px;
-  --shop-sprite-height: 98px;
+  --shop-sprite-width: 142px;
+  --shop-sprite-height: 104px;
   border-top: 0;
   border-bottom: 0;
 }
 
 .shop-preview.decor-lamp {
-  --shop-sprite-width: 92px;
+  --shop-sprite-width: 58px;
   --shop-sprite-height: 108px;
 }
 
 .shop-preview.decor-pond {
-  --shop-sprite-width: 136px;
-  --shop-sprite-height: 96px;
+  --shop-sprite-width: 124px;
+  --shop-sprite-height: 92px;
   border-radius: 0;
   border: 0;
   box-shadow: none;
@@ -1197,6 +1363,20 @@ textarea:focus-visible {
 .shop-card h3 {
   margin: 0 0 8px;
   font-size: 16px;
+}
+
+.shop-placement-note {
+  display: inline-flex;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  margin: -2px 0 8px;
+  padding: 3px 7px;
+  border: 1px solid rgb(38 60 50 / 38%);
+  background: rgb(255 248 226 / 82%);
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: bold;
 }
 
 .shop-card p {
@@ -1342,7 +1522,7 @@ textarea:focus-visible {
 
 .plant-card {
   display: grid;
-  grid-template-columns: 108px 1fr;
+  grid-template-columns: 166px 1fr;
   gap: 17px;
   min-height: 250px;
   padding: 16px;
@@ -1366,7 +1546,7 @@ textarea:focus-visible {
 
 .plant-illustration {
   position: relative;
-  height: 168px;
+  height: 188px;
   border: 3px solid var(--grass-dark);
   background:
     linear-gradient(rgb(255 255 255 / 8%), rgb(255 255 255 / 8%)),
@@ -1406,8 +1586,8 @@ textarea:focus-visible {
   z-index: 2;
   left: 50%;
   bottom: 18px;
-  width: 128px;
-  height: 128px;
+  width: 146px;
+  height: 150px;
   object-fit: contain;
   transform: translateX(-50%);
   transform-origin: 50% 100%;
@@ -1424,6 +1604,16 @@ textarea:focus-visible {
 .flower.stage-growing .card-plant-sprite {
   width: 86px;
   height: 132px;
+}
+
+.tree.stage-tree .card-plant-sprite,
+.tree.stage-flower .card-plant-sprite,
+.tree.stage-fruit .card-plant-sprite,
+.flower.stage-bloom .card-plant-sprite,
+.flower.stage-fruit .card-plant-sprite,
+.flower.stage-seed_saved .card-plant-sprite {
+  width: 156px;
+  height: 156px;
 }
 
 .plant-illustration::before {
@@ -1984,7 +2174,7 @@ textarea:focus-visible {
 
 .detail-scene {
   position: relative;
-  height: 270px;
+  height: 304px;
   margin-bottom: 22px;
   border: 3px solid var(--grass-dark);
   background:
@@ -2012,8 +2202,8 @@ textarea:focus-visible {
   z-index: 2;
   left: 50%;
   bottom: 28px;
-  width: 220px;
-  height: 220px;
+  width: 238px;
+  height: 238px;
   object-fit: contain;
   transform: translateX(-50%);
   transform-origin: 50% 100%;
@@ -2030,6 +2220,15 @@ textarea:focus-visible {
 .detail-scene.stage-growing .detail-plant-sprite {
   width: 150px;
   height: 220px;
+}
+
+.detail-scene.stage-tree .detail-plant-sprite,
+.detail-scene.stage-flower .detail-plant-sprite,
+.detail-scene.stage-fruit .detail-plant-sprite,
+.detail-scene.stage-bloom .detail-plant-sprite,
+.detail-scene.stage-seed_saved .detail-plant-sprite {
+  width: 252px;
+  height: 252px;
 }
 
 .detail-paper,
@@ -2202,15 +2401,10 @@ textarea:focus-visible {
   }
 
   .home-actions {
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: none;
   }
 
   .home-actions .primary-button {
-    grid-column: 1 / -1;
     min-width: 0;
   }
 
@@ -2230,9 +2424,35 @@ textarea:focus-visible {
   }
 
   .farm-zone-switch {
-    bottom: 96px;
-    width: calc(100% - 32px);
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .farm-toolbar {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    overflow-x: visible;
+  }
+
+  .farm-toolbar-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .farm-toolbar .primary-button,
+  .farm-toolbar .quiet-button {
+    min-width: 0;
+    padding-inline: 6px;
+    font-size: 13px;
   }
 
   .farm-zone-tab {
@@ -2242,16 +2462,13 @@ textarea:focus-visible {
   }
 
   .farm-plot {
-    left: calc((var(--x) - 50%) * 0.78 + 50%);
-    top: calc(var(--y) + 1%);
     width: 112px;
     height: 72px;
   }
 
   .decoration-slot,
   .garden-decoration {
-    left: calc((var(--x) - 50%) * 0.82 + 50%);
-    top: calc(var(--y) + 1%);
+    top: var(--y);
   }
 
   .overview-empty {
@@ -2283,18 +2500,39 @@ textarea:focus-visible {
   }
 
   .map-house {
-    top: 315px;
-    width: 86px;
-    height: 68px;
+    width: 72px;
+    height: 54px;
     padding-bottom: 0;
   }
 
-  .house-harvested {
-    left: 25%;
+  .house-active-to-harvested {
+    --house-x: 30%;
+    --house-y: 23%;
   }
 
-  .house-dormant {
-    left: 73%;
+  .house-active-to-dormant {
+    --house-x: 70%;
+    --house-y: 23%;
+  }
+
+  .house-harvested-to-active {
+    --house-x: 28%;
+    --house-y: 24%;
+  }
+
+  .house-harvested-to-dormant {
+    --house-x: 72%;
+    --house-y: 24%;
+  }
+
+  .house-dormant-to-active {
+    --house-x: 29%;
+    --house-y: 25%;
+  }
+
+  .house-dormant-to-harvested {
+    --house-x: 69%;
+    --house-y: 25%;
   }
 
   .house-art {
@@ -2323,29 +2561,16 @@ textarea:focus-visible {
   }
 
   .map-house em {
-    right: 1px;
-    bottom: 3px;
+    left: calc(50% + 36px);
+    bottom: calc(100% - 7px);
     min-width: 16px;
     height: 16px;
     font-size: 8px;
   }
 
   .overview-plant {
-    left: calc((var(--x) - 50%) * 0.78 + 50%);
-    top: calc(var(--y) + 1%);
+    --map-sprite-h: 98px;
     width: 100px;
-  }
-
-  .overview-plant::before {
-    bottom: 45px;
-    width: 82px;
-    height: 16px;
-  }
-
-  .overview-plant::after {
-    bottom: 46px;
-    width: 72px;
-    height: 13px;
   }
 
   .map-plant-sprite {
@@ -2359,10 +2584,71 @@ textarea:focus-visible {
     height: 56px;
   }
 
+  .overview-plant.stage-seed,
+  .overview-plant.stage-sowing {
+    --map-sprite-h: 56px;
+  }
+
   .overview-plant.stage-sapling .map-plant-sprite,
   .overview-plant.stage-growing .map-plant-sprite {
     width: 72px;
     height: 112px;
+  }
+
+  .overview-plant.stage-sapling,
+  .overview-plant.stage-growing {
+    --map-sprite-h: 112px;
+  }
+
+  .overview-plant.stage-tree,
+  .overview-plant.stage-flower,
+  .overview-plant.stage-fruit,
+  .overview-plant.stage-bloom,
+  .overview-plant.stage-seed_saved {
+    --map-sprite-h: 112px;
+  }
+
+  .overview-plant.stage-tree .map-plant-sprite,
+  .overview-plant.stage-flower .map-plant-sprite,
+  .overview-plant.stage-fruit .map-plant-sprite,
+  .overview-plant.stage-bloom .map-plant-sprite,
+  .overview-plant.stage-seed_saved .map-plant-sprite {
+    width: 102px;
+    height: 112px;
+  }
+
+  .overview-plant.plot-row-0.stage-tree,
+  .overview-plant.plot-row-0.stage-flower,
+  .overview-plant.plot-row-0.stage-fruit,
+  .overview-plant.plot-row-0.stage-bloom,
+  .overview-plant.plot-row-0.stage-seed_saved {
+    --map-sprite-h: 92px;
+  }
+
+  .overview-plant.plot-row-0.stage-tree .map-plant-sprite,
+  .overview-plant.plot-row-0.stage-flower .map-plant-sprite,
+  .overview-plant.plot-row-0.stage-fruit .map-plant-sprite,
+  .overview-plant.plot-row-0.stage-bloom .map-plant-sprite,
+  .overview-plant.plot-row-0.stage-seed_saved .map-plant-sprite {
+    width: 84px;
+    height: 92px;
+  }
+
+  .overview-plant.plot-row-1.stage-tree,
+  .overview-plant.plot-row-1.stage-flower,
+  .overview-plant.plot-row-1.stage-fruit,
+  .overview-plant.plot-row-1.stage-bloom,
+  .overview-plant.plot-row-1.stage-seed_saved {
+    --map-sprite-h: 102px;
+  }
+
+  .overview-plant.plot-row-1.stage-tree .map-plant-sprite,
+  .overview-plant.plot-row-1.stage-flower .map-plant-sprite,
+  .overview-plant.plot-row-1.stage-fruit .map-plant-sprite,
+  .overview-plant.plot-row-1.stage-bloom .map-plant-sprite,
+  .overview-plant.plot-row-1.stage-seed_saved .map-plant-sprite {
+    width: 94px;
+    height: 102px;
   }
 
   .overview-plant strong,
@@ -2385,7 +2671,7 @@ textarea:focus-visible {
   }
 
   .plant-card {
-    grid-template-columns: 104px 1fr;
+    grid-template-columns: 136px 1fr;
   }
 }
 
@@ -2406,12 +2692,12 @@ textarea:focus-visible {
   }
 
   .plant-illustration {
-    height: 146px;
+    height: 176px;
   }
 
   .card-plant-sprite {
-    width: 118px;
-    height: 118px;
+    width: 136px;
+    height: 138px;
   }
 
   .tree.stage-sapling .card-plant-sprite,
@@ -2420,12 +2706,199 @@ textarea:focus-visible {
     height: 120px;
   }
 
+  .tree.stage-tree .card-plant-sprite,
+  .tree.stage-flower .card-plant-sprite,
+  .tree.stage-fruit .card-plant-sprite,
+  .flower.stage-bloom .card-plant-sprite,
+  .flower.stage-fruit .card-plant-sprite,
+  .flower.stage-seed_saved .card-plant-sprite {
+    width: 144px;
+    height: 144px;
+  }
+
   .home-actions {
-    grid-template-columns: 1fr;
+    display: none;
   }
 
   .field-row {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+}
+
+/* Visual refinement pass: soften UI chrome so the pixel garden art stays primary. */
+body,
+input,
+select,
+textarea {
+  font-family: "Microsoft YaHei UI", "Noto Sans SC", "PingFang SC", sans-serif;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.brand h1,
+.eyebrow,
+button,
+.wallet,
+.view-tab,
+.farm-zone-tab,
+.garden-tab,
+.garden-summary strong,
+.shop-card footer,
+.plant-topline,
+.stage,
+.kind {
+  font-family: Consolas, "Courier New", "Microsoft YaHei UI", monospace;
+}
+
+.tagline,
+.settlement-card p:not(.eyebrow),
+.shop-card p,
+.plant-meta,
+.latest,
+.detail-status {
+  line-height: 1.65;
+}
+
+.primary-button,
+.action-button {
+  text-shadow: 1px 1px 0 rgb(255 248 226 / 45%);
+}
+
+.quiet-button {
+  border-width: 2px;
+  background: rgb(255 247 221 / 86%);
+  box-shadow: 2px 2px 0 rgb(38 60 50 / 58%);
+  color: var(--ink-soft);
+}
+
+.quiet-button:hover {
+  color: var(--ink);
+  background: var(--cream);
+}
+
+.backup-button,
+.sync-button {
+  min-height: 40px;
+  border-color: rgb(71 118 66 / 62%);
+  background: rgb(253 241 208 / 72%);
+  box-shadow: 2px 2px 0 rgb(71 118 66 / 42%);
+}
+
+.primary-button:disabled,
+.quiet-button:disabled,
+.action-button:disabled {
+  filter: saturate(0.72);
+}
+
+.view-switch,
+.wallet,
+.garden-summary,
+.settlement-card {
+  border-width: 2px;
+  box-shadow: 2px 2px 0 rgb(38 60 50 / 54%);
+}
+
+.garden-summary {
+  background: rgb(255 248 226 / 82%);
+}
+
+.garden-summary strong {
+  font-size: clamp(25px, 2.6vw, 31px);
+}
+
+.settlement-card {
+  background: rgb(255 248 226 / 78%);
+}
+
+.settlement-card .primary-button {
+  min-height: 42px;
+  padding: 8px 13px;
+}
+
+.farm-toolbar {
+  border-width: 2px;
+  background: rgb(255 248 226 / 82%);
+  box-shadow: 3px 3px 0 rgb(38 60 50 / 38%);
+}
+
+.farm-toolbar .quiet-button {
+  background: rgb(255 248 226 / 88%);
+}
+
+.farm-zone-tab {
+  border-width: 2px;
+  box-shadow: 2px 2px 0 rgb(38 60 50 / 42%);
+}
+
+.shop-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: 128px auto auto 1fr auto;
+  min-height: 318px;
+  border-width: 2px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 22%), transparent 44%),
+    var(--panel-bg);
+  box-shadow: 3px 3px 0 rgb(38 60 50 / 64%);
+}
+
+.shop-card:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+}
+
+.shop-preview {
+  width: 100%;
+  height: 118px;
+  margin: 0 0 9px;
+}
+
+.shop-placement-note {
+  justify-self: start;
+}
+
+.shop-card h3 {
+  margin-bottom: 5px;
+}
+
+.shop-card p {
+  min-height: 0;
+  margin-bottom: 12px;
+}
+
+.shop-card footer {
+  min-height: 42px;
+}
+
+.shop-card.is-owned footer strong {
+  color: var(--grass-dark);
+}
+
+.shop-card footer .action-button {
+  min-height: 38px;
+  padding: 7px 11px;
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.shop-card footer .action-button:disabled {
+  border-color: rgb(71 118 66 / 44%);
+  background: rgb(239 184 59 / 42%);
+  color: rgb(83 96 74 / 82%);
+  opacity: 0.82;
+}
+
+@media (max-width: 760px) {
+  .backup-button,
+  .sync-button {
+    flex: 1 1 145px;
+  }
+
+  .farm-toolbar {
+    background: rgb(255 248 226 / 88%);
+  }
+
+  .shop-card {
+    min-height: 260px;
   }
 }
