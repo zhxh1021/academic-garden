@@ -1,5 +1,76 @@
 # Pending Changes
 
+## 2026-06-01 - Frontend cloud sync login panel
+
+### Summary
+
+- Added a visible cloud sync login dialog opened from the header sync status button.
+- Replaced the active prompt-based login path with `POST /api/auth/login` and bearer-token storage for the current browser device.
+- Added logout handling through `POST /api/auth/logout`, clearing the saved token and local sync identity.
+- Kept legacy Basic Auth headers as a compatibility fallback when older saved credentials still exist.
+- Added a small `src/sync-auth.js` helper module for auth headers, login/logout requests, and sync button copy.
+- Updated the backend sync plan to describe the login panel flow.
+
+### Files Changed
+
+- `index.html`
+- `styles.css`
+- `src/app.js`
+- `src/store.js`
+- `src/sync-auth.js`
+- `scripts/sync-auth.test.mjs`
+- `package.json`
+- `docs/backend-sync-plan.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --test scripts/sync-auth.test.mjs` and observed the new test fail before `src/sync-auth.js` existed.
+- Ran `node --check src/sync-auth.js`.
+- Ran `node --check src/store.js`.
+- Ran `node --check src/app.js`.
+- Ran `npm test`.
+- Ran `git diff --check`; only existing Windows line-ending warnings appeared.
+- Served the app locally at `http://127.0.0.1:4173/` and used headless Edge with Playwright to confirm the sync button opens the login dialog without console errors.
+- Used Playwright route mocks to confirm a successful login closes the dialog, stores the bearer token, does not save the password, and updates the sync button to `同步：已连接 v7`.
+
+### Notes
+
+- Existing grid farm, art asset, backend auth foundation, and unrelated documentation work in the worktree was left untouched.
+- No new visual assets were generated in this slice.
+
+## 2026-05-31 - Next-version backend account auth foundation
+
+### Summary
+
+- Created the backend work branch `codex/backend-auth-v2`.
+- Added a dependency-free account store backed by `server/data/accounts.json`, seeded from the existing sync username/password when no account file exists.
+- Added password hashing with Node `scrypt`, bearer session tokens, and an HTTP-only session cookie for future login UI work.
+- Added `POST /api/auth/login`, `GET /api/auth/session`, `POST /api/auth/logout`, and `POST /api/auth/register`.
+- Kept registration closed by default with `ACADEMIC_GARDEN_REGISTRATION_ENABLED=false`.
+- Preserved the existing Basic Auth flow so the current frontend sync code can keep using `/api/garden` without a frontend migration in this slice.
+- Documented the new account env vars and persistent account-data file.
+
+### Files Changed
+
+- `.env.example`
+- `server/server.mjs`
+- `scripts/server.test.mjs`
+- `docs/backend-sync-plan.md`
+- `docs/server-maintenance.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check server/server.mjs`.
+- Ran `node --check scripts/server.test.mjs`.
+- Ran `npm test`.
+
+### Notes
+
+- Existing frontend, grid farm, art asset, and unrelated documentation work in the worktree was left untouched.
+- No new visual assets were generated in this slice.
+
 ## 2026-05-31 - OpenClaw deployment reminder convention
 
 ### Summary
@@ -7,6 +78,7 @@
 - Documented the shared convention that Codex should tell the user when a change requires OpenClaw to deploy server-side updates.
 - Added examples separating GitHub Pages-only changes from backend/API/service changes.
 - Updated the server maintenance guide so OpenClaw deployment is a Codex-explicit yes/no step rather than something the user has to infer.
+- Added the convention that Codex should include a copy-ready OpenClaw command block whenever OpenClaw deployment is needed.
 
 ### Files Changed
 

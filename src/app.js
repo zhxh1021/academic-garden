@@ -25,7 +25,8 @@ import {
   varietyLabel,
   varietySprite
 } from "./domain.js";
-import { clearSyncLogin, downloadBackup, getSyncStatus, loadState, saveState } from "./store.js";
+import { syncStatusViewModel } from "./sync-auth.js";
+import { downloadBackup, getSyncStatus, loadState, loginSync, logoutSync, saveState } from "./store.js";
 
 function normalizeState(snapshot) {
   const decorations = snapshot.decorations ?? { owned: [] };
@@ -75,6 +76,14 @@ let focusTimer = null;
 const elements = {
   coinCount: document.querySelector("#coin-count"),
   syncStatus: document.querySelector("#sync-status"),
+  syncDialog: document.querySelector("#sync-dialog"),
+  syncForm: document.querySelector("#sync-form"),
+  syncCurrent: document.querySelector("#sync-current"),
+  syncMessage: document.querySelector("#sync-message"),
+  syncUsername: document.querySelector("#sync-username"),
+  syncPassword: document.querySelector("#sync-password"),
+  syncSubmit: document.querySelector("#sync-submit"),
+  syncLogout: document.querySelector("#sync-logout"),
   viewTabs: [...document.querySelectorAll(".view-tab")],
   gardenHome: document.querySelector("#garden-home"),
   projectWorkbench: document.querySelector("#project-workbench"),
@@ -142,18 +151,11 @@ function zoneLabel(zone) {
 function renderSyncStatus() {
   const sync = getSyncStatus();
   if (!elements.syncStatus) return;
-  if (!sync.configured) {
-    elements.syncStatus.textContent = "同步：本地";
-    elements.syncStatus.title = "当前使用浏览器本地数据";
-    return;
-  }
-  if (sync.connected) {
-    elements.syncStatus.textContent = `同步：已连接 v${sync.version}`;
-    elements.syncStatus.title = sync.updatedAt ? `云端已连接，最近更新：${sync.updatedAt}` : "云端已连接";
-    return;
-  }
-  elements.syncStatus.textContent = sync.hasSavedLogin ? "同步：待连接" : "同步：未登录";
-  elements.syncStatus.title = "点击清除本设备保存的云端同步登录";
+  const view = syncStatusViewModel(sync);
+  elements.syncStatus.textContent = view.label;
+  elements.syncStatus.title = view.title;
+  elements.syncStatus.dataset.syncState = sync.connected ? "connected" : sync.hasSavedLogin ? "pending" : "signed-out";
+  if (elements.syncDialog?.open) renderSyncDialog();
 }
 
 function escapeText(value) {
@@ -626,6 +628,40 @@ async function buyDecoration(decorationId) {
   await storeAndRender();
 }
 
+function setSyncMessage(message, kind = "") {
+  if (!elements.syncMessage) return;
+  elements.syncMessage.hidden = !message;
+  elements.syncMessage.textContent = message;
+  elements.syncMessage.dataset.kind = kind;
+}
+
+function renderSyncDialog() {
+  const sync = getSyncStatus();
+  const view = syncStatusViewModel(sync);
+  if (elements.syncCurrent) elements.syncCurrent.textContent = view.label;
+  if (elements.syncLogout) elements.syncLogout.hidden = !sync.hasSavedLogin;
+  if (elements.syncSubmit) elements.syncSubmit.textContent = sync.connected ? "重新登录" : "登录";
+}
+
+function openSyncDialog() {
+  const sync = getSyncStatus();
+  if (!sync.configured) {
+    window.alert("当前没有配置云端同步地址，正在使用浏览器本地数据。");
+    return;
+  }
+  elements.syncUsername.value = sync.username || "garden";
+  elements.syncPassword.value = "";
+  setSyncMessage(sync.connected ? "当前设备已连接云端同步。" : "", "ok");
+  renderSyncDialog();
+  elements.syncDialog.showModal();
+  (elements.syncUsername.value ? elements.syncPassword : elements.syncUsername).focus();
+}
+
+async function reloadFromCloud() {
+  state = normalizeState(await loadState());
+  render();
+}
+
 function plantWithZonePlot(plant, zone) {
   const plotIndex = firstOpenPlotIndex(
     state.plants.filter((item) => item.id !== plant.id),
@@ -761,15 +797,42 @@ document.querySelector("[data-home-action='projects']").addEventListener("click"
 document.querySelector("#open-create").addEventListener("click", () => openForm(false));
 document.querySelector("#import-history").addEventListener("click", () => openForm(true));
 document.querySelector("#export-button").addEventListener("click", () => downloadBackup(state));
-elements.syncStatus?.addEventListener("click", () => {
-  if (!getSyncStatus().configured) {
-    window.alert("当前没有配置云端同步地址，正在使用本地浏览器数据。");
+elements.syncStatus?.addEventListener("click", openSyncDialog);
+document.querySelector("#close-sync")?.addEventListener("click", () => elements.syncDialog.close());
+document.querySelector("#cancel-sync")?.addEventListener("click", () => elements.syncDialog.close());
+elements.syncForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const username = elements.syncUsername.value.trim();
+  const password = elements.syncPassword.value;
+  if (!username || !password) {
+    setSyncMessage("请输入用户名和密码。", "error");
     return;
   }
-  const shouldClear = window.confirm("清除这台设备保存的云端同步登录吗？下次刷新页面会重新要求输入账号和密码。");
-  if (!shouldClear) return;
-  clearSyncLogin();
-  renderSyncStatus();
+  elements.syncSubmit.disabled = true;
+  setSyncMessage("正在登录云端同步……");
+  try {
+    await loginSync(username, password);
+    await reloadFromCloud();
+    elements.syncDialog.close();
+  } catch (error) {
+    setSyncMessage(error.message || "登录失败，请稍后重试。", "error");
+  } finally {
+    elements.syncSubmit.disabled = false;
+    renderSyncDialog();
+    renderSyncStatus();
+  }
+});
+elements.syncLogout?.addEventListener("click", async () => {
+  elements.syncLogout.disabled = true;
+  setSyncMessage("正在退出登录……");
+  try {
+    await logoutSync();
+    setSyncMessage("已退出云端同步。", "ok");
+    render();
+  } finally {
+    elements.syncLogout.disabled = false;
+    renderSyncDialog();
+  }
 });
 document.querySelector("#close-dialog").addEventListener("click", () => {
   editingPlantId = null;

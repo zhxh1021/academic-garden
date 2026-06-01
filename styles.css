@@ -1927,7 +1927,8 @@ textarea:focus-visible {
 }
 
 .plant-dialog,
-.detail-dialog {
+.detail-dialog,
+.sync-dialog {
   width: min(515px, calc(100% - 30px));
   padding: 0;
   border: 4px solid var(--border);
@@ -1936,12 +1937,14 @@ textarea:focus-visible {
 }
 
 .plant-dialog::backdrop,
-.detail-dialog::backdrop {
+.detail-dialog::backdrop,
+.sync-dialog::backdrop {
   background: rgb(38 60 50 / 46%);
 }
 
 #plant-form,
-#detail-form {
+#detail-form,
+#sync-form {
   padding: 25px;
 }
 
@@ -1949,10 +1952,34 @@ textarea:focus-visible {
   width: min(660px, calc(100% - 30px));
 }
 
+.sync-dialog {
+  width: min(440px, calc(100% - 30px));
+}
+
 .detail-status {
   margin: 8px 0 0;
   color: var(--ink-soft);
   font-size: 13px;
+}
+
+.sync-message {
+  margin: 0 0 17px;
+  padding: 12px 13px;
+  border: 2px solid var(--grass-dark);
+  background: #e5ecbd;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sync-message[data-kind="error"] {
+  border-color: #a04332;
+  background: #ffe1d6;
+}
+
+.sync-message[data-kind="ok"] {
+  border-color: var(--grass-dark);
+  background: #dceec5;
 }
 
 .detail-scene {

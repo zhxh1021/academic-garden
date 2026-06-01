@@ -5,6 +5,6 @@
   "scripts": {
     "start:sync": "node server/server.mjs",
     "backup:garden": "node scripts/backup_garden.mjs",
-    "test": "node --test scripts/domain.test.mjs scripts/server.test.mjs"
+    "test": "node --test scripts/domain.test.mjs scripts/server.test.mjs scripts/sync-auth.test.mjs"
   }
 }

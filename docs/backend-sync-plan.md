@@ -30,11 +30,21 @@ The backend can still be run locally for testing, but real multi-device use need
 When the app is opened from GitHub Pages:
 
 1. `sync-config.js` tells the page where the backend API lives.
-2. The app asks for the sync username and password the first time it needs cloud data.
-3. The app loads `GET BACKEND_URL/api/garden`.
-4. Every local change still updates IndexedDB first.
-5. If the backend is available, the app also saves to `PUT BACKEND_URL/api/garden`.
-6. The backend writes the snapshot to `server/data/garden.json`.
+2. The user opens the header sync button and signs in through the cloud sync login panel.
+3. The frontend calls `POST BACKEND_URL/api/auth/login` and stores the returned bearer token on the current browser device.
+4. The app loads `GET BACKEND_URL/api/garden`.
+5. Every local change still updates IndexedDB first.
+6. If the backend is available, the app also saves to `PUT BACKEND_URL/api/garden`.
+7. The backend writes the snapshot to `server/data/garden.json`.
+
+The next-version backend also exposes account endpoints for future UI work:
+
+- `POST /api/auth/login`
+- `GET /api/auth/session`
+- `POST /api/auth/logout`
+- `POST /api/auth/register`
+
+Registration exists as an API route but is closed by default. Keep `ACADEMIC_GARDEN_REGISTRATION_ENABLED=false` unless public registration has been designed and reviewed.
 
 When the app is opened without the sync server, it keeps using the old local-only IndexedDB mode.
 
@@ -105,6 +115,9 @@ ACADEMIC_GARDEN_PORT=8787
 ACADEMIC_GARDEN_USERNAME=garden
 ACADEMIC_GARDEN_PASSWORD=your-private-password
 ACADEMIC_GARDEN_DATA_PATH=server/data/garden.json
+ACADEMIC_GARDEN_ACCOUNTS_PATH=server/data/accounts.json
+ACADEMIC_GARDEN_REGISTRATION_ENABLED=false
+ACADEMIC_GARDEN_SESSION_TTL_HOURS=24
 ACADEMIC_GARDEN_ALLOWED_ORIGIN=https://zhxh1021.github.io
 ```
 
@@ -128,14 +141,14 @@ ACADEMIC_GARDEN_HOST=0.0.0.0
 http://YOUR-COMPUTER-IP:8787
 ```
 
-Use the same username and password when the browser asks.
+Use the same username and password in the sync login panel.
 
 This is not the same as GitHub Pages sync. Same-Wi-Fi mode uses your computer as the backend server.
 
 ## Safety Notes
 
 - `.env` is ignored by Git because it contains the private password.
-- `server/data/` is ignored by Git because it contains the personal garden data.
+- `server/data/` is ignored by Git because it contains the personal garden data and account password hashes.
 - `sync-config.js` may be committed because it only contains the public backend URL.
 - Export JSON backups from the app before big changes or before trying sync on a new device.
 - If two devices edit at the same time, the app detects stale saves and asks you to refresh before overwriting cloud data.

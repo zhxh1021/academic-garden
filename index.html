@@ -189,6 +189,33 @@
       </form>
     </dialog>
 
+    <dialog class="sync-dialog" id="sync-dialog">
+      <form method="dialog" id="sync-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">CLOUD SYNC</p>
+            <h2>云端同步登录</h2>
+            <p class="detail-status" id="sync-current">同步：未登录</p>
+          </div>
+          <button type="button" class="close-button" id="close-sync" aria-label="关闭">×</button>
+        </div>
+        <p class="sync-message" id="sync-message" hidden></p>
+        <label class="field">
+          <span>用户名</span>
+          <input name="username" id="sync-username" autocomplete="username" required maxlength="40" placeholder="garden" />
+        </label>
+        <label class="field">
+          <span>密码</span>
+          <input name="password" id="sync-password" type="password" autocomplete="current-password" required />
+        </label>
+        <footer class="dialog-actions">
+          <button type="button" class="quiet-button danger-action" id="sync-logout">退出登录</button>
+          <button type="button" class="quiet-button" id="cancel-sync">取消</button>
+          <button type="submit" class="primary-button" id="sync-submit">登录</button>
+        </footer>
+      </form>
+    </dialog>
+
     <template id="empty-template">
       <article class="empty-state">
         <span class="empty-sprout" aria-hidden="true"></span>

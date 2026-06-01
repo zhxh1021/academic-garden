@@ -9,6 +9,7 @@ This note is for the Tencent Cloud backend at `https://api.acagarden.site`.
 - Node service: `academic-garden.service`
 - Local backend target: `127.0.0.1:8787`
 - Garden data: `/opt/academic-garden/server/data/garden.json`
+- Account data: `/opt/academic-garden/server/data/accounts.json`
 - Backups: `/opt/academic-garden/backups/`
 
 ## Routine Checks
@@ -19,6 +20,9 @@ systemctl status caddy --no-pager
 journalctl -u academic-garden -n 80 --no-pager
 ss -tulpn | grep -E '8787|80|443|18789|18791|22'
 curl -u garden:*** https://api.acagarden.site/api/health
+curl -X POST https://api.acagarden.site/api/auth/login \
+  -H 'content-type: application/json' \
+  -d '{"username":"garden","password":"***"}'
 ```
 
 Do not print the real password in chat logs. Replace it with `***` when sharing output.
@@ -96,6 +100,7 @@ Codex is responsible for telling the user whether a change needs this step. As a
 - GitHub Pages-only changes do not need OpenClaw deployment.
 - Backend/API/service/backup-script changes do need OpenClaw deployment.
 - Ambiguous sync changes should be treated as needing an explicit Codex yes/no note.
+- When deployment is needed, Codex should include a copy-ready OpenClaw instruction block for the user.
 
 ```bash
 cd /opt/academic-garden

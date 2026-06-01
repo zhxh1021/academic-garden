@@ -1,4 +1,5 @@
 import { DEFAULT_UNLOCKED_VARIETIES } from "./domain.js";
+import { authHeadersFor, loginToCloud, logoutFromCloud } from "./sync-auth.js";
 
 const DATABASE_NAME = "academic-garden";
 const DATABASE_VERSION = 1;
@@ -7,6 +8,9 @@ const SNAPSHOT_KEY = "snapshot";
 const API_URL_STORAGE_KEY = "academicGardenApiBaseUrl";
 const API_USERNAME_STORAGE_KEY = "academicGardenApiUsername";
 const API_PASSWORD_STORAGE_KEY = "academicGardenApiPassword";
+const API_TOKEN_STORAGE_KEY = "academicGardenApiToken";
+const API_TOKEN_EXPIRES_STORAGE_KEY = "academicGardenApiTokenExpiresAt";
+const API_USER_STORAGE_KEY = "academicGardenApiUser";
 
 let cloudEnabled = false;
 let cloudVersion = null;
@@ -106,14 +110,18 @@ function isConfiguredCloudEndpoint() {
 }
 
 export function getSyncStatus() {
+  const user = JSON.parse(localStorage.getItem(API_USER_STORAGE_KEY) || "null");
   return {
     configured: isConfiguredCloudEndpoint(),
     connected: cloudEnabled,
     hasSavedLogin: Boolean(
+      localStorage.getItem(API_TOKEN_STORAGE_KEY) ||
       localStorage.getItem(API_USERNAME_STORAGE_KEY) &&
       localStorage.getItem(API_PASSWORD_STORAGE_KEY)
     ),
     apiBaseUrl: configuredApiBaseUrl().trim(),
+    username: localStorage.getItem(API_USERNAME_STORAGE_KEY) || user?.username || "",
+    user,
     version: cloudVersion,
     updatedAt: cloudUpdatedAt
   };
@@ -122,6 +130,9 @@ export function getSyncStatus() {
 export function clearSyncLogin() {
   localStorage.removeItem(API_USERNAME_STORAGE_KEY);
   localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
+  localStorage.removeItem(API_TOKEN_STORAGE_KEY);
+  localStorage.removeItem(API_TOKEN_EXPIRES_STORAGE_KEY);
+  localStorage.removeItem(API_USER_STORAGE_KEY);
   cloudEnabled = false;
   cloudVersion = null;
   cloudUpdatedAt = null;
@@ -129,33 +140,51 @@ export function clearSyncLogin() {
 
 function cloudAuthHeaders() {
   if (!isConfiguredCloudEndpoint()) return {};
-  let username = localStorage.getItem(API_USERNAME_STORAGE_KEY);
-  if (!username) {
-    username = window.prompt("请输入云端同步用户名", "garden") || "";
-    if (!username) return null;
-    localStorage.setItem(API_USERNAME_STORAGE_KEY, username);
-  }
+  return authHeadersFor({
+    token: localStorage.getItem(API_TOKEN_STORAGE_KEY) || "",
+    username: localStorage.getItem(API_USERNAME_STORAGE_KEY) || "",
+    password: localStorage.getItem(API_PASSWORD_STORAGE_KEY) || ""
+  });
+}
 
-  let password = localStorage.getItem(API_PASSWORD_STORAGE_KEY) || "";
-  if (!password) {
-    password = window.prompt("请输入云端同步密码") || "";
-    if (!password) return null;
-    localStorage.setItem(API_PASSWORD_STORAGE_KEY, password);
+export async function loginSync(username, password) {
+  const apiBaseUrl = configuredApiBaseUrl().trim();
+  if (!apiBaseUrl) throw new Error("Cloud sync is not configured.");
+  const session = await loginToCloud(apiBaseUrl, { username, password });
+  localStorage.setItem(API_USERNAME_STORAGE_KEY, session.user?.username || username);
+  localStorage.setItem(API_TOKEN_STORAGE_KEY, session.token);
+  localStorage.setItem(API_TOKEN_EXPIRES_STORAGE_KEY, session.expiresAt || "");
+  localStorage.setItem(API_USER_STORAGE_KEY, JSON.stringify(session.user || { username }));
+  localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
+  cloudEnabled = false;
+  return session;
+}
+
+export async function logoutSync() {
+  const apiBaseUrl = configuredApiBaseUrl().trim();
+  if (apiBaseUrl) {
+    await logoutFromCloud(apiBaseUrl, {
+      token: localStorage.getItem(API_TOKEN_STORAGE_KEY) || "",
+      username: localStorage.getItem(API_USERNAME_STORAGE_KEY) || "",
+      password: localStorage.getItem(API_PASSWORD_STORAGE_KEY) || ""
+    });
   }
-  return {
-    authorization: `Basic ${window.btoa(`${username}:${password}`)}`
-  };
+  clearSyncLogin();
 }
 
 async function loadCloudGarden() {
   const authHeaders = cloudAuthHeaders();
-  if (!authHeaders) throw new Error("Cloud login was cancelled.");
+  if (isConfiguredCloudEndpoint() && !Object.keys(authHeaders).length) {
+    throw new Error("Cloud login is required.");
+  }
   const response = await fetch(cloudEndpoint(), {
     method: "GET",
     headers: { accept: "application/json", ...authHeaders },
+    credentials: "include",
     cache: "no-store"
   });
   if (response.status === 401) {
+    localStorage.removeItem(API_TOKEN_STORAGE_KEY);
     localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
     throw new Error("Cloud login failed.");
   }
@@ -167,7 +196,7 @@ async function loadCloudGarden() {
 
 async function saveCloudGarden(state) {
   const authHeaders = cloudAuthHeaders();
-  if (!authHeaders) return false;
+  if (!Object.keys(authHeaders).length) return false;
   const response = await fetch(cloudEndpoint(), {
     method: "PUT",
     headers: {
@@ -175,10 +204,12 @@ async function saveCloudGarden(state) {
       "content-type": "application/json",
       ...authHeaders
     },
+    credentials: "include",
     body: JSON.stringify({ state, version: cloudVersion })
   });
   const payload = await response.json().catch(() => ({}));
   if (response.status === 401) {
+    localStorage.removeItem(API_TOKEN_STORAGE_KEY);
     localStorage.removeItem(API_PASSWORD_STORAGE_KEY);
     window.alert("云端同步登录失败。请刷新页面后重新输入密码。");
     return false;

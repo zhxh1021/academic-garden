@@ -30,10 +30,76 @@ async function withServer(testBody) {
   }
 }
 
+async function login(baseUrl, username = "garden", password = "secret") {
+  const response = await fetch(`${baseUrl}/api/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+  return { response, payload: await response.json() };
+}
+
 test("rejects unauthenticated API requests", async () => {
   await withServer(async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/garden`);
     assert.equal(response.status, 401);
+  });
+});
+
+test("logs in with an account password and uses the bearer token", async () => {
+  await withServer(async (baseUrl) => {
+    const { response, payload } = await login(baseUrl);
+    assert.equal(response.status, 200);
+    assert.equal(payload.user.username, "garden");
+    assert.equal(typeof payload.token, "string");
+
+    const garden = await fetch(`${baseUrl}/api/garden`, {
+      headers: { authorization: `Bearer ${payload.token}` }
+    });
+    assert.equal(garden.status, 200);
+  });
+});
+
+test("rejects wrong account passwords", async () => {
+  await withServer(async (baseUrl) => {
+    const { response, payload } = await login(baseUrl, "garden", "not-the-password");
+    assert.equal(response.status, 401);
+    assert.equal(payload.error, "Invalid username or password.");
+  });
+});
+
+test("reports and clears bearer-token sessions", async () => {
+  await withServer(async (baseUrl) => {
+    const { payload } = await login(baseUrl);
+
+    const session = await fetch(`${baseUrl}/api/auth/session`, {
+      headers: { authorization: `Bearer ${payload.token}` }
+    });
+    assert.equal(session.status, 200);
+    assert.equal((await session.json()).authenticated, true);
+
+    const logout = await fetch(`${baseUrl}/api/auth/logout`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${payload.token}` }
+    });
+    assert.equal(logout.status, 200);
+
+    const expired = await fetch(`${baseUrl}/api/auth/session`, {
+      headers: { authorization: `Bearer ${payload.token}` }
+    });
+    assert.equal(expired.status, 401);
+  });
+});
+
+test("keeps public registration closed by default", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/auth/register`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username: "new-gardener", password: "long-enough-password" })
+    });
+    assert.equal(response.status, 403);
+    assert.equal((await response.json()).error, "Registration is currently closed.");
   });
 });
 
@@ -85,6 +151,8 @@ test("reports storage health without leaking garden contents", async () => {
     assert.equal(payload.ok, true);
     assert.equal(payload.storage.writable, true);
     assert.equal(payload.storage.readable, true);
+    assert.equal(payload.auth.accountsConfigured, true);
+    assert.equal(payload.auth.registrationOpen, false);
     assert.equal(payload.garden.version, 0);
     assert.equal("state" in payload, false);
   });
