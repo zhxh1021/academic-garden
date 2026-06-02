@@ -1,5 +1,40 @@
 # Pending Changes
 
+## 2026-06-02 - House hotspot and decoration asset redraw pass
+
+### Summary
+
+- Moved homepage garden entrance hot zones down onto the painted house/cottage areas and fixed the hover transform mismatch that made the clickable area jump away from the house.
+- Replaced the runtime wood bench sprite with a newly cropped complete bench asset from the existing decoration sheet and reduced its map/shop render size.
+- Replaced the temporary generated stepping-stone sprite with a higher-quality hand-painted cobblestone path crop from the existing decoration sheet.
+- Updated decoration sprite paths so the shop and map use the new bench/path assets.
+
+### Files Changed
+
+- `src/domain.js`
+- `styles.css`
+- `assets/sprites/decor-wood-bench-v6.png`
+- `assets/sprites/decor-cobble-path-v6.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- `assets/sprites/decor-wood-bench-v6.png` and `assets/sprites/decor-cobble-path-v6.png` were cropped from `assets/art/decoration-sheet-v2.png`, with chroma-key background pixels removed locally.
+- The generated image direction used for this pass was: complete compact wooden bench, full left/right arms and legs, and an organic hand-painted curved cobblestone path with moss/grass, no text.
+- Existing generated originals were left in the Codex generated-images directory; app-ready runtime assets are under `assets/sprites/`.
+
+### Verification
+
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`.
+- Ran `git diff --check`.
+- Ran PNG chroma-key scans on the new bench/path sprites.
+
+### Notes
+
+- Existing unrelated `AGENTS.md` local change was left untouched.
+- This is GitHub Pages frontend/domain asset work. OpenClaw deploy needed: no.
+
 ## 2026-06-02 - Mature tree map anchor adjustment
 
 ### Summary

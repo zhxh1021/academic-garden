@@ -542,8 +542,8 @@ textarea:focus-visible {
   display: grid;
   justify-items: center;
   align-content: start;
-  width: 108px;
-  height: 72px;
+  width: var(--house-w, 156px);
+  height: var(--house-h, 118px);
   gap: 0;
   border: 0;
   padding: 0;
@@ -551,7 +551,7 @@ textarea:focus-visible {
   color: var(--ink);
   font-weight: bold;
   text-shadow: 1px 1px 0 rgb(255 243 204 / 58%);
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   transition: filter 160ms steps(2, end), transform 160ms steps(2, end);
 }
 
@@ -609,33 +609,35 @@ textarea:focus-visible {
 }
 
 .house-active-to-harvested {
-  --house-x: 29%;
-  --house-y: 24%;
+  --house-x: 30%;
+  --house-y: 39%;
 }
 
 .house-active-to-dormant {
   --house-x: 70%;
-  --house-y: 24%;
+  --house-y: 39%;
 }
 
 .house-harvested-to-active {
-  --house-x: 25%;
-  --house-y: 25%;
+  --house-x: 28%;
+  --house-y: 40%;
 }
 
 .house-harvested-to-dormant {
   --house-x: 72%;
-  --house-y: 25%;
+  --house-y: 40%;
 }
 
 .house-dormant-to-active {
-  --house-x: 28%;
-  --house-y: 26%;
+  --house-x: 44%;
+  --house-y: 41%;
+  --house-w: 126px;
 }
 
 .house-dormant-to-harvested {
-  --house-x: 67%;
-  --house-y: 26%;
+  --house-x: 56%;
+  --house-y: 41%;
+  --house-w: 126px;
 }
 
 .map-house strong {
@@ -1182,7 +1184,7 @@ textarea:focus-visible {
 
 .decor-path {
   width: 96px;
-  height: 64px;
+  height: 110px;
 }
 
 .decor-path:has(.decor-sprite),
@@ -1206,8 +1208,8 @@ textarea:focus-visible {
 }
 
 .decor-bench {
-  width: 104px;
-  height: 78px;
+  width: 92px;
+  height: 68px;
   border-top: 10px solid #9f6337;
   border-bottom: 10px solid #9f6337;
 }
@@ -1354,13 +1356,13 @@ textarea:focus-visible {
 }
 
 .shop-preview.decor-path {
-  --shop-sprite-width: 112px;
-  --shop-sprite-height: 74px;
+  --shop-sprite-width: 92px;
+  --shop-sprite-height: 106px;
 }
 
 .shop-preview.decor-bench {
-  --shop-sprite-width: 142px;
-  --shop-sprite-height: 104px;
+  --shop-sprite-width: 126px;
+  --shop-sprite-height: 92px;
   border-top: 0;
   border-bottom: 0;
 }
@@ -2518,39 +2520,41 @@ textarea:focus-visible {
   }
 
   .map-house {
-    width: 72px;
-    height: 54px;
+    --house-w: 138px;
+    --house-h: 104px;
     padding-bottom: 0;
   }
 
   .house-active-to-harvested {
     --house-x: 30%;
-    --house-y: 23%;
+    --house-y: 38%;
   }
 
   .house-active-to-dormant {
     --house-x: 70%;
-    --house-y: 23%;
+    --house-y: 38%;
   }
 
   .house-harvested-to-active {
     --house-x: 28%;
-    --house-y: 24%;
+    --house-y: 39%;
   }
 
   .house-harvested-to-dormant {
     --house-x: 72%;
-    --house-y: 24%;
+    --house-y: 39%;
   }
 
   .house-dormant-to-active {
-    --house-x: 29%;
-    --house-y: 25%;
+    --house-x: 43%;
+    --house-y: 40%;
+    --house-w: 112px;
   }
 
   .house-dormant-to-harvested {
-    --house-x: 69%;
-    --house-y: 25%;
+    --house-x: 57%;
+    --house-y: 40%;
+    --house-w: 112px;
   }
 
   .house-art {

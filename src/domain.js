@@ -81,7 +81,7 @@ export const DECORATIONS = [
     price: 10,
     description: "给花园铺一段安静的小路。",
     className: "decor-path",
-    sprite: "./assets/sprites/decor-stepping-stones-v5.png"
+    sprite: "./assets/sprites/decor-cobble-path-v6.png"
   },
   {
     id: "wood-bench",
@@ -89,7 +89,7 @@ export const DECORATIONS = [
     price: 16,
     description: "给完成思考后的自己留一个座位。",
     className: "decor-bench",
-    sprite: "./assets/sprites/decor-wood-bench.png"
+    sprite: "./assets/sprites/decor-wood-bench-v6.png"
   },
   {
     id: "lamp",
