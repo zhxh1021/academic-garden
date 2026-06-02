@@ -1074,6 +1074,24 @@ textarea:focus-visible {
   height: 148px;
 }
 
+.overview-plant.tree.stage-tree,
+.overview-plant.tree.stage-flower,
+.overview-plant.tree.stage-fruit {
+  --map-sprite-h: 124px;
+}
+
+.overview-plant.tree.plot-row-0.stage-tree,
+.overview-plant.tree.plot-row-0.stage-flower,
+.overview-plant.tree.plot-row-0.stage-fruit {
+  --map-sprite-h: 94px;
+}
+
+.overview-plant.tree.plot-row-1.stage-tree,
+.overview-plant.tree.plot-row-1.stage-flower,
+.overview-plant.tree.plot-row-1.stage-fruit {
+  --map-sprite-h: 108px;
+}
+
 .mini-sprite {
   position: relative;
   display: block;
@@ -2649,6 +2667,24 @@ textarea:focus-visible {
   .overview-plant.plot-row-1.stage-seed_saved .map-plant-sprite {
     width: 94px;
     height: 102px;
+  }
+
+  .overview-plant.tree.stage-tree,
+  .overview-plant.tree.stage-flower,
+  .overview-plant.tree.stage-fruit {
+    --map-sprite-h: 82px;
+  }
+
+  .overview-plant.tree.plot-row-0.stage-tree,
+  .overview-plant.tree.plot-row-0.stage-flower,
+  .overview-plant.tree.plot-row-0.stage-fruit {
+    --map-sprite-h: 66px;
+  }
+
+  .overview-plant.tree.plot-row-1.stage-tree,
+  .overview-plant.tree.plot-row-1.stage-flower,
+  .overview-plant.tree.plot-row-1.stage-fruit {
+    --map-sprite-h: 76px;
   }
 
   .overview-plant strong,

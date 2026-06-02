@@ -1,5 +1,29 @@
 # Pending Changes
 
+## 2026-06-02 - Mature tree map anchor adjustment
+
+### Summary
+
+- Lowered mature paper tree sprites on the homepage farm map so the tree base sits back on the painted soil area instead of floating above it.
+- Scoped the anchor adjustment to `.overview-plant.tree` mature stages (`tree`, `flower`, `fruit`) so course flowers and smaller growth stages keep their existing placement.
+- Added matching mobile anchor values for the 390px layout.
+
+### Files Changed
+
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`; 23 tests passed.
+- Ran `git diff --check`; only existing Windows line-ending warnings were reported.
+
+### Notes
+
+- Existing unrelated `AGENTS.md` local change was left untouched.
+- This is GitHub Pages frontend CSS work. OpenClaw deploy needed: no.
+
 ## 2026-06-02 - Mature paper tree sprite clipping fix
 
 ### Summary
