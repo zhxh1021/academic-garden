@@ -1,5 +1,35 @@
 # Pending Changes
 
+## 2026-06-02 - Mature paper tree sprite clipping fix
+
+### Summary
+
+- Fixed the remaining half-cut mature tree problem by routing paper `tree`, `flower`, and `fruit` stages to the complete variety tree sprites instead of the cropped stage-specific tree PNGs.
+- Added a domain regression test so mature paper stages keep using complete tree sprites.
+- Removed leftover chroma-key magenta pixels from the complete paper tree sprites used at runtime.
+
+### Files Changed
+
+- `src/domain.js`
+- `scripts/domain.test.mjs`
+- `assets/sprites/tree-camphor.png`
+- `assets/sprites/tree-cherry.png`
+- `assets/sprites/tree-ginkgo.png`
+- `assets/sprites/tree-maple.png`
+- `assets/sprites/tree-willow.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Confirmed cropped stage PNGs had alpha content touching the top edge, while complete tree sprites have transparent margins.
+- Confirmed `tree-maple.png` and `tree-ginkgo.png` have transparent corner alpha and zero remaining magenta pixels.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`; 23 tests passed.
+
+### Notes
+
+- Existing unrelated `AGENTS.md` local change was left untouched.
+- This is GitHub Pages frontend/domain asset work. OpenClaw deploy needed: no.
+
 ## 2026-06-02 - Homepage farm v5 entrance, tree, and decoration scope fixes
 
 ### Summary

@@ -335,6 +335,9 @@ export function varietySprite(plant) {
   const variety = TYPE_CONFIG[plant.type].varieties.find((item) => item.id === plant.variety);
   const stage = TYPE_CONFIG[plant.type].stages.find((item) => item.id === plant.stage);
   if (!variety) return "";
+  if (plant.type === "paper" && ["tree", "flower", "fruit"].includes(stage?.id)) {
+    return variety.sprite ?? "";
+  }
   if (stage) return `./assets/sprites/stages/${plant.type}-${variety.id}-${stage.id}.png`;
   return variety.sprite ?? "";
 }

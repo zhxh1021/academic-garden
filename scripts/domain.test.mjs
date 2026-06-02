@@ -10,7 +10,8 @@ import {
   moveDecorationToSlot,
   movePlantToPlot,
   removePlantRecords,
-  updatePlantBasics
+  updatePlantBasics,
+  varietySprite
 } from "../src/domain.js";
 
 test("updates editable paper plant fields without changing progress", () => {
@@ -226,4 +227,19 @@ test("repairs duplicate decoration slots within a zone during moves", () => {
     { zone: "active", slotId: "right-bench", decorationId: "lamp" },
     { zone: "active", slotId: "left-lamp", decorationId: "wood-bench" }
   ]);
+});
+
+test("uses complete paper tree sprites for mature map stages", () => {
+  const plant = createPlant({
+    title: "Maple",
+    type: "paper",
+    variety: "maple",
+    historical: false,
+    authorRole: "primary",
+    term: ""
+  });
+
+  assert.equal(varietySprite({ ...plant, stage: "tree" }), "./assets/sprites/tree-maple.png");
+  assert.equal(varietySprite({ ...plant, stage: "flower" }), "./assets/sprites/tree-maple.png");
+  assert.equal(varietySprite({ ...plant, stage: "fruit" }), "./assets/sprites/tree-maple.png");
 });
