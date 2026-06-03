@@ -1,0 +1,356 @@
+{
+  "selected_zone": "active",
+  "layout_version": 3,
+  "coins": 80,
+  "zones": [
+    {
+      "id": "active",
+      "title": "Active Garden",
+      "subtitle": "正在生长的论文与课程",
+      "map": "res://assets/sprites/sprout/maps/sprout-map-active-gpt-v5.png",
+      "accent": "#5f8f4f",
+      "plots": [
+        {
+          "id": "active-1",
+          "title": "Paper Ginkgo",
+          "kind": "paper",
+          "stage": "tree",
+          "status": "Reading",
+          "note": "A long-running paper thread with mature notes.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-ginkgo-tree-rebuilt.png",
+          "x": 0.293,
+          "y": 0.488,
+          "visits": 0,
+          "logs": 2,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-ginkgo-tree-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-2",
+          "title": "Paper Cherry",
+          "kind": "paper",
+          "stage": "flower",
+          "status": "Annotating",
+          "note": "Needs a detail pass on methods and figures.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-cherry-flower-rebuilt.png",
+          "x": 0.503,
+          "y": 0.488,
+          "visits": 0,
+          "logs": 1,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-cherry-flower-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-3",
+          "title": "Course Daisy",
+          "kind": "course",
+          "stage": "bloom",
+          "status": "Practicing",
+          "note": "A course flower used to test non-paper projects.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-daisy-bloom-rebuilt.png",
+          "x": 0.719,
+          "y": 0.488,
+          "visits": 0,
+          "logs": 3,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-daisy-bloom-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-4",
+          "title": "Paper Maple",
+          "kind": "paper",
+          "stage": "sapling",
+          "status": "Queued",
+          "note": "Early reading notes, not yet mature.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-maple-sapling-rebuilt.png",
+          "x": 0.293,
+          "y": 0.585,
+          "visits": 0,
+          "logs": 0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-maple-sapling-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-5",
+          "title": "Course Rose",
+          "kind": "course",
+          "stage": "growing",
+          "status": "Reviewing",
+          "note": "Practice set is half finished.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-rose-growing-rebuilt.png",
+          "x": 0.503,
+          "y": 0.585,
+          "visits": 0,
+          "logs": 1,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-rose-growing-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-6",
+          "title": "Paper Pine",
+          "kind": "paper",
+          "stage": "seed",
+          "status": "Captured",
+          "note": "Only a seed idea so far.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-pine-seed-rebuilt.png",
+          "x": 0.719,
+          "y": 0.585,
+          "visits": 0,
+          "logs": 0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-pine-seed-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-7",
+          "title": "Course Lotus",
+          "kind": "course",
+          "stage": "fruit",
+          "status": "Consolidating",
+          "note": "Close to harvest, needs summary notes.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-lotus-fruit-rebuilt.png",
+          "x": 0.293,
+          "y": 0.676,
+          "visits": 0,
+          "logs": 4,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-lotus-fruit-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-8",
+          "title": "Paper Willow",
+          "kind": "paper",
+          "stage": "flower",
+          "status": "Comparing",
+          "note": "Good candidate for a literature cluster.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-willow-flower-rebuilt.png",
+          "x": 0.503,
+          "y": 0.676,
+          "visits": 0,
+          "logs": 2,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-willow-flower-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "active-9",
+          "title": "Empty Plot",
+          "kind": "empty",
+          "stage": "empty",
+          "status": "Available",
+          "note": "Tap to inspect the detail-card flow.",
+          "sprite": "res://assets/sprites/sprout/ground/empty-plot-1.png",
+          "x": 0.719,
+          "y": 0.676,
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0
+        }
+      ],
+      "decorations": [
+        {
+          "id": "bench",
+          "x": 0.192,
+          "y": 0.85,
+          "size_scale": 1.0
+        },
+        {
+          "id": "lamp",
+          "x": 0.84,
+          "y": 0.85,
+          "size_scale": 1.0
+        },
+        {
+          "id": "pond",
+          "x": 0.71,
+          "y": 0.82,
+          "size_scale": 1.0
+        },
+        {
+          "id": "lamp",
+          "x": 0.71,
+          "y": 0.82,
+          "size_scale": 1.0
+        }
+      ]
+    },
+    {
+      "id": "harvested",
+      "title": "Harvest Garden",
+      "subtitle": "已经收获、可复盘的成果",
+      "map": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v5.png",
+      "accent": "#a9783b",
+      "plots": [
+        {
+          "id": "harvested-1",
+          "title": "Course Sunflower",
+          "kind": "course",
+          "stage": "seed_saved",
+          "status": "Archived",
+          "note": "Finished course notes waiting for review.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-sunflower-seed_saved-rebuilt.png",
+          "x": 0.35,
+          "y": 0.57,
+          "visits": 0,
+          "logs": 5,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-sunflower-seed_saved-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "harvested-2",
+          "title": "Paper Camphor",
+          "kind": "paper",
+          "stage": "fruit",
+          "status": "Harvested",
+          "note": "Useful references and summary cards are ready.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-camphor-fruit-rebuilt.png",
+          "x": 0.65,
+          "y": 0.69,
+          "visits": 0,
+          "logs": 6,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-camphor-fruit-portrait.png",
+          "size_scale": 1.0
+        }
+      ],
+      "decorations": [
+        {
+          "id": "well",
+          "x": 0.21,
+          "y": 0.82,
+          "size_scale": 1.0
+        },
+        {
+          "id": "picnic",
+          "x": 0.74,
+          "y": 0.84,
+          "size_scale": 1.0
+        }
+      ]
+    },
+    {
+      "id": "dormant",
+      "title": "Dormant Garden",
+      "subtitle": "暂停、沉淀或等待重启",
+      "map": "res://assets/sprites/sprout/maps/sprout-map-dormant-gpt-v5.png",
+      "accent": "#55708a",
+      "plots": [
+        {
+          "id": "dormant-1",
+          "title": "Paper Pine",
+          "kind": "paper",
+          "stage": "sapling",
+          "status": "Paused",
+          "note": "A quiet project that should stay visible.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-pine-sapling-rebuilt.png",
+          "x": 0.36,
+          "y": 0.58,
+          "visits": 0,
+          "logs": 1,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-pine-sapling-portrait.png",
+          "size_scale": 1.0
+        },
+        {
+          "id": "dormant-2",
+          "title": "Course Hydrangea",
+          "kind": "course",
+          "stage": "sowing",
+          "status": "Waiting",
+          "note": "A course seed for the next study cycle.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-hydrangea-sowing-rebuilt.png",
+          "x": 0.64,
+          "y": 0.72,
+          "visits": 0,
+          "logs": 0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-hydrangea-sowing-portrait.png",
+          "size_scale": 1.0
+        }
+      ],
+      "decorations": [
+        {
+          "id": "pond",
+          "x": 0.22,
+          "y": 0.84,
+          "size_scale": 1.0
+        },
+        {
+          "id": "sign",
+          "x": 0.78,
+          "y": 0.55,
+          "size_scale": 1.0
+        }
+      ]
+    }
+  ],
+  "decoration_catalog": [
+    {
+      "id": "path",
+      "title": "Stone Path",
+      "price": 8,
+      "sprite": "res://assets/sprites/sprout/decor/decor-stone-path.png"
+    },
+    {
+      "id": "bench",
+      "title": "Bench",
+      "price": 12,
+      "sprite": "res://assets/sprites/sprout/decor/decor-wood-bench.png"
+    },
+    {
+      "id": "lamp",
+      "title": "Lamp",
+      "price": 10,
+      "sprite": "res://assets/sprites/sprout/decor/decor-lamp.png"
+    },
+    {
+      "id": "pond",
+      "title": "Pond",
+      "price": 18,
+      "sprite": "res://assets/sprites/sprout/decor/decor-pond.png"
+    },
+    {
+      "id": "well",
+      "title": "Well",
+      "price": 16,
+      "sprite": "res://assets/sprites/sprout/decor/decor-well.png"
+    },
+    {
+      "id": "workbench",
+      "title": "Workbench",
+      "price": 14,
+      "sprite": "res://assets/sprites/sprout/decor/decor-workbench.png"
+    },
+    {
+      "id": "sign",
+      "title": "Sign",
+      "price": 6,
+      "sprite": "res://assets/sprites/sprout/decor/decor-sign.png"
+    },
+    {
+      "id": "flower-rock",
+      "title": "Flower Rock",
+      "price": 9,
+      "sprite": "res://assets/sprites/sprout/decor/decor-flower-rock.png"
+    },
+    {
+      "id": "bridge",
+      "title": "Bridge",
+      "price": 20,
+      "sprite": "res://assets/sprites/sprout/decor/decor-wood-bridge.png"
+    },
+    {
+      "id": "picnic",
+      "title": "Picnic Rug",
+      "price": 15,
+      "sprite": "res://assets/sprites/sprout/decor/decor-picnic-rug.png"
+    }
+  ],
+  "owned_decorations": {
+    "path": 2,
+    "bench": 1,
+    "lamp": 1,
+    "pond": 1,
+    "well": 1,
+    "workbench": 0,
+    "sign": 1,
+    "flower-rock": 0,
+    "bridge": 0,
+    "picnic": 1
+  }
+}

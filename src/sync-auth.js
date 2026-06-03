@@ -1,3 +1,9 @@
+/*
+  DEPRECATED WEB RUNTIME.
+  Browser cloud-sync auth is historical reference only. Active product work has
+  moved to the Godot mobile portrait prototype in ../godot-prototype/.
+*/
+
 function base64Encode(value) {
   if (typeof btoa === "function") return btoa(value);
   return Buffer.from(value).toString("base64");

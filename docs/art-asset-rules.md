@@ -1,5 +1,13 @@
 # Academic Garden Art Asset Rules
 
+## Deprecated Web Asset Rules
+
+Rules that mention `src/domain.js`, `src/app.js`, `styles.css`, homepage maps,
+GitHub Pages, or browser UI are deprecated web-runtime guidance. Current visual
+asset integration should target the Godot mobile prototype under
+`godot-prototype/` unless the user explicitly asks for archival web
+maintenance.
+
 ## Runtime vs Source Assets
 
 - Runtime assets live under `assets/sprites/` and must be app-ready PNGs with alpha transparency.

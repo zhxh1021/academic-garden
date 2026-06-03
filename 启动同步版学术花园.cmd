@@ -1,4 +1,6 @@
 @echo off
+rem DEPRECATED WEB RUNTIME: historical browser sync server launcher only.
+rem Active product work has moved to godot-prototype.
 cd /d "%~dp0"
 echo Starting Academic Garden sync server...
 echo.

@@ -2,6 +2,7 @@
   "name": "academic-garden",
   "private": true,
   "type": "module",
+  "deprecatedRuntime": "Root web/GitHub Pages sync runtime is historical reference only; active product work is in godot-prototype.",
   "scripts": {
     "start:sync": "node server/server.mjs",
     "backup:garden": "node scripts/backup_garden.mjs",

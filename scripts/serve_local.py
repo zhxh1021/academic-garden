@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# DEPRECATED WEB RUNTIME: historical browser static server only.
+# Active product work has moved to godot-prototype.
+
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json

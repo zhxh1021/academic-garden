@@ -1,3 +1,9 @@
+/*
+  DEPRECATED WEB RUNTIME.
+  This browser UI is historical reference only. Active product work has moved
+  to the Godot mobile portrait prototype in ../godot-prototype/.
+*/
+
 import {
   DECORATIONS,
   DECORATION_SLOTS,
@@ -176,7 +182,13 @@ function decorationSlotLabel(slotId) {
     "front-path": "前景小径格",
     "right-bench": "右侧休息格",
     "left-lamp": "左侧路灯格",
-    "right-water": "右下水边格"
+    "right-water": "右下水边格",
+    "rear-sign": "后排标牌格",
+    "rear-storage": "后排仓库格",
+    "left-flowerbed": "左侧花圃格",
+    "right-flowerbed": "右侧花圃格",
+    "front-left-small": "左前小物格",
+    "front-right-small": "右前小物格"
   };
   return labels[slotId] ?? "地图自由格";
 }
@@ -197,6 +209,13 @@ function placementForNewDecoration(placements, zone, decorationId) {
     ? preferred
     : DECORATION_SLOTS.find((item) => !occupiedSlots.has(item.id));
   return slot ? { zone, slotId: slot.id, decorationId } : null;
+}
+
+function decorationPlacementSummary(decorationId) {
+  const placement = (state.decorations.placements ?? [])
+    .find((item) => item.decorationId === decorationId);
+  if (!placement) return "已拥有 · 尚未摆放";
+  return `已拥有 · ${zoneLabel(placement.zone)} · ${decorationSlotLabel(placement.slotId)}`;
 }
 
 function metadataText(plant) {
@@ -389,9 +408,11 @@ function decorationMarkup(placement) {
   const decoration = DECORATIONS.find((item) => item.id === placement.decorationId);
   const slot = DECORATION_SLOTS.find((item) => item.id === placement.slotId);
   if (!decoration || !slot) return "";
+  const canReceiveMove = moveMode && movingDecorationId && movingDecorationId !== decoration.id;
   return `
-    <button type="button" class="garden-decoration ${decoration.className} ${movingDecorationId === decoration.id ? "is-moving" : ""}" data-decoration-placement-id="${decoration.id}" data-decoration-slot-id="${slot.id}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z}" aria-label="${moveMode ? `移动${escapeText(decoration.label)}` : escapeText(decoration.label)}" title="${escapeText(decoration.label)}">
+    <button type="button" class="garden-decoration ${decoration.className} ${movingDecorationId === decoration.id ? "is-moving" : ""} ${canReceiveMove ? "is-drop-target" : ""}" data-decoration-placement-id="${decoration.id}" data-decoration-slot-id="${slot.id}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z}" aria-label="${moveMode ? `${movingDecorationId === decoration.id ? "正在移动" : "替换到"}${escapeText(decoration.label)}，${decorationSlotLabel(slot.id)}` : `${escapeText(decoration.label)}，${decorationSlotLabel(slot.id)}`}" title="${escapeText(decoration.label)} · ${decorationSlotLabel(slot.id)}">
       ${spriteImage(decoration.sprite, "decor-sprite", decoration.label)}
+      <span>${decorationSlotLabel(slot.id)}</span>
     </button>
   `;
 }
@@ -410,12 +431,18 @@ function emptyPlotMarkup(plot) {
   `;
 }
 
+function occupiedPlotGroundMarkup(plot) {
+  return `
+    <span class="farm-plot is-occupied" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z - 1}" aria-hidden="true"></span>
+  `;
+}
+
 function decorationPlaceholdersMarkup(occupiedSlotIds) {
   return DECORATION_SLOTS
     .filter((slot) => !occupiedSlotIds.has(slot.id))
     .map((slot) => `
-    <button type="button" class="decoration-slot ${moveMode ? "is-grid-visible" : ""} ${moveMode && movingDecorationId ? "is-drop-target" : ""}" data-decoration-slot-id="${slot.id}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z - 1}" ${moveMode && movingDecorationId ? "" : "disabled"} aria-label="移动装饰到这里">
-      <span>装饰格</span>
+    <button type="button" class="decoration-slot ${moveMode ? "is-grid-visible" : ""} ${moveMode && movingDecorationId ? "is-drop-target" : ""}" data-decoration-slot-id="${slot.id}" style="--x:${slot.x}%;--y:${slot.y}%;--z:${slot.z - 1}" ${moveMode && movingDecorationId ? "" : "disabled"} aria-label="移动装饰到${decorationSlotLabel(slot.id)}">
+      <span>${decorationSlotLabel(slot.id)}</span>
     </button>
   `).join("");
 }
@@ -457,6 +484,12 @@ function renderOverview() {
   elements.overviewGarden.dataset.moveMode = moveMode ? "true" : "false";
   elements.overviewGarden.innerHTML = `
     <div class="map-sky" aria-hidden="true"></div>
+    <div class="map-ambience" aria-hidden="true">
+      <span class="drift-leaf leaf-a"></span>
+      <span class="drift-leaf leaf-b"></span>
+      <span class="drift-petal petal-a"></span>
+      <span class="garden-bird bird-a"></span>
+    </div>
     <div class="farm-scene-bar">
       <div>
         <p class="eyebrow">${zone.kicker}</p>
@@ -471,7 +504,7 @@ function renderOverview() {
         const plant = zonePlants.get(index);
         return `
           <div class="farm-cell" style="--x:${plot.x}%;--y:${plot.y}%;--z:${plot.z}">
-            ${plant ? "" : emptyPlotMarkup({ ...plot, index })}
+            ${plant ? occupiedPlotGroundMarkup(plot) : emptyPlotMarkup({ ...plot, index })}
             ${plant ? miniPlantMarkup(plant, plot) : ""}
           </div>
         `;
@@ -496,18 +529,21 @@ function renderShop() {
     const owned = state.decorations.owned.includes(decoration.id);
     const affordable = state.wallet.currentCoins >= decoration.price;
     const slot = DECORATION_SLOTS.find((item) => item.accepts.includes(decoration.id));
+    const placementCopy = owned
+      ? decorationPlacementSummary(decoration.id)
+      : `解锁后放到 ${zoneLabel(selectedFarmZone)} · ${decorationSlotLabel(slot?.id)}`;
     return `
       <article class="shop-card ${owned ? "is-owned" : ""}">
         <span class="shop-preview ${decoration.className}" aria-hidden="true">
           ${spriteImage(decoration.sprite, "shop-sprite", decoration.label)}
         </span>
-        <span class="shop-placement-note">地图装饰格 · ${decorationSlotLabel(slot?.id)}</span>
+        <span class="shop-placement-note">${placementCopy}</span>
         <h3>${escapeText(decoration.label)}</h3>
         <p>${escapeText(decoration.description)}</p>
         <footer>
           <strong>${owned ? "已拥有" : `${decoration.price} 金币`}</strong>
           <button type="button" class="action-button" data-decoration-id="${decoration.id}" ${owned || !affordable ? "disabled" : ""}>
-            ${owned ? "去地图移动" : affordable ? "解锁" : "金币不足"}
+            ${owned ? "已入仓库" : affordable ? "解锁并摆放" : "金币不足"}
           </button>
         </footer>
       </article>

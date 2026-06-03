@@ -1,3 +1,9 @@
+/*
+  DEPRECATED WEB RUNTIME.
+  This IndexedDB/cloud-sync store belongs to the archived browser app. The
+  active Godot prototype uses local JSON seed/save files under godot-prototype/.
+*/
+
 import { DEFAULT_UNLOCKED_VARIETIES } from "./domain.js";
 import { authHeadersFor, loginToCloud, logoutFromCloud } from "./sync-auth.js";
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# DEPRECATED WEB RUNTIME: historical browser launcher helper only.
+# Active product work has moved to godot-prototype.
+
 import os
 from pathlib import Path
 import subprocess

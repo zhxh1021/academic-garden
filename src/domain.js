@@ -1,3 +1,9 @@
+/*
+  DEPRECATED WEB RUNTIME.
+  These browser-domain rules are historical reference only. Active product work
+  should use the Godot mobile portrait prototype in ../godot-prototype/.
+*/
+
 export const ZONES = {
   active: {
     kicker: "ACTIVE PLOT",
@@ -27,12 +33,12 @@ export const TYPE_CONFIG = {
     label: "树",
     icon: "tree",
     varieties: [
-      { id: "ginkgo", label: "银杏树", sprite: "./assets/sprites/tree-ginkgo.png" },
-      { id: "camphor", label: "香樟树", sprite: "./assets/sprites/tree-camphor.png" },
-      { id: "pine", label: "松树", sprite: "./assets/sprites/tree-pine.png" },
-      { id: "maple", label: "枫树", sprite: "./assets/sprites/tree-maple.png" },
-      { id: "willow", label: "柳树", sprite: "./assets/sprites/tree-willow.png" },
-      { id: "cherry", label: "樱花树", sprite: "./assets/sprites/tree-cherry.png" }
+      { id: "ginkgo", label: "银杏树", sprite: "./assets/sprites/sprout/paper-ginkgo.png" },
+      { id: "camphor", label: "香樟树", sprite: "./assets/sprites/sprout/paper-camphor.png" },
+      { id: "pine", label: "松树", sprite: "./assets/sprites/sprout/paper-pine.png" },
+      { id: "maple", label: "枫树", sprite: "./assets/sprites/sprout/paper-maple.png" },
+      { id: "willow", label: "柳树", sprite: "./assets/sprites/sprout/paper-willow.png" },
+      { id: "cherry", label: "樱花树", sprite: "./assets/sprites/sprout/paper-cherry.png" }
     ],
     stages: [
       { id: "seed", label: "种子", nextAction: "开始推进" },
@@ -46,12 +52,12 @@ export const TYPE_CONFIG = {
     label: "花",
     icon: "flower",
     varieties: [
-      { id: "daisy", label: "雏菊", sprite: "./assets/sprites/flower-daisy.png" },
-      { id: "hydrangea", label: "绣球花", sprite: "./assets/sprites/flower-hydrangea.png" },
-      { id: "sunflower", label: "向日葵", sprite: "./assets/sprites/flower-sunflower.png" },
-      { id: "lotus", label: "荷花", sprite: "./assets/sprites/flower-lotus.png" },
-      { id: "lavender", label: "薰衣草", sprite: "./assets/sprites/flower-lavender.png" },
-      { id: "rose", label: "玫瑰", sprite: "./assets/sprites/flower-rose.png" }
+      { id: "daisy", label: "雏菊", sprite: "./assets/sprites/sprout/course-daisy.png" },
+      { id: "hydrangea", label: "绣球花", sprite: "./assets/sprites/sprout/course-hydrangea.png" },
+      { id: "sunflower", label: "向日葵", sprite: "./assets/sprites/sprout/course-sunflower.png" },
+      { id: "lotus", label: "荷花", sprite: "./assets/sprites/sprout/course-lotus.png" },
+      { id: "lavender", label: "薰衣草", sprite: "./assets/sprites/sprout/course-lavender.png" },
+      { id: "rose", label: "玫瑰", sprite: "./assets/sprites/sprout/course-rose.png" }
     ],
     stages: [
       { id: "sowing", label: "播种", nextAction: "开始教学" },
@@ -81,7 +87,7 @@ export const DECORATIONS = [
     price: 10,
     description: "给花园铺一段安静的小路。",
     className: "decor-path",
-    sprite: "./assets/sprites/decor-cobble-path-v6.png"
+    sprite: "./assets/sprites/sprout/decor/decor-stone-path.png"
   },
   {
     id: "wood-bench",
@@ -89,7 +95,7 @@ export const DECORATIONS = [
     price: 16,
     description: "给完成思考后的自己留一个座位。",
     className: "decor-bench",
-    sprite: "./assets/sprites/decor-wood-bench-v6.png"
+    sprite: "./assets/sprites/sprout/decor/decor-wood-bench.png"
   },
   {
     id: "lamp",
@@ -97,7 +103,7 @@ export const DECORATIONS = [
     price: 22,
     description: "夜里也能看见正在长大的项目。",
     className: "decor-lamp",
-    sprite: "./assets/sprites/decor-lamp.png"
+    sprite: "./assets/sprites/sprout/decor/decor-lamp.png"
   },
   {
     id: "pond",
@@ -105,7 +111,55 @@ export const DECORATIONS = [
     price: 30,
     description: "让花园多一点清亮的呼吸。",
     className: "decor-pond",
-    sprite: "./assets/sprites/decor-pond.png"
+    sprite: "./assets/sprites/sprout/decor/decor-pond.png"
+  },
+  {
+    id: "water-well",
+    label: "木井",
+    price: 24,
+    description: "把每日照料的水源安在地图边上。",
+    className: "decor-well",
+    sprite: "./assets/sprites/sprout/decor/decor-well.png"
+  },
+  {
+    id: "workbench",
+    label: "研究工作台",
+    price: 26,
+    description: "放下笔记、工具和下一步想法。",
+    className: "decor-workbench",
+    sprite: "./assets/sprites/sprout/decor/decor-workbench.png"
+  },
+  {
+    id: "garden-sign",
+    label: "木标牌",
+    price: 14,
+    description: "给这片花园立一个小小入口。",
+    className: "decor-sign",
+    sprite: "./assets/sprites/sprout/decor/decor-sign.png"
+  },
+  {
+    id: "flower-rock",
+    label: "花草石堆",
+    price: 18,
+    description: "让角落多一点自然的层次。",
+    className: "decor-flower-rock",
+    sprite: "./assets/sprites/sprout/decor/decor-flower-rock.png"
+  },
+  {
+    id: "wood-bridge",
+    label: "木桥",
+    price: 28,
+    description: "把水边和小径轻轻连起来。",
+    className: "decor-bridge",
+    sprite: "./assets/sprites/sprout/decor/decor-wood-bridge.png"
+  },
+  {
+    id: "picnic-rug",
+    label: "野餐毯",
+    price: 20,
+    description: "给复盘和休息留一块柔软地面。",
+    className: "decor-rug",
+    sprite: "./assets/sprites/sprout/decor/decor-picnic-rug.png"
   }
 ];
 
@@ -113,35 +167,41 @@ export const PLOT_COUNT = 9;
 export const GARDEN_ZONES = ["active", "harvested", "dormant"];
 
 export const ZONE_PLOTS = [
-  { id: "plot-0", column: 0, row: 0, x: 36, y: 46, z: 4 },
-  { id: "plot-1", column: 1, row: 0, x: 50, y: 45, z: 5 },
-  { id: "plot-2", column: 2, row: 0, x: 64, y: 46, z: 6 },
-  { id: "plot-3", column: 0, row: 1, x: 33, y: 62, z: 7 },
-  { id: "plot-4", column: 1, row: 1, x: 49, y: 63, z: 8 },
-  { id: "plot-5", column: 2, row: 1, x: 65, y: 62, z: 9 },
-  { id: "plot-6", column: 0, row: 2, x: 30, y: 78, z: 10 },
-  { id: "plot-7", column: 1, row: 2, x: 48, y: 79, z: 11 },
-  { id: "plot-8", column: 2, row: 2, x: 66, y: 78, z: 12 }
+  { id: "plot-0", column: 0, row: 0, x: 36.5, y: 31.5, z: 6 },
+  { id: "plot-1", column: 1, row: 0, x: 50, y: 31.5, z: 7 },
+  { id: "plot-2", column: 2, row: 0, x: 63.5, y: 31.5, z: 8 },
+  { id: "plot-3", column: 0, row: 1, x: 36.5, y: 48.5, z: 9 },
+  { id: "plot-4", column: 1, row: 1, x: 50, y: 48.5, z: 10 },
+  { id: "plot-5", column: 2, row: 1, x: 63.5, y: 48.5, z: 11 },
+  { id: "plot-6", column: 0, row: 2, x: 36.5, y: 64.5, z: 12 },
+  { id: "plot-7", column: 1, row: 2, x: 50, y: 64.5, z: 13 },
+  { id: "plot-8", column: 2, row: 2, x: 63.5, y: 64.5, z: 14 }
 ];
 
 export const DECORATION_SLOTS = [
-  { id: "front-path", x: 20, y: 82, z: 13, accepts: ["stone-path"] },
-  { id: "right-bench", x: 76, y: 67, z: 10, accepts: ["wood-bench"] },
-  { id: "left-lamp", x: 22, y: 55, z: 8, accepts: ["lamp"] },
-  { id: "right-water", x: 84, y: 80, z: 14, accepts: ["pond"] },
-  { id: "rear-sign", x: 32, y: 39, z: 3, accepts: [] },
-  { id: "rear-storage", x: 68, y: 39, z: 3, accepts: [] },
-  { id: "left-flowerbed", x: 20, y: 66, z: 7, accepts: [] },
-  { id: "right-flowerbed", x: 80, y: 55, z: 7, accepts: [] },
-  { id: "front-left-small", x: 34, y: 82, z: 12, accepts: [] },
-  { id: "front-right-small", x: 68, y: 82, z: 12, accepts: [] }
+  { id: "front-path", x: 23, y: 55, z: 10, accepts: ["stone-path"] },
+  { id: "right-bench", x: 82, y: 44, z: 9, accepts: ["wood-bench"] },
+  { id: "left-lamp", x: 20, y: 34, z: 8, accepts: ["lamp"] },
+  { id: "right-water", x: 88, y: 66, z: 12, accepts: ["pond"] },
+  { id: "rear-sign", x: 28, y: 21, z: 5, accepts: ["garden-sign"] },
+  { id: "rear-storage", x: 83, y: 27, z: 5, accepts: ["workbench"] },
+  { id: "left-flowerbed", x: 18, y: 25, z: 6, accepts: ["flower-rock"] },
+  { id: "right-flowerbed", x: 82, y: 31, z: 7, accepts: ["water-well"] },
+  { id: "front-left-small", x: 24, y: 76, z: 14, accepts: ["picnic-rug"] },
+  { id: "front-right-small", x: 76, y: 76, z: 14, accepts: ["wood-bridge"] }
 ];
 
 const DEFAULT_DECORATION_SLOT_BY_ID = {
   "stone-path": "front-path",
   "wood-bench": "right-bench",
   lamp: "left-lamp",
-  pond: "right-water"
+  pond: "right-water",
+  "water-well": "right-flowerbed",
+  workbench: "rear-storage",
+  "garden-sign": "rear-sign",
+  "flower-rock": "left-flowerbed",
+  "wood-bridge": "front-right-small",
+  "picnic-rug": "front-left-small"
 };
 
 export const DEFAULT_UNLOCKED_VARIETIES = TYPE_CONFIG.paper.varieties
@@ -335,10 +395,7 @@ export function varietySprite(plant) {
   const variety = TYPE_CONFIG[plant.type].varieties.find((item) => item.id === plant.variety);
   const stage = TYPE_CONFIG[plant.type].stages.find((item) => item.id === plant.stage);
   if (!variety) return "";
-  if (plant.type === "paper" && ["tree", "flower", "fruit"].includes(stage?.id)) {
-    return variety.sprite ?? "";
-  }
-  if (stage) return `./assets/sprites/stages/${plant.type}-${variety.id}-${stage.id}.png`;
+  if (stage) return `./assets/sprites/sprout/stages/${plant.type}-${variety.id}-${stage.id}.png`;
   return variety.sprite ?? "";
 }
 

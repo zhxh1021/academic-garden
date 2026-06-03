@@ -1,3 +1,9 @@
+/*
+  DEPRECATED WEB/SYNC RUNTIME.
+  This server supports the old browser/GitHub Pages sync path. Active product
+  work has moved to the Godot mobile portrait prototype in ../godot-prototype/.
+*/
+
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";

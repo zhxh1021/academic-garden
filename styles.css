@@ -1,3 +1,15 @@
+/*
+  DEPRECATED WEB RUNTIME.
+  This stylesheet belongs to the archived root browser app. Active UI, map,
+  plant sizing, and mobile interaction work should happen in godot-prototype/.
+*/
+
+@font-face {
+  font-family: "Sprout Lands";
+  src: url("./assets/sprites/sprout/ui/sproutlands-pixel.ttf") format("truetype");
+  font-display: swap;
+}
+
 :root {
   --sky: #cce9d5;
   --sky-light: #e8f4dc;
@@ -5,22 +17,24 @@
   --grass-dark: #477642;
   --soil: #b07749;
   --soil-dark: #75452c;
-  --cream: #fff3cc;
-  --paper: #fdf1d0;
-  --ink: #263c32;
-  --ink-soft: #53604a;
-  --gold: #efb83b;
-  --gold-dark: #ad672f;
+  --cream: #f6d6a2;
+  --paper: #f2c98f;
+  --ink: #5b3b35;
+  --ink-soft: #805f4d;
+  --gold: #d9a059;
+  --gold-dark: #a96f48;
   --pink: #ec8095;
   --leaf: #3f9249;
   --leaf-light: #71c653;
-  --border: #263c32;
+  --border: #7a4c47;
   --shadow: 4px 4px 0 var(--border);
-  --shadow-soft: 3px 3px 0 rgb(38 60 50 / 72%);
-  --hud-bg: rgb(255 248 226 / 88%);
-  --panel-bg: #fff7df;
+  --shadow-soft: 3px 3px 0 rgb(91 59 53 / 62%);
+  --hud-bg: rgb(246 214 162 / 90%);
+  --panel-bg: #f7ddb0;
   --danger: #9e3d2f;
-  font-family: Consolas, "Courier New", "Microsoft YaHei UI", monospace;
+  --sprout-panel-border: url("./assets/sprites/sprout/ui/dialog-box-medium.png") 12 fill / 12px / 0 round;
+  --sprout-slot-border: url("./assets/sprites/sprout/ui/inventory-slot-wood.png") 5 fill / 5px / 0 stretch;
+  font-family: "Sprout Lands", Consolas, "Courier New", "Microsoft YaHei UI", monospace;
   color: var(--ink);
   background: var(--sky);
 }
@@ -33,10 +47,35 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(0deg, transparent 23px, rgb(71 118 66 / 10%) 24px, transparent 25px),
-    linear-gradient(90deg, transparent 23px, rgb(71 118 66 / 10%) 24px, transparent 25px),
-    var(--sky);
-  background-size: 24px 24px;
+    linear-gradient(0deg, transparent 31px, rgb(122 76 71 / 10%) 32px, transparent 33px),
+    linear-gradient(90deg, transparent 31px, rgb(122 76 71 / 10%) 32px, transparent 33px),
+    #c8df9d;
+  background-size: 32px 32px;
+}
+
+.deprecated-web-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 8px 12px;
+  border-bottom: 2px solid #7a4c47;
+  background: #f6d6a2;
+  color: #5b3b35;
+  font: 700 12px/1.4 Consolas, "Courier New", monospace;
+  text-align: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    url("./assets/sprites/sprout/maps/sprout-map-active-gpt-v3-empty.png"),
+    url("./assets/sprites/sprout/maps/sprout-map-harvested-gpt-v3-empty.png"),
+    url("./assets/sprites/sprout/maps/sprout-map-dormant-gpt-v3-empty.png");
 }
 
 body::after {
@@ -75,9 +114,9 @@ textarea:focus-visible {
   z-index: -1;
   height: 380px;
   background:
-    radial-gradient(circle at 18% 20%, #fff7cf 0 6px, transparent 7px),
-    radial-gradient(circle at 85% 35%, #fff7cf 0 5px, transparent 6px),
-    linear-gradient(var(--sky-light), transparent);
+    radial-gradient(circle at 18% 20%, #f9e2a5 0 6px, transparent 7px),
+    radial-gradient(circle at 85% 35%, #f9e2a5 0 5px, transparent 6px),
+    linear-gradient(#b9db98, transparent);
   image-rendering: pixelated;
 }
 
@@ -126,7 +165,8 @@ textarea:focus-visible {
   display: flex;
   gap: 8px;
   padding: 6px;
-  border: 3px solid var(--border);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
   background: var(--hud-bg);
   box-shadow: var(--shadow-soft);
 }
@@ -142,8 +182,9 @@ textarea:focus-visible {
 }
 
 .view-tab.is-selected {
-  background: var(--grass-dark);
-  color: var(--cream);
+  background: #8fb45f;
+  color: #fff4ce;
+  box-shadow: inset 0 -2px 0 rgb(91 59 53 / 24%);
 }
 
 .view-tab:not(.is-selected):hover {
@@ -156,7 +197,8 @@ textarea:focus-visible {
   gap: 11px;
   min-height: 48px;
   padding: 9px 15px;
-  border: 3px solid var(--border);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
   background: var(--hud-bg);
   box-shadow: var(--shadow-soft);
 }
@@ -165,7 +207,7 @@ textarea:focus-visible {
   content: "";
   width: 28px;
   height: 28px;
-  background: url("./assets/sprites/coin-v1.png") center / contain no-repeat;
+  background: url("./assets/sprites/sprout/ui/coin-icon.png") center / contain no-repeat;
   image-rendering: pixelated;
   filter: drop-shadow(1px 2px 0 rgb(38 60 50 / 24%));
   flex: 0 0 auto;
@@ -185,7 +227,8 @@ textarea:focus-visible {
 .action-button {
   min-height: 48px;
   padding: 10px 16px;
-  border: 3px solid var(--border);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
   box-shadow: var(--shadow);
   font-weight: bold;
   transition:
@@ -196,11 +239,11 @@ textarea:focus-visible {
 
 .primary-button,
 .action-button {
-  background: var(--gold);
+  background: #d9a059;
 }
 
 .quiet-button {
-  background: var(--paper);
+  background: #f6d6a2;
 }
 
 .primary-button:hover,
@@ -305,10 +348,9 @@ textarea:focus-visible {
 .shop-section {
   position: relative;
   padding: 14px;
-  border: 4px solid var(--border);
-  background:
-    linear-gradient(180deg, rgb(255 248 226 / 36%), rgb(253 241 208 / 72%)),
-    var(--paper);
+  border: 12px solid transparent;
+  border-image: var(--sprout-panel-border);
+  background: var(--panel-bg);
   box-shadow: var(--shadow);
 }
 
@@ -362,9 +404,10 @@ textarea:focus-visible {
 .farm-scene-bar h2 {
   margin: 0;
   padding: 4px 8px;
-  border: 3px solid rgb(38 60 50 / 76%);
-  background: rgb(255 248 226 / 82%);
-  box-shadow: 3px 3px 0 rgb(38 60 50 / 36%);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: rgb(246 214 162 / 92%);
+  box-shadow: 3px 3px 0 rgb(91 59 53 / 36%);
   font-size: 18px;
 }
 
@@ -394,9 +437,10 @@ textarea:focus-visible {
   gap: 10px;
   min-width: 0;
   padding: 8px;
-  border: 3px solid rgb(38 60 50 / 78%);
-  background: rgb(255 248 226 / 90%);
-  box-shadow: 4px 4px 0 rgb(38 60 50 / 48%);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: rgb(246 214 162 / 92%);
+  box-shadow: 4px 4px 0 rgb(91 59 53 / 42%);
   overflow-x: auto;
   pointer-events: auto;
   scrollbar-width: thin;
@@ -426,15 +470,16 @@ textarea:focus-visible {
   gap: 8px;
   min-height: 42px;
   padding: 7px 9px;
-  border: 3px solid var(--border);
-  background: rgb(255 248 226 / 88%);
-  box-shadow: 3px 3px 0 rgb(38 60 50 / 58%);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: rgb(246 214 162 / 90%);
+  box-shadow: 3px 3px 0 rgb(91 59 53 / 42%);
   font-size: 12px;
 }
 
 .farm-zone-tab.is-selected {
-  background: var(--grass-dark);
-  color: var(--cream);
+  background: #8fb45f;
+  color: #fff4ce;
 }
 
 .farm-zone-tab strong {
@@ -457,8 +502,8 @@ textarea:focus-visible {
   min-height: 680px;
   border: 4px solid var(--grass-dark);
   background:
-    linear-gradient(rgb(255 255 255 / 5%), rgb(255 255 255 / 5%)),
-    url("./assets/art/garden-background-active-v5.png") center / 100% 100% no-repeat,
+    linear-gradient(rgb(255 255 255 / 2%), rgb(255 255 255 / 2%)),
+    url("./assets/sprites/sprout/maps/sprout-map-active-gpt-v3-empty.png") center / 100% 100% no-repeat,
     #91c765;
   overflow: hidden;
   image-rendering: pixelated;
@@ -467,16 +512,16 @@ textarea:focus-visible {
 .overview-garden[data-current-zone="harvested"] {
   border-color: #9b6a28;
   background:
-    linear-gradient(rgb(255 255 255 / 4%), rgb(255 226 133 / 8%)),
-    url("./assets/art/garden-background-harvested-v5.png") center / 100% 100% no-repeat,
+    linear-gradient(rgb(255 255 255 / 3%), rgb(255 226 133 / 5%)),
+    url("./assets/sprites/sprout/maps/sprout-map-harvested-gpt-v3-empty.png") center / 100% 100% no-repeat,
     #caa64a;
 }
 
 .overview-garden[data-current-zone="dormant"] {
   border-color: #4b5a86;
   background:
-    linear-gradient(rgb(175 191 255 / 6%), rgb(24 34 69 / 8%)),
-    url("./assets/art/garden-background-dormant-v5.png") center / 100% 100% no-repeat,
+    linear-gradient(rgb(175 191 255 / 5%), rgb(24 34 69 / 6%)),
+    url("./assets/sprites/sprout/maps/sprout-map-dormant-gpt-v3-empty.png") center / 100% 100% no-repeat,
     #314c6a;
 }
 
@@ -490,12 +535,8 @@ textarea:focus-visible {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(90deg, transparent 0 19px, rgb(255 255 255 / 9%) 20px, transparent 21px),
-    linear-gradient(0deg, transparent 0 19px, rgb(38 60 50 / 8%) 20px, transparent 21px);
-  background-size: 20px 20px;
-  mix-blend-mode: soft-light;
-  opacity: 0.32;
+  background: linear-gradient(180deg, rgb(255 248 205 / 10%), transparent 26%, transparent 82%, rgb(38 60 50 / 10%));
+  opacity: 0.42;
 }
 
 .overview-garden::after {
@@ -516,11 +557,98 @@ textarea:focus-visible {
   inset: 0 0 auto;
   height: 280px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgb(255 249 209 / 18%), transparent 72%);
+  background: linear-gradient(180deg, rgb(255 249 209 / 8%), transparent 70%);
 }
 
 .map-sky::after {
   content: none;
+}
+
+.map-ambience {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.drift-leaf,
+.drift-petal,
+.garden-bird {
+  position: absolute;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.drift-leaf {
+  width: 8px;
+  height: 5px;
+  background: #6fa447;
+  box-shadow: 4px 2px 0 #477642;
+  opacity: 0.72;
+  animation: leaf-drift 11s steps(18, end) infinite;
+}
+
+.drift-petal {
+  width: 6px;
+  height: 6px;
+  background: #f2b5bb;
+  box-shadow: 5px -2px 0 #ffd5cf;
+  opacity: 0.66;
+  animation: petal-fall 8s steps(14, end) infinite;
+}
+
+.garden-bird {
+  width: 18px;
+  height: 10px;
+  background: transparent;
+  border-top: 3px solid #263c32;
+  border-radius: 50%;
+  opacity: 0.72;
+  animation: bird-hop 5.6s steps(9, end) infinite;
+}
+
+.garden-bird::before,
+.garden-bird::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  width: 9px;
+  height: 6px;
+  border-top: 3px solid #263c32;
+  border-radius: 50%;
+}
+
+.garden-bird::before {
+  left: -7px;
+  transform: rotate(-18deg);
+}
+
+.garden-bird::after {
+  right: -7px;
+  transform: rotate(18deg);
+}
+
+.leaf-a {
+  left: 12%;
+  top: 31%;
+}
+
+.leaf-b {
+  left: 82%;
+  top: 49%;
+  animation-delay: -5s;
+}
+
+.petal-a {
+  left: 57%;
+  top: 35%;
+  animation-delay: -2s;
+}
+
+.bird-a {
+  left: 17%;
+  top: 71%;
 }
 
 .map-field {
@@ -609,35 +737,33 @@ textarea:focus-visible {
 }
 
 .house-active-to-harvested {
-  --house-x: 30%;
-  --house-y: 39%;
+  --house-x: 17%;
+  --house-y: 19%;
 }
 
 .house-active-to-dormant {
-  --house-x: 70%;
-  --house-y: 39%;
+  --house-x: 82%;
+  --house-y: 20%;
 }
 
 .house-harvested-to-active {
-  --house-x: 28%;
-  --house-y: 40%;
+  --house-x: 17%;
+  --house-y: 19%;
 }
 
 .house-harvested-to-dormant {
-  --house-x: 72%;
-  --house-y: 40%;
+  --house-x: 82%;
+  --house-y: 20%;
 }
 
 .house-dormant-to-active {
-  --house-x: 44%;
-  --house-y: 41%;
-  --house-w: 126px;
+  --house-x: 17%;
+  --house-y: 19%;
 }
 
 .house-dormant-to-harvested {
-  --house-x: 56%;
-  --house-y: 41%;
-  --house-w: 126px;
+  --house-x: 82%;
+  --house-y: 20%;
 }
 
 .map-house strong {
@@ -661,7 +787,7 @@ textarea:focus-visible {
 .map-house em {
   position: absolute;
   z-index: 4;
-  left: calc(50% + 48px);
+  left: calc(50% + 44px);
   bottom: calc(100% - 8px);
   display: grid;
   place-content: center;
@@ -788,11 +914,11 @@ textarea:focus-visible {
   left: var(--x);
   top: var(--y);
   z-index: var(--z);
-  width: 148px;
-  height: 92px;
+  width: 12.7%;
+  height: 15.4%;
   border: 0;
   padding: 0;
-  background: transparent;
+  background: url("./assets/sprites/sprout/ground/plot-soil-gpt-v3.png") center / 100% 100% no-repeat;
   transform: translate(-50%, -50%);
   cursor: pointer;
 }
@@ -810,15 +936,17 @@ textarea:focus-visible {
 }
 
 .farm-plot::after {
-  left: 50%;
-  top: 50%;
-  width: 88px;
-  height: 44px;
-  border: 3px dashed rgb(239 184 59 / 0%);
-  border-radius: 50%;
+  inset: 8px 10px 12px;
+  border: 3px solid rgb(239 184 59 / 0%);
+  border-radius: 6px;
+  background: rgb(255 248 226 / 0%);
+  box-shadow: inset 0 0 0 2px rgb(117 69 44 / 0%);
   opacity: 0;
-  transform: translate(-50%, -50%) skewX(-10deg);
-  transition: opacity 160ms steps(2, end), border-color 160ms steps(2, end);
+  transition:
+    opacity 160ms steps(2, end),
+    border-color 160ms steps(2, end),
+    background 160ms steps(2, end),
+    box-shadow 160ms steps(2, end);
 }
 
 .farm-plot.can-plant::before,
@@ -829,7 +957,7 @@ textarea:focus-visible {
 .farm-plot span {
   position: absolute;
   left: 50%;
-  bottom: 18px;
+  bottom: -14px;
   z-index: 2;
   padding: 3px 7px;
   border: 2px solid rgb(38 60 50 / 62%);
@@ -854,6 +982,8 @@ textarea:focus-visible {
 .farm-plot:not(:disabled):hover::after,
 .farm-plot:not(:disabled):focus-visible::after {
   border-color: rgb(239 184 59 / 82%);
+  background: rgb(255 248 226 / 14%);
+  box-shadow: inset 0 0 0 2px rgb(117 69 44 / 28%);
   opacity: 1;
 }
 
@@ -867,6 +997,7 @@ textarea:focus-visible {
 
 .farm-plot.is-occupied {
   pointer-events: none;
+  cursor: default;
 }
 
 .farm-plot.is-occupied span {
@@ -882,12 +1013,12 @@ textarea:focus-visible {
   left: var(--x);
   top: var(--y);
   z-index: var(--z);
-  width: 78px;
+  width: 68px;
   height: 48px;
   border: 2px dashed rgb(38 60 50 / 14%);
-  border-radius: 50%;
+  border-radius: 6px;
   background: rgb(255 248 226 / 12%);
-  transform: translate(-50%, -50%) skewX(-14deg);
+  transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
 }
@@ -931,6 +1062,7 @@ textarea:focus-visible {
 
 .overview-plant {
   --map-sprite-h: 150px;
+  --plant-ground-shift: 32px;
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -943,13 +1075,13 @@ textarea:focus-visible {
   background: transparent;
   box-shadow: none;
   text-align: center;
-  transform: translate(-50%, calc(-1 * var(--map-sprite-h)));
+  transform: translate(-50%, calc(-1 * var(--map-sprite-h) + var(--plant-ground-shift)));
   filter: drop-shadow(3px 6px 0 rgb(38 60 50 / 28%));
   transition: transform 160ms steps(2, end), filter 160ms steps(2, end);
 }
 
 .overview-plant:hover {
-  transform: translate(-50%, calc(-1 * var(--map-sprite-h) - 6px));
+  transform: translate(-50%, calc(-1 * var(--map-sprite-h) + var(--plant-ground-shift) - 6px));
   filter: drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
 }
 
@@ -960,7 +1092,7 @@ textarea:focus-visible {
 
 .overview-plant.is-moving {
   filter: drop-shadow(0 0 0 var(--gold)) drop-shadow(4px 9px 0 rgb(38 60 50 / 36%));
-  transform: translate(-50%, calc(-1 * var(--map-sprite-h) - 8px));
+  transform: translate(-50%, calc(-1 * var(--map-sprite-h) + var(--plant-ground-shift) - 8px));
 }
 
 .overview-plant strong,
@@ -975,9 +1107,24 @@ textarea:focus-visible {
   padding: 2px 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border: 2px solid rgb(38 60 50 / 72%);
-  background: rgb(255 243 204 / 86%);
-  box-shadow: 2px 2px 0 rgb(38 60 50 / 42%);
+  border: 6px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: rgb(246 214 162 / 88%);
+  box-shadow: 2px 2px 0 rgb(91 59 53 / 34%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(5px);
+  transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
+}
+
+.overview-plant:hover strong,
+.overview-plant:hover em,
+.overview-plant:focus-visible strong,
+.overview-plant:focus-visible em,
+.overview-plant.is-moving strong,
+.overview-plant.is-moving em {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .overview-plant strong {
@@ -1001,28 +1148,32 @@ textarea:focus-visible {
   margin: 0 auto;
   object-fit: contain;
   object-position: center bottom;
+  transform-origin: 50% 100%;
+  animation: map-plant-breeze 5.6s steps(5, end) infinite;
 }
 
 .overview-plant.stage-seed,
 .overview-plant.stage-sowing {
-  --map-sprite-h: 72px;
+  --map-sprite-h: 32px;
+  --plant-ground-shift: 18px;
 }
 
 .overview-plant.stage-seed .map-plant-sprite,
 .overview-plant.stage-sowing .map-plant-sprite {
-  width: 70px;
-  height: 72px;
+  width: 30px;
+  height: 32px;
 }
 
 .overview-plant.stage-sapling,
 .overview-plant.stage-growing {
-  --map-sprite-h: 146px;
+  --map-sprite-h: 66px;
+  --plant-ground-shift: 22px;
 }
 
 .overview-plant.stage-sapling .map-plant-sprite,
 .overview-plant.stage-growing .map-plant-sprite {
-  width: 94px;
-  height: 146px;
+  width: 56px;
+  height: 66px;
 }
 
 .overview-plant.stage-tree,
@@ -1079,19 +1230,75 @@ textarea:focus-visible {
 .overview-plant.tree.stage-tree,
 .overview-plant.tree.stage-flower,
 .overview-plant.tree.stage-fruit {
-  --map-sprite-h: 124px;
+  --map-sprite-h: 188px;
+}
+
+.overview-plant.tree.stage-tree .map-plant-sprite,
+.overview-plant.tree.stage-flower .map-plant-sprite,
+.overview-plant.tree.stage-fruit .map-plant-sprite {
+  width: 168px;
+  height: var(--map-sprite-h);
 }
 
 .overview-plant.tree.plot-row-0.stage-tree,
 .overview-plant.tree.plot-row-0.stage-flower,
 .overview-plant.tree.plot-row-0.stage-fruit {
-  --map-sprite-h: 94px;
+  --map-sprite-h: 138px;
+}
+
+.overview-plant.tree.plot-row-0.stage-tree .map-plant-sprite,
+.overview-plant.tree.plot-row-0.stage-flower .map-plant-sprite,
+.overview-plant.tree.plot-row-0.stage-fruit .map-plant-sprite {
+  width: 124px;
 }
 
 .overview-plant.tree.plot-row-1.stage-tree,
 .overview-plant.tree.plot-row-1.stage-flower,
 .overview-plant.tree.plot-row-1.stage-fruit {
-  --map-sprite-h: 108px;
+  --map-sprite-h: 162px;
+}
+
+.overview-plant.tree.plot-row-1.stage-tree .map-plant-sprite,
+.overview-plant.tree.plot-row-1.stage-flower .map-plant-sprite,
+.overview-plant.tree.plot-row-1.stage-fruit .map-plant-sprite {
+  width: 146px;
+}
+
+.overview-plant.flower.stage-bloom,
+.overview-plant.flower.stage-fruit,
+.overview-plant.flower.stage-seed_saved {
+  --map-sprite-h: 96px;
+}
+
+.overview-plant.flower.stage-bloom .map-plant-sprite,
+.overview-plant.flower.stage-fruit .map-plant-sprite,
+.overview-plant.flower.stage-seed_saved .map-plant-sprite {
+  width: 82px;
+  height: var(--map-sprite-h);
+}
+
+.overview-plant.flower.plot-row-0.stage-bloom,
+.overview-plant.flower.plot-row-0.stage-fruit,
+.overview-plant.flower.plot-row-0.stage-seed_saved {
+  --map-sprite-h: 76px;
+}
+
+.overview-plant.flower.plot-row-0.stage-bloom .map-plant-sprite,
+.overview-plant.flower.plot-row-0.stage-fruit .map-plant-sprite,
+.overview-plant.flower.plot-row-0.stage-seed_saved .map-plant-sprite {
+  width: 66px;
+}
+
+.overview-plant.flower.plot-row-1.stage-bloom,
+.overview-plant.flower.plot-row-1.stage-fruit,
+.overview-plant.flower.plot-row-1.stage-seed_saved {
+  --map-sprite-h: 86px;
+}
+
+.overview-plant.flower.plot-row-1.stage-bloom .map-plant-sprite,
+.overview-plant.flower.plot-row-1.stage-fruit .map-plant-sprite,
+.overview-plant.flower.plot-row-1.stage-seed_saved .map-plant-sprite {
+  width: 74px;
 }
 
 .mini-sprite {
@@ -1175,6 +1382,36 @@ textarea:focus-visible {
   transform: translate(-50%, -56%);
 }
 
+.garden-decoration.is-drop-target {
+  filter: brightness(1.05) drop-shadow(0 0 0 var(--gold)) drop-shadow(2px 5px 0 rgb(38 60 50 / 24%));
+}
+
+.garden-decoration span {
+  position: absolute;
+  left: 50%;
+  bottom: -13px;
+  z-index: 3;
+  padding: 2px 5px;
+  border: 6px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: rgb(246 214 162 / 92%);
+  color: var(--grass-dark);
+  font-size: 9px;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity 160ms steps(2, end), transform 160ms steps(2, end);
+}
+
+.garden-decoration.is-moving span,
+.garden-decoration.is-drop-target span,
+.garden-decoration:hover span,
+.garden-decoration:focus-visible span {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .decor-sprite {
   width: 100%;
   height: 100%;
@@ -1184,13 +1421,19 @@ textarea:focus-visible {
 
 .decor-path {
   width: 96px;
-  height: 110px;
+  height: 82px;
 }
 
 .decor-path:has(.decor-sprite),
 .decor-bench:has(.decor-sprite),
 .decor-lamp:has(.decor-sprite),
-.decor-pond:has(.decor-sprite) {
+.decor-pond:has(.decor-sprite),
+.decor-well:has(.decor-sprite),
+.decor-workbench:has(.decor-sprite),
+.decor-sign:has(.decor-sprite),
+.decor-flower-rock:has(.decor-sprite),
+.decor-bridge:has(.decor-sprite),
+.decor-rug:has(.decor-sprite) {
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -1203,15 +1446,27 @@ textarea:focus-visible {
 .decor-lamp:has(.decor-sprite)::before,
 .decor-lamp:has(.decor-sprite)::after,
 .decor-pond:has(.decor-sprite)::before,
-.decor-pond:has(.decor-sprite)::after {
+.decor-pond:has(.decor-sprite)::after,
+.decor-well:has(.decor-sprite)::before,
+.decor-well:has(.decor-sprite)::after,
+.decor-workbench:has(.decor-sprite)::before,
+.decor-workbench:has(.decor-sprite)::after,
+.decor-sign:has(.decor-sprite)::before,
+.decor-sign:has(.decor-sprite)::after,
+.decor-flower-rock:has(.decor-sprite)::before,
+.decor-flower-rock:has(.decor-sprite)::after,
+.decor-bridge:has(.decor-sprite)::before,
+.decor-bridge:has(.decor-sprite)::after,
+.decor-rug:has(.decor-sprite)::before,
+.decor-rug:has(.decor-sprite)::after {
   content: none;
 }
 
 .decor-bench {
-  width: 92px;
-  height: 68px;
-  border-top: 10px solid #9f6337;
-  border-bottom: 10px solid #9f6337;
+  width: 110px;
+  height: 78px;
+  border-top: 0;
+  border-bottom: 0;
 }
 
 .decor-bench::before,
@@ -1233,9 +1488,9 @@ textarea:focus-visible {
 }
 
 .decor-lamp {
-  width: 48px;
-  height: 102px;
-  background: #4a4539;
+  width: 58px;
+  height: 90px;
+  background: transparent;
 }
 
 .decor-lamp::before {
@@ -1251,12 +1506,47 @@ textarea:focus-visible {
 }
 
 .decor-pond {
+  width: 118px;
+  height: 74px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.decor-well,
+.decor-workbench,
+.decor-sign,
+.decor-flower-rock,
+.decor-bridge,
+.decor-rug {
+  width: 88px;
+  height: 88px;
+}
+
+.decor-workbench {
   width: 104px;
-  height: 76px;
-  border: 5px solid #6d8b80;
-  border-radius: 50%;
-  background: #6bbbd4;
-  box-shadow: inset 14px 7px 0 #90d7df;
+  height: 72px;
+}
+
+.decor-sign {
+  width: 72px;
+  height: 72px;
+}
+
+.decor-flower-rock {
+  width: 124px;
+  height: 88px;
+}
+
+.decor-bridge {
+  width: 92px;
+  height: 68px;
+}
+
+.decor-rug {
+  width: 94px;
+  height: 58px;
 }
 
 .decor-path:has(.decor-sprite),
@@ -1287,7 +1577,8 @@ textarea:focus-visible {
 
 .shop-card {
   padding: 16px;
-  border: 3px solid var(--border);
+  border: 10px solid transparent;
+  border-image: var(--sprout-panel-border);
   background: var(--panel-bg);
   box-shadow: 3px 3px 0 var(--border);
 }
@@ -1335,7 +1626,7 @@ textarea:focus-visible {
   height: 96px;
   border: 0;
   transform: translate(-50%, -50%);
-  background: url("./assets/sprites/shop-preview-ground-v1.png") center bottom / contain no-repeat;
+  background: url("./assets/sprites/sprout/ground/shop-preview-ground.png") center bottom / contain no-repeat;
   box-shadow: none;
   image-rendering: pixelated;
 }
@@ -1347,7 +1638,13 @@ textarea:focus-visible {
 .shop-preview.decor-path,
 .shop-preview.decor-bench,
 .shop-preview.decor-lamp,
-.shop-preview.decor-pond {
+.shop-preview.decor-pond,
+.shop-preview.decor-well,
+.shop-preview.decor-workbench,
+.shop-preview.decor-sign,
+.shop-preview.decor-flower-rock,
+.shop-preview.decor-bridge,
+.shop-preview.decor-rug {
   inset: auto;
   left: auto;
   right: auto;
@@ -1378,6 +1675,36 @@ textarea:focus-visible {
   border-radius: 0;
   border: 0;
   box-shadow: none;
+}
+
+.shop-preview.decor-well {
+  --shop-sprite-width: 96px;
+  --shop-sprite-height: 96px;
+}
+
+.shop-preview.decor-workbench {
+  --shop-sprite-width: 124px;
+  --shop-sprite-height: 84px;
+}
+
+.shop-preview.decor-sign {
+  --shop-sprite-width: 82px;
+  --shop-sprite-height: 82px;
+}
+
+.shop-preview.decor-flower-rock {
+  --shop-sprite-width: 128px;
+  --shop-sprite-height: 92px;
+}
+
+.shop-preview.decor-bridge {
+  --shop-sprite-width: 110px;
+  --shop-sprite-height: 78px;
+}
+
+.shop-preview.decor-rug {
+  --shop-sprite-width: 110px;
+  --shop-sprite-height: 72px;
 }
 
 .shop-card h3 {
@@ -1426,12 +1753,69 @@ textarea:focus-visible {
   }
 }
 
+@keyframes map-plant-breeze {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  34% {
+    transform: rotate(-1.2deg) translateY(-1px);
+  }
+  68% {
+    transform: rotate(1deg) translateY(0);
+  }
+}
+
+@keyframes leaf-drift {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  18%,
+  76% {
+    opacity: 0.72;
+  }
+  to {
+    transform: translate(54px, 38px) rotate(90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes petal-fall {
+  from {
+    transform: translate(0, -12px) rotate(0deg);
+    opacity: 0;
+  }
+  25%,
+  78% {
+    opacity: 0.66;
+  }
+  to {
+    transform: translate(-28px, 72px) rotate(-90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bird-hop {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  44% {
+    transform: translate(28px, -4px);
+  }
+  70% {
+    transform: translate(42px, 0);
+  }
+}
+
 .garden-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(78px, 1fr));
   align-self: stretch;
   min-width: min(370px, 100%);
-  border: 3px solid var(--border);
+  border: 10px solid transparent;
+  border-image: var(--sprout-panel-border);
   background: var(--hud-bg);
   box-shadow: var(--shadow-soft);
 }
@@ -1467,9 +1851,10 @@ textarea:focus-visible {
   align-items: center;
   gap: 13px;
   padding: 13px 18px;
-  border: 3px solid var(--grass-dark);
-  background: rgb(255 248 226 / 72%);
-  box-shadow: 2px 2px 0 rgb(71 118 66 / 54%);
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: rgb(246 214 162 / 88%);
+  box-shadow: 2px 2px 0 rgb(91 59 53 / 44%);
   transition:
     transform 120ms steps(2, end),
     box-shadow 120ms steps(2, end),
@@ -1492,8 +1877,8 @@ textarea:focus-visible {
 }
 
 .garden-tab.is-selected {
-  border-color: var(--border);
-  background: var(--cream);
+  background: #8fb45f;
+  color: #fff4ce;
   box-shadow: var(--shadow);
   font-weight: bold;
   transform: translateY(-2px);
@@ -1546,9 +1931,10 @@ textarea:focus-visible {
   gap: 17px;
   min-height: 250px;
   padding: 16px;
-  border: 3px solid var(--border);
+  border: 10px solid transparent;
+  border-image: var(--sprout-panel-border);
   background:
-    linear-gradient(90deg, rgb(121 170 88 / 9%), transparent 38%),
+    linear-gradient(90deg, rgb(255 255 255 / 18%), transparent 38%),
     var(--panel-bg);
   box-shadow: var(--shadow);
   transition: transform 140ms steps(2, end);
@@ -1567,10 +1953,11 @@ textarea:focus-visible {
 .plant-illustration {
   position: relative;
   height: 188px;
-  border: 3px solid var(--grass-dark);
+  border: 10px solid transparent;
+  border-image: var(--sprout-slot-border);
   background:
     linear-gradient(rgb(255 255 255 / 8%), rgb(255 255 255 / 8%)),
-    url("./assets/art/garden-background-v2.png") center / cover no-repeat,
+    url("./assets/sprites/sprout/maps/sprout-map-active-gpt-v3-empty.png") center / cover no-repeat,
     #91c765;
   overflow: hidden;
   image-rendering: pixelated;
@@ -1597,7 +1984,7 @@ textarea:focus-visible {
   height: 22px;
   pointer-events: none;
   transform: translateX(-50%);
-  background: url("./assets/sprites/plant-ground-base-v2-front.png") center bottom / contain no-repeat;
+  background: url("./assets/sprites/sprout/ground/plant-base.png") center bottom / contain no-repeat;
   image-rendering: pixelated;
 }
 
@@ -1626,14 +2013,18 @@ textarea:focus-visible {
   height: 132px;
 }
 
-.tree.stage-tree .card-plant-sprite,
-.tree.stage-flower .card-plant-sprite,
-.tree.stage-fruit .card-plant-sprite,
 .flower.stage-bloom .card-plant-sprite,
 .flower.stage-fruit .card-plant-sprite,
 .flower.stage-seed_saved .card-plant-sprite {
   width: 156px;
   height: 156px;
+}
+
+.tree.stage-tree .card-plant-sprite,
+.tree.stage-flower .card-plant-sprite,
+.tree.stage-fruit .card-plant-sprite {
+  width: 148px;
+  height: 172px;
 }
 
 .plant-illustration::before {
@@ -1909,6 +2300,9 @@ textarea:focus-visible {
   .scene-dormant .scene-sky::after,
   .mini-sprite,
   .asset-sprite,
+  .drift-leaf,
+  .drift-petal,
+  .garden-bird,
   .plant-card.is-focused {
     animation: none;
   }
@@ -2053,8 +2447,9 @@ textarea:focus-visible {
   min-width: 0;
   width: 100%;
   padding: 7px 8px;
-  border: 2px solid var(--grass-dark);
-  background: #fff8e2;
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: #f8dfb4;
   font-size: 12px;
 }
 
@@ -2141,8 +2536,9 @@ textarea:focus-visible {
 .sync-dialog {
   width: min(515px, calc(100% - 30px));
   padding: 0;
-  border: 4px solid var(--border);
-  background: var(--paper);
+  border: 12px solid transparent;
+  border-image: var(--sprout-panel-border);
+  background: var(--panel-bg);
   box-shadow: 7px 7px 0 var(--border);
 }
 
@@ -2196,10 +2592,11 @@ textarea:focus-visible {
   position: relative;
   height: 304px;
   margin-bottom: 22px;
-  border: 3px solid var(--grass-dark);
+  border: 10px solid transparent;
+  border-image: var(--sprout-slot-border);
   background:
     linear-gradient(rgb(255 255 255 / 7%), rgb(255 255 255 / 7%)),
-    url("./assets/art/garden-background-v2.png") center / cover no-repeat,
+    url("./assets/sprites/sprout/maps/sprout-map-active-gpt-v3-empty.png") center / cover no-repeat,
     #91c765;
   overflow: hidden;
   image-rendering: pixelated;
@@ -2242,13 +2639,18 @@ textarea:focus-visible {
   height: 220px;
 }
 
-.detail-scene.stage-tree .detail-plant-sprite,
-.detail-scene.stage-flower .detail-plant-sprite,
-.detail-scene.stage-fruit .detail-plant-sprite,
-.detail-scene.stage-bloom .detail-plant-sprite,
-.detail-scene.stage-seed_saved .detail-plant-sprite {
+.detail-scene.flower.stage-bloom .detail-plant-sprite,
+.detail-scene.flower.stage-fruit .detail-plant-sprite,
+.detail-scene.flower.stage-seed_saved .detail-plant-sprite {
   width: 252px;
   height: 252px;
+}
+
+.detail-scene.tree.stage-tree .detail-plant-sprite,
+.detail-scene.tree.stage-flower .detail-plant-sprite,
+.detail-scene.tree.stage-fruit .detail-plant-sprite {
+  width: 218px;
+  height: 270px;
 }
 
 .detail-paper,
@@ -2312,8 +2714,9 @@ textarea:focus-visible {
   width: 100%;
   min-height: 46px;
   padding: 9px;
-  border: 3px solid var(--grass-dark);
-  background: #fff8e2;
+  border: 8px solid transparent;
+  border-image: var(--sprout-slot-border);
+  background: #f8dfb4;
   resize: vertical;
 }
 
@@ -2381,7 +2784,9 @@ textarea:focus-visible {
   }
 
   .header-actions {
+    width: 100%;
     flex-wrap: wrap;
+    align-items: stretch;
     gap: 9px;
   }
 
@@ -2392,6 +2797,11 @@ textarea:focus-visible {
   .view-switch {
     order: 3;
     width: 100%;
+  }
+
+  .backup-button,
+  .sync-button {
+    flex: 1 1 145px;
   }
 
   .view-tab {
@@ -2405,12 +2815,14 @@ textarea:focus-visible {
   }
 
   .home-hud {
-    top: 20px;
-    left: 20px;
-    right: 20px;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
     gap: 10px;
     flex-direction: column;
     align-items: stretch;
+    margin-bottom: 10px;
   }
 
   .settlement-card {
@@ -2434,7 +2846,7 @@ textarea:focus-visible {
   }
 
   .farm-scene-bar {
-    top: 198px;
+    top: 16px;
     left: 16px;
     right: 16px;
   }
@@ -2462,7 +2874,7 @@ textarea:focus-visible {
 
   .farm-toolbar-actions {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
     overflow-x: visible;
     padding-bottom: 0;
@@ -2472,18 +2884,40 @@ textarea:focus-visible {
   .farm-toolbar .quiet-button {
     min-width: 0;
     padding-inline: 6px;
-    font-size: 13px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .farm-zone-tab {
+    justify-content: center;
     min-height: 38px;
     padding: 6px;
     font-size: 10px;
   }
 
+  .farm-zone-tab span {
+    font-size: 0;
+    white-space: nowrap;
+  }
+
+  .farm-zone-tab[data-farm-zone="active"] span::after {
+    content: "生长";
+    font-size: 10px;
+  }
+
+  .farm-zone-tab[data-farm-zone="harvested"] span::after {
+    content: "收获";
+    font-size: 10px;
+  }
+
+  .farm-zone-tab[data-farm-zone="dormant"] span::after {
+    content: "沉睡";
+    font-size: 10px;
+  }
+
   .farm-plot {
-    width: 112px;
-    height: 72px;
+    width: 12.7%;
+    height: 15.4%;
   }
 
   .decoration-slot,
@@ -2525,38 +2959,6 @@ textarea:focus-visible {
     padding-bottom: 0;
   }
 
-  .house-active-to-harvested {
-    --house-x: 30%;
-    --house-y: 38%;
-  }
-
-  .house-active-to-dormant {
-    --house-x: 70%;
-    --house-y: 38%;
-  }
-
-  .house-harvested-to-active {
-    --house-x: 28%;
-    --house-y: 39%;
-  }
-
-  .house-harvested-to-dormant {
-    --house-x: 72%;
-    --house-y: 39%;
-  }
-
-  .house-dormant-to-active {
-    --house-x: 43%;
-    --house-y: 40%;
-    --house-w: 112px;
-  }
-
-  .house-dormant-to-harvested {
-    --house-x: 57%;
-    --house-y: 40%;
-    --house-w: 112px;
-  }
-
   .house-art {
     width: 86px;
     height: 74px;
@@ -2592,6 +2994,7 @@ textarea:focus-visible {
 
   .overview-plant {
     --map-sprite-h: 98px;
+    --plant-ground-shift: 28px;
     width: 100px;
   }
 
@@ -2602,24 +3005,26 @@ textarea:focus-visible {
 
   .overview-plant.stage-seed .map-plant-sprite,
   .overview-plant.stage-sowing .map-plant-sprite {
-    width: 54px;
-    height: 56px;
+    width: 22px;
+    height: 24px;
   }
 
   .overview-plant.stage-seed,
   .overview-plant.stage-sowing {
-    --map-sprite-h: 56px;
+    --map-sprite-h: 24px;
+    --plant-ground-shift: 15px;
   }
 
   .overview-plant.stage-sapling .map-plant-sprite,
   .overview-plant.stage-growing .map-plant-sprite {
-    width: 72px;
-    height: 112px;
+    width: 42px;
+    height: 50px;
   }
 
   .overview-plant.stage-sapling,
   .overview-plant.stage-growing {
-    --map-sprite-h: 112px;
+    --map-sprite-h: 50px;
+    --plant-ground-shift: 18px;
   }
 
   .overview-plant.stage-tree,
@@ -2676,19 +3081,75 @@ textarea:focus-visible {
   .overview-plant.tree.stage-tree,
   .overview-plant.tree.stage-flower,
   .overview-plant.tree.stage-fruit {
-    --map-sprite-h: 82px;
+    --map-sprite-h: 126px;
+  }
+
+  .overview-plant.tree.stage-tree .map-plant-sprite,
+  .overview-plant.tree.stage-flower .map-plant-sprite,
+  .overview-plant.tree.stage-fruit .map-plant-sprite {
+    width: 112px;
+    height: var(--map-sprite-h);
   }
 
   .overview-plant.tree.plot-row-0.stage-tree,
   .overview-plant.tree.plot-row-0.stage-flower,
   .overview-plant.tree.plot-row-0.stage-fruit {
-    --map-sprite-h: 66px;
+    --map-sprite-h: 104px;
+  }
+
+  .overview-plant.tree.plot-row-0.stage-tree .map-plant-sprite,
+  .overview-plant.tree.plot-row-0.stage-flower .map-plant-sprite,
+  .overview-plant.tree.plot-row-0.stage-fruit .map-plant-sprite {
+    width: 92px;
   }
 
   .overview-plant.tree.plot-row-1.stage-tree,
   .overview-plant.tree.plot-row-1.stage-flower,
   .overview-plant.tree.plot-row-1.stage-fruit {
-    --map-sprite-h: 76px;
+    --map-sprite-h: 116px;
+  }
+
+  .overview-plant.tree.plot-row-1.stage-tree .map-plant-sprite,
+  .overview-plant.tree.plot-row-1.stage-flower .map-plant-sprite,
+  .overview-plant.tree.plot-row-1.stage-fruit .map-plant-sprite {
+    width: 102px;
+  }
+
+  .overview-plant.flower.stage-bloom,
+  .overview-plant.flower.stage-fruit,
+  .overview-plant.flower.stage-seed_saved {
+    --map-sprite-h: 72px;
+  }
+
+  .overview-plant.flower.stage-bloom .map-plant-sprite,
+  .overview-plant.flower.stage-fruit .map-plant-sprite,
+  .overview-plant.flower.stage-seed_saved .map-plant-sprite {
+    width: 62px;
+    height: var(--map-sprite-h);
+  }
+
+  .overview-plant.flower.plot-row-0.stage-bloom,
+  .overview-plant.flower.plot-row-0.stage-fruit,
+  .overview-plant.flower.plot-row-0.stage-seed_saved {
+    --map-sprite-h: 58px;
+  }
+
+  .overview-plant.flower.plot-row-0.stage-bloom .map-plant-sprite,
+  .overview-plant.flower.plot-row-0.stage-fruit .map-plant-sprite,
+  .overview-plant.flower.plot-row-0.stage-seed_saved .map-plant-sprite {
+    width: 50px;
+  }
+
+  .overview-plant.flower.plot-row-1.stage-bloom,
+  .overview-plant.flower.plot-row-1.stage-fruit,
+  .overview-plant.flower.plot-row-1.stage-seed_saved {
+    --map-sprite-h: 64px;
+  }
+
+  .overview-plant.flower.plot-row-1.stage-bloom .map-plant-sprite,
+  .overview-plant.flower.plot-row-1.stage-fruit .map-plant-sprite,
+  .overview-plant.flower.plot-row-1.stage-seed_saved .map-plant-sprite {
+    width: 56px;
   }
 
   .overview-plant strong,
@@ -2718,7 +3179,25 @@ textarea:focus-visible {
 @media (max-width: 430px) {
   .masthead,
   .layout {
-    width: calc(100% - 25px);
+    width: calc(100% - 28px);
+  }
+
+  .garden-board,
+  .shop-section {
+    padding: 8px;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wallet,
+  .backup-button,
+  .sync-button,
+  .view-switch {
+    width: 100%;
+    min-width: 0;
   }
 
   .plant-grid {
@@ -2771,7 +3250,7 @@ body,
 input,
 select,
 textarea {
-  font-family: "Microsoft YaHei UI", "Noto Sans SC", "PingFang SC", sans-serif;
+  font-family: "Sprout Lands", "Microsoft YaHei UI", "Noto Sans SC", "PingFang SC", sans-serif;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -2788,7 +3267,7 @@ button,
 .plant-topline,
 .stage,
 .kind {
-  font-family: Consolas, "Courier New", "Microsoft YaHei UI", monospace;
+  font-family: "Sprout Lands", Consolas, "Courier New", "Microsoft YaHei UI", monospace;
 }
 
 .tagline,
@@ -2806,9 +3285,9 @@ button,
 }
 
 .quiet-button {
-  border-width: 2px;
-  background: rgb(255 247 221 / 86%);
-  box-shadow: 2px 2px 0 rgb(38 60 50 / 58%);
+  border-width: 8px;
+  background: rgb(246 214 162 / 90%);
+  box-shadow: 2px 2px 0 rgb(91 59 53 / 46%);
   color: var(--ink-soft);
 }
 
@@ -2820,9 +3299,8 @@ button,
 .backup-button,
 .sync-button {
   min-height: 40px;
-  border-color: rgb(71 118 66 / 62%);
-  background: rgb(253 241 208 / 72%);
-  box-shadow: 2px 2px 0 rgb(71 118 66 / 42%);
+  background: rgb(246 214 162 / 82%);
+  box-shadow: 2px 2px 0 rgb(91 59 53 / 34%);
 }
 
 .primary-button:disabled,
@@ -2835,8 +3313,8 @@ button,
 .wallet,
 .garden-summary,
 .settlement-card {
-  border-width: 2px;
-  box-shadow: 2px 2px 0 rgb(38 60 50 / 54%);
+  border-width: 8px;
+  box-shadow: 2px 2px 0 rgb(91 59 53 / 42%);
 }
 
 .garden-summary {
@@ -2848,7 +3326,7 @@ button,
 }
 
 .settlement-card {
-  background: rgb(255 248 226 / 78%);
+  background: rgb(246 214 162 / 82%);
 }
 
 .settlement-card .primary-button {
@@ -2857,18 +3335,18 @@ button,
 }
 
 .farm-toolbar {
-  border-width: 2px;
-  background: rgb(255 248 226 / 82%);
-  box-shadow: 3px 3px 0 rgb(38 60 50 / 38%);
+  border-width: 8px;
+  background: rgb(246 214 162 / 88%);
+  box-shadow: 3px 3px 0 rgb(91 59 53 / 34%);
 }
 
 .farm-toolbar .quiet-button {
-  background: rgb(255 248 226 / 88%);
+  background: rgb(246 214 162 / 90%);
 }
 
 .farm-zone-tab {
-  border-width: 2px;
-  box-shadow: 2px 2px 0 rgb(38 60 50 / 42%);
+  border-width: 8px;
+  box-shadow: 2px 2px 0 rgb(91 59 53 / 34%);
 }
 
 .shop-card {

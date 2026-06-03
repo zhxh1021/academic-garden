@@ -1,5 +1,20 @@
 # Academic Garden
 
+## DEPRECATED: Web Runtime
+
+The root web app (`index.html`, `styles.css`, `src/*.js`, `sync-config.js`, and
+GitHub Pages/browser workflows) is deprecated and must be treated as historical
+reference only.
+
+Current active development is the Godot mobile portrait prototype under
+`godot-prototype/`. New UI, map, plant sizing, interaction, save-flow, and art
+integration work should happen there first. Do not spend implementation effort
+on the web runtime unless the user explicitly asks to maintain archival web
+compatibility.
+
+Open `D:\academic garden\godot-prototype` in Godot and run the main scene for
+the current project direction.
+
 面向青年教师的像素风长期项目成长花园原型。当前迭代实现项目建立、历史成果
 导入、活跃/收获/沉睡分区，以及论文与课程的培育记录和基础阶段推进。
 
@@ -39,6 +54,13 @@ https://zhxh1021.github.io/academic-garden/
 - 页面右上角可将全部花园数据导出为 JSON 备份。
 - 持久化封装在 `src/store.js` 中，后续可替换为服务端 API 或本地数据库。
 - 第一版正式采用本地优先方式；体验稳定后再将同一数据边界迁移到在线版本。
+
+## 素材与授权
+
+2.0 美术重构使用用户已购买授权的 Sprout Lands 素材包作为主视觉来源，包括
+`Sprout Lands - Sprites - Basic pack`、`Sprout Lands - Sprites - premium pack`
+和 `Sprout Lands - UI Pack - Basic pack`。运行时裁切与合成素材集中放在
+`assets/sprites/sprout/`，来源索引和地图合成源图保留在 `assets/art/`。
 
 ## 本轮范围
 

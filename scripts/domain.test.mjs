@@ -229,7 +229,7 @@ test("repairs duplicate decoration slots within a zone during moves", () => {
   ]);
 });
 
-test("uses complete paper tree sprites for mature map stages", () => {
+test("uses distinct paper tree sprites for mature lifecycle stages", () => {
   const plant = createPlant({
     title: "Maple",
     type: "paper",
@@ -239,7 +239,22 @@ test("uses complete paper tree sprites for mature map stages", () => {
     term: ""
   });
 
-  assert.equal(varietySprite({ ...plant, stage: "tree" }), "./assets/sprites/tree-maple.png");
-  assert.equal(varietySprite({ ...plant, stage: "flower" }), "./assets/sprites/tree-maple.png");
-  assert.equal(varietySprite({ ...plant, stage: "fruit" }), "./assets/sprites/tree-maple.png");
+  assert.equal(varietySprite({ ...plant, stage: "tree" }), "./assets/sprites/sprout/stages/paper-maple-tree.png");
+  assert.equal(varietySprite({ ...plant, stage: "flower" }), "./assets/sprites/sprout/stages/paper-maple-flower.png");
+  assert.equal(varietySprite({ ...plant, stage: "fruit" }), "./assets/sprites/sprout/stages/paper-maple-fruit.png");
+});
+
+test("uses distinct course flower sprites for bloom, fruit, and saved seed stages", () => {
+  const plant = createPlant({
+    title: "Sunflower",
+    type: "course",
+    variety: "sunflower",
+    historical: false,
+    authorRole: "",
+    term: "Spring"
+  });
+
+  assert.equal(varietySprite({ ...plant, stage: "bloom" }), "./assets/sprites/sprout/stages/course-sunflower-bloom.png");
+  assert.equal(varietySprite({ ...plant, stage: "fruit" }), "./assets/sprites/sprout/stages/course-sunflower-fruit.png");
+  assert.equal(varietySprite({ ...plant, stage: "seed_saved" }), "./assets/sprites/sprout/stages/course-sunflower-seed_saved.png");
 });

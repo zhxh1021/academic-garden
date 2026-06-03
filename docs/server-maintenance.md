@@ -1,5 +1,12 @@
 # Academic Garden Server Maintenance
 
+## Deprecated Web/Backend Path
+
+This document describes the old GitHub Pages plus Tencent Cloud browser-sync
+architecture. That web runtime is deprecated. Keep this document as operational
+history only unless the user explicitly asks for archival web/backend
+maintenance. Current product work should target `godot-prototype/`.
+
 This note is for the Tencent Cloud backend at `https://api.acagarden.site`.
 
 ## Services

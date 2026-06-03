@@ -1,3 +1,9 @@
+/*
+  DEPRECATED WEB/SYNC RUNTIME.
+  This backup helper supports the old browser sync backend. Active product work
+  has moved to the Godot mobile portrait prototype in ../godot-prototype/.
+*/
+
 import { mkdir, readdir, stat, copyFile, unlink } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

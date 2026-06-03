@@ -13,3 +13,6 @@ backups/
 *.sqlite3
 dist/
 build/
+/2.0美术重构/
+godot-prototype/.godot/
+godot-prototype/layout_debug_export.json

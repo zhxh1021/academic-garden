@@ -1,5 +1,12 @@
 # Academic Garden Personal Sync Backend
 
+## Deprecated Web/Sync Plan
+
+This plan belongs to the old root browser app and GitHub Pages sync path. The
+web runtime is deprecated. Keep this file as historical reference only unless
+the user explicitly asks for archival web/backend maintenance. Current product
+work should target `godot-prototype/`.
+
 This is the small backend plan used for the personal multi-device version.
 
 ## Goal

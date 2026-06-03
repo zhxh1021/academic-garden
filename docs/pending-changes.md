@@ -1,5 +1,508 @@
 # Pending Changes
 
+## 2026-06-03 - Godot exported layout bake and plot alignment
+
+### Summary
+
+- Read the user's exported Godot debug layout from `godot-prototype/layout_debug_export.json`.
+- Baked the exported decoration positions and decoration slot positions into the prototype defaults.
+- Aligned the active garden's 9 plot anchors into a clean 3x3 grid while preserving the user's hand-placed overall position:
+  - columns: `0.293`, `0.503`, `0.719`
+  - rows: `0.488`, `0.585`, `0.676`
+- Bumped `layout_version` to `3` so existing local saves migrate plot positions to the aligned anchors.
+- Kept decoration migration limited to pre-v2 saves so the user's current decoration placement is not overwritten.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Parsed `godot-prototype/data/garden_seed.json` with `python -m json.tool`.
+- Printed active plot coordinates and confirmed the 9 anchors share exactly three x columns and three y rows.
+- Launched the Godot project through MCP debug mode; output reported the Vulkan device and no errors.
+
+### Notes
+
+- Existing unrelated local web app, docs, and root asset changes were left untouched.
+- The plot anchor semantics remain bottom/ground aligned: the coordinate represents the plant's soil/ground anchor rather than the canopy center. OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot map and sprite style harmonization pass
+
+### Summary
+
+- Generated a v5 Godot map set from the existing v4 generated maps so the background better matches the lower-resolution cream-toned Sprout plant and decoration sprites.
+- Tuned the maps by lowering effective detail density, lightly posterizing color, reducing contrast/saturation, and adding a subtle warm paper veil.
+- Updated the Godot prototype to load the v5 active/harvested/dormant maps for both fresh seed data and existing-save map migration.
+- Set the Godot map, plant, and decoration display layers to nearest-neighbor texture filtering so pixel art is not smoothed against the map.
+
+### Files Changed
+
+- `scripts/tune_godot_map_style.py`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-active-gpt-v5.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-harvested-gpt-v5.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-dormant-gpt-v5.png`
+- `godot-prototype/assets/art/godot-map-style-v5-contact-sheet.png`
+- `godot-prototype/assets/art/godot-active-map-v4-v5-plant-overlay.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- No new GPT-Image-2 generation was used; this pass locally retuned the existing Godot v4 generated maps.
+- The v4 maps remain in place as source/reference assets.
+- The contact sheet compares each v4 map to its v5 retuned output.
+- The active overlay preview composites current plant sprites on v4 and v5 to check foreground/background style fit.
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`; JSON parsed successfully and shows all three zones using v5 maps.
+- Ran `python -m py_compile scripts/tune_godot_map_style.py`.
+- Verified the three v5 maps plus both QA preview images exist.
+- Queried Godot MCP project info; it recognized `godot-prototype` with Godot `4.6.3.stable.official.7d41c59c4`.
+- Launched the Godot project through MCP debug mode after the v5 map/style update; output reported the Vulkan device and no errors.
+- Stopped the MCP debug run cleanly; final output had no errors.
+
+### Notes
+
+- Existing unrelated local web app, backend, docs, and root asset changes were left untouched.
+- This is a local Godot prototype/static asset slice. OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot early growth map sizing fix
+
+### Summary
+
+- Fixed the Godot map plant sizing bug where seed, sowing, sapling, growing, and course bloom/harvest stages reused mature tree-sized plot buttons.
+- Added stage-specific Godot plot button sizes so seeds stay tiny near the soil, seedlings remain visibly smaller than mature trees, and course flower buds no longer occupy a whole field tile.
+- Kept existing plot `x`/`y` positions untouched; debug-mode `size_scale` still applies on top of the new stage base size.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Queried Godot MCP project info; it recognized `godot-prototype` with Godot `4.6.3.stable.official.7d41c59c4`, 1 scene, 1 script, and 640 assets.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Confirmed `STAGE_PLOT_SIZES` entries exist for `paper:seed`, `paper:sapling`, `course:sowing`, `course:growing`, `course:bloom`, `course:fruit`, and `course:seed_saved`.
+- Launched `res://scenes/main.tscn` through Godot MCP; output reported the Vulkan device and no errors.
+- Stopped the Godot MCP debug run cleanly; final output had no errors.
+
+### Notes
+
+- Existing Godot plot positions and user-adjusted layout coordinates were left untouched.
+- No new visual assets were generated.
+- OpenClaw deploy needed: no.
+
+## 2026-06-03 - Deprecated root web runtime
+
+### Summary
+
+- Marked the root browser app as deprecated in project guidance and runtime entry files.
+- Declared `godot-prototype/` as the active product path for mobile portrait UI, map, plant sizing, interaction, save-flow, and art integration work.
+- Added a dedicated deprecated-web-runtime note so future Codex threads do not keep patching `index.html`, `styles.css`, or `src/*.js` by default.
+- Added a visible deprecated banner to the old `index.html` page without deleting historical web code.
+
+### Files Changed
+
+- `AGENTS.md`
+- `README.md`
+- `index.html`
+- `styles.css`
+- `src/app.js`
+- `src/domain.js`
+- `src/store.js`
+- `src/sync-auth.js`
+- `sync-config.js`
+- `scripts/open_local.py`
+- `scripts/close_local.py`
+- `scripts/serve_local.py`
+- `server/server.mjs`
+- `scripts/backup_garden.mjs`
+- `package.json`
+- `打开学术花园.cmd`
+- `关闭学术花园.cmd`
+- `启动同步版学术花园.cmd`
+- `docs/art-asset-rules.md`
+- `docs/backend-sync-plan.md`
+- `docs/server-maintenance.md`
+- `docs/web-runtime-deprecated.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Ran `node --check src/domain.js`.
+- Ran `node --check src/store.js`.
+- Ran `node --check src/sync-auth.js`.
+- Ran `node --check sync-config.js`.
+- Ran `node --check server/server.mjs`.
+- Ran `node --check scripts/backup_garden.mjs`.
+- Parsed `package.json` with `node -e`.
+- Searched the root web files and web/backend docs for `DEPRECATED` markers.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- OpenClaw deploy needed: no.
+
+## 2026-06-03 - Homepage early growth map sizing fix
+
+### Summary
+
+- Superseded: this was a web-runtime patch made after the project direction had already moved to the Godot mobile prototype. The root browser app is now explicitly marked deprecated.
+- Shrank homepage map sprites for seed/sowing stages so newly planted items appear as tiny ground-level sprouts near the soil instead of filling a whole plot.
+- Reduced sapling/growing stages so seedlings remain visibly smaller than mature trees.
+- Reduced course flower bloom/fruit/seed-saved map sizing so flower stages do not read as tree-sized objects on the field.
+- Kept the existing plant data, stage routing, and save files unchanged.
+
+### Files Changed
+
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --test scripts/domain.test.mjs`.
+- Confirmed the target desktop and mobile CSS overrides are present for seed/sowing, sapling/growing, and course flower map stages.
+- Attempted Browser plugin QA at `http://127.0.0.1:8765/`, but the browser runtime failed twice with `windows sandbox failed: spawn setup refresh`; no fallback browser dependencies were installed.
+
+### Notes
+
+- No new visual assets were generated for this slice.
+- Existing unrelated local work was left untouched.
+- OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot runtime layout debug mode
+
+### Summary
+
+- Added a runtime layout debug mode to the Godot prototype, toggled with `F2`.
+- In debug mode, plants, placed decorations, decoration placement slots, and distant house hotspots can be selected and dragged directly on the running map.
+- Added selected-item size adjustment with `[` and `]` for plants/decorations/hotspots.
+- Added debug export with `\` and an `Export layout` overlay button, writing current positions and sizes to both `user://layout_debug_export.json` and `godot-prototype/layout_debug_export.json` for handoff before baking final coordinates into the project.
+- Ignored `godot-prototype/layout_debug_export.json` so future debug exports do not dirty the repository after the layout has been baked.
+- Added layout version protection so existing-save migration no longer overwrites manual position changes after the current layout version has been applied.
+- Documented the debug controls in `godot-prototype/README.md`.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/README.md`
+- `.gitignore`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Launched the Godot project through MCP debug mode after adding the layout debugger; output reported the Vulkan device and no errors or warnings.
+- Stopped the MCP debug run cleanly; final output had no errors or warnings.
+
+### Notes
+
+- Existing unrelated local web app, docs, and root asset changes were left untouched.
+- This is a local Godot prototype/debug tooling slice. OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot generated map and rebuilt plant portrait pass
+
+### Summary
+
+- Replaced the visibly stitched Godot portrait map with a new unified generated active garden entrance map.
+- Derived harvested and dormant v4 map variants from the same generated map so all three Godot zones avoid the old broken/patched background.
+- Rebuilt the Sprout tree/flower runtime assets into two project-specific sets: map sprites with shared ground anchors, shadows, and paper/course badges; and larger portrait sprites for mobile detail panels.
+- Added lightweight in-engine plant motion using `_process` scale pulses instead of baked animation frames.
+- Reworked the plot detail UI into a mobile overlay: portrait illustration on top, status/title/log/note content below, without shrinking or scrambling the map.
+- Updated fresh seed data and existing-save migration so map paths, plot coordinates, rebuilt sprites, and portrait sprites stay compatible with local JSON saves.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/README.md`
+- `godot-prototype/assets/art/godot-active-entry-gpt-v1-source.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-active-gpt-v4.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-harvested-gpt-v4.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-dormant-gpt-v4.png`
+- `godot-prototype/assets/sprites/sprout/plants-rebuilt/*.png`
+- `godot-prototype/assets/sprites/sprout/portraits/*.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Used the built-in image generation tool for the new active entrance map, then copied the source into `godot-prototype/assets/art/godot-active-entry-gpt-v1-source.png`.
+- Prompt constraints: vertical mobile game home map, cohesive Sprout Lands-inspired pixel-art academic garden, 390:844 portrait composition, distant cottage and greenhouse, natural paths/fences/water/decor, 9 integrated soil beds, no UI, no labels, no seams, no collage or stitched grass.
+- App-ready map files were resized to `780x1240` under `godot-prototype/assets/sprites/sprout/maps/`.
+- Harvested and dormant maps are local color/mood variants of the generated active map.
+- Plant map sprites and detail portraits were locally derived with Pillow from the existing Sprout stage sprites, preserving the original plant silhouettes while adding ground anchors, shadows, project badges, and detail-friendly framing.
+
+### Verification
+
+- Visually inspected the generated active map and rebuilt paper/course portrait assets.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`; JSON parsed successfully.
+- Verified key new asset paths exist: source map, active v4 map, rebuilt course sprite, and course portrait sprite.
+- Launched the Godot project through MCP debug mode after the v4 map/detail rewrite; output reported the Vulkan device and no errors.
+- Stopped the MCP debug run cleanly; final output had no errors.
+
+### Notes
+
+- Existing unrelated local web app, docs, and root asset changes were left untouched.
+- This is a local Godot prototype/static asset slice. OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot immersive portrait garden map redo
+
+### Summary
+
+- Removed the menu-first Godot startup flow; the prototype now launches directly into the active garden map.
+- Reworked the main Godot UI into a lightweight mobile HUD: compact title/coin header, large map stage, optional plant detail drawer, and fixed-size bottom decoration inventory strip.
+- Replaced the broken/tiled entry map usage with portrait runtime maps derived from the existing unified Sprout map backgrounds.
+- Kept three-garden navigation in the game world: distant house/greenhouse hotspots switch active, harvested, and dormant gardens instead of opening list-style buttons.
+- Repositioned the active garden's 9 plot anchors into a clean 3x3 planting area on the portrait map, with harvested/dormant plot and decoration anchors moved onto stable map ground.
+- Added a startup migration for existing local Godot saves so old saved plot/decor coordinates are moved to the new portrait map anchors without resetting visits, logs, status, coins, or inventory.
+- Preserved local JSON loading/saving, plot visit/log updates, decoration inventory counts, placement, and removal behavior.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/README.md`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-active-portrait-v1.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-harvested-portrait-v1.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-dormant-portrait-v1.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- No GPT-Image-2 generation was used.
+- The three portrait map PNGs were locally derived with Pillow from the existing `sprout-map-*-gpt-v3-empty.png` backgrounds.
+- The portrait maps preserve the distant buildings, paths, fences, water, and garden edges from the existing unified maps, then extend the lower playable planting area with grass sampled from the same source maps.
+
+### Verification
+
+- Queried Godot MCP project info; it recognized `godot-prototype` with Godot `4.6.3.stable.official.7d41c59c4`, 1 scene, 1 script, and 516 assets.
+- Launched the Godot project through MCP debug mode after the rewrite; output reported the Vulkan device and no errors or warnings.
+- Stopped the MCP debug run cleanly; final output had no errors or warnings.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`; JSON parsed successfully and confirmed the active garden still has 9 plots.
+- Verified the three new portrait map files exist.
+- Searched `godot-prototype/scripts/main.gd` and `godot-prototype/README.md` for old entry/menu strings (`Choose a garden`, `screen_mode`, `entry scene`, `garden tabs`, `Home`); no stale runtime entry flow remains.
+
+### Notes
+
+- Existing unrelated local web app, docs, and root asset changes were left untouched.
+- This is a local Godot prototype/static asset slice. OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot three-garden mobile demo slice
+
+### Summary
+
+- Expanded the separate Godot prototype from a tappable 9-plot skeleton into a basic mobile demo.
+- Imported the existing runtime sprites, art source files, and user-provided Sprout Lands source pack into `godot-prototype/assets/`.
+- Added an entry scene flow with three garden choices: active, harvest, and dormant.
+- Reworked the main demo screen around a portrait mobile layout with garden tabs, map backgrounds, plant overlays, decoration overlays, a detail card, and a decoration inventory bar.
+- Preserved the local-first prototype mechanism by extending the JSON data model for zones, plots, visits, progress logs, coins, decoration catalog, owned decoration counts, and placed decorations.
+- Added basic decoration interactions: select an owned decoration, tap a placement slot, and tap a placed decoration to return it to inventory.
+
+### Files Changed
+
+- `godot-prototype/project.godot`
+- `godot-prototype/scenes/main.tscn`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/README.md`
+- `godot-prototype/assets/art/**`
+- `godot-prototype/assets/source-art/**`
+- `godot-prototype/assets/sprites/**`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- No GPT-Image-2 generation was needed for this slice.
+- Runtime sprites and composed map backgrounds were copied from the existing project assets under `assets/sprites/` and `assets/art/`.
+- The original user-provided Sprout Lands art packs were copied under `godot-prototype/assets/source-art/` for future Godot-side slicing and adjustment.
+- The demo currently composes existing map backgrounds, stage sprites, ground sprites, and decoration sprites in Godot UI layers sized for a portrait mobile window.
+
+### Verification
+
+- Ran Godot 4.6.3 headless validation for `godot-prototype`; it completed with no parse errors and no missing-resource errors.
+- Launched the Godot project through MCP debug mode and stopped it; final output reported the Vulkan device and no warnings or errors.
+- Verified key imported paths exist under `godot-prototype/assets/sprites/sprout/`, including maps, decorations, and stage sprites.
+
+### Notes
+
+- Existing unrelated local web app, docs, and art changes were left untouched.
+- This is a local Godot prototype/static asset slice. OpenClaw deploy needed: no.
+
+## 2026-06-03 - Godot mobile prototype bootstrap
+
+### Summary
+
+- Added a separate Godot 4.6.3 Standard prototype project under `godot-prototype/` without touching the existing web app runtime.
+- Configured the prototype for a 390 x 844 portrait viewport.
+- Added a first vertical slice with 9 tappable garden plots, local seed JSON, local `user://garden_state.json` saving, a detail card, and a simple progress log button.
+- Copied a small set of existing Sprout Lands stage sprites into the prototype so the first run has real plant visuals.
+
+### Files Changed
+
+- `godot-prototype/project.godot`
+- `godot-prototype/scenes/main.tscn`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/README.md`
+- `godot-prototype/assets/sprites/stages/*`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- No new GPT-Image-2 generation was needed.
+- Runtime prototype sprites were copied from existing Sprout Lands stage assets under `assets/sprites/sprout/stages/`.
+- The prototype loads PNGs directly with `Image.load()` / `ImageTexture.create_from_image()` so the first headless run does not depend on editor-side import metadata.
+
+### Verification
+
+- Confirmed Godot version `4.6.3.stable.official.7d41c59c4`.
+- Initial sandboxed headless Godot run crashed while trying to create `user://logs`; this was an environment permission issue, not a project script error.
+- Re-ran headless project validation with normal Godot user-data access; the project loaded successfully after switching direct PNG loading on.
+- Queried Godot MCP project info; it recognized `godot-prototype` with 1 scene, 1 script, and 8 assets.
+
+### Notes
+
+- Existing unrelated local web app, docs, and art changes were left untouched.
+- This is a local prototype/static asset slice. OpenClaw deploy needed: no.
+
+## 2026-06-02 - Sprout Lands 2.0 art rebuild slice
+
+### Summary
+
+- Rebuilt the homepage farm visual direction around Sprout Lands assets instead of the previous GPT-painted garden backgrounds.
+- Added three Sprout Lands composite maps for active, harvested, and dormant zones while preserving the existing 9 plots, zone switching, plant click behavior, move mode, and decoration placement logic.
+- Routed paper tree and course flower varieties/stages to Sprout Lands tree, fruit, farming-plant, and flower sprites under `assets/sprites/sprout/`.
+- Replaced the decoration shop/runtime decoration sprites with Sprout Lands objects and expanded the existing fixed slots to 10 centralized `DECORATIONS` entries in `src/domain.js`.
+- Re-skinned the HUD, wallet, tabs, toolbar, shop cards, project cards, dialogs, inputs, buttons, inventory-like slots, and preview grounds with Sprout Lands UI/font assets.
+- Added mobile layout fixes so the HUD sits above the map and the farm toolbar uses a 2x2 action grid with short zone labels.
+- Added Sprout Lands attribution/licensing notes to `README.md` and updated `docs/art-progress.md`.
+
+### Files Changed
+
+- `README.md`
+- `docs/art-progress.md`
+- `docs/pending-changes.md`
+- `scripts/domain.test.mjs`
+- `src/domain.js`
+- `styles.css`
+- `assets/art/sprout-source-contact-v1.png`
+- `assets/art/sprout-components-v1/*`
+- `assets/art/sprout-map-active-v1-source.png`
+- `assets/art/sprout-map-harvested-v1-source.png`
+- `assets/art/sprout-map-dormant-v1-source.png`
+- `assets/sprites/sprout/**`
+
+### Asset Notes
+
+- No GPT-Image-2 generation was needed for this slice.
+- Source art came from the user-provided, purchased Sprout Lands packs under `2.0美术重构/`: Sprites Basic, Sprites premium, and UI Pack Basic.
+- `assets/art/sprout-source-contact-v1.png` and `assets/art/sprout-components-v1/*` document the source sheets and numbered crop candidates used for slicing.
+- `assets/sprites/sprout/maps/sprout-map-*-v1.png` were locally composed from Sprout Lands grass, tilled dirt, path, water, fence, wooden house, tree, flower, well, workbench, sign, and bridge sprites.
+- `assets/sprites/sprout/stages/*` were locally cropped from Sprout Lands fruit tree, tree/bush, farming plant, mushroom/flower/stone sheets to preserve the existing paper/course lifecycle stage semantics.
+- `assets/sprites/sprout/decor/*`, `assets/sprites/sprout/ui/*`, and `assets/sprites/sprout/ground/*` were locally cropped or copied from Sprout Lands object/UI sheets and font files.
+
+### Verification
+
+- Ran `node --check src\app.js`.
+- Ran `node --check src\domain.js`.
+- Ran `npm test`; 29 tests passed.
+- Ran `git diff --check`; only existing CRLF normalization warnings were reported.
+- Ran a magenta/chroma-key scan across `assets/sprites/sprout/**/*.png`; 0 magenta pixels found.
+- Started local preview at `http://127.0.0.1:4173/`.
+- Browser plugin tools were not exposed by tool search, so rendered QA used bundled Playwright with system Microsoft Edge.
+- Verified desktop 1365x900 and mobile 390x844:
+  - page title matched `Academic Garden | 学术花园`;
+  - active and harvested Sprout map backgrounds were present;
+  - shop opened from the farm toolbar;
+  - 10 shop cards rendered;
+  - farm zone switching changed the homepage map to `harvested`;
+  - no horizontal overflow at either viewport;
+  - no relevant console errors or warnings.
+- Captured QA screenshots under `%TEMP%`: `academic-garden-sprout-active-debug.png`, `academic-garden-sprout-desktop-v2.png`, and `academic-garden-sprout-mobile-v3.png`.
+
+### Notes
+
+- Existing unrelated `AGENTS.md` local change was left untouched.
+- Existing untracked full-stage sprite work under `assets/sprites/stages/*-full.png` was left untouched.
+- This is GitHub Pages frontend/static asset work. OpenClaw deploy needed: no.
+
+## 2026-06-02 - Homepage farm lifecycle, motion, and decoration closure
+
+### Summary
+
+- Restored distinct homepage/card/detail lifecycle sprite routing for paper tree `tree`, `flower`, and `fruit` stages with full-height derived tree assets instead of the cropped stage PNGs or a single collapsed variety sprite.
+- Added distinct course flower `seed_saved` runtime sprites so `bloom`, `fruit`, and `seed_saved` no longer render as the same image.
+- Added lightweight homepage ambience and plant motion: stage sprites sway subtly, leaves/petals drift, and a small bird accent moves behind the playable map layer with `prefers-reduced-motion` support.
+- Tightened 390px mobile layout overflow and changed map plant name plaques to hover/focus tags so dense gardens no longer look like labels pasted over stems.
+- Kept active/harvested/dormant homepage map entrances consistent and verified the dormant entrance switches only the homepage farm area.
+- Reworked decoration slot labels, shop/warehouse ownership copy, occupied-slot swap targets, decoration sizing, and slot coordinates so map placement, shop preview, and move mode communicate the same target slots.
+
+### Files Changed
+
+- `src/domain.js`
+- `src/app.js`
+- `styles.css`
+- `scripts/domain.test.mjs`
+- `assets/sprites/stages/paper-camphor-tree-full.png`
+- `assets/sprites/stages/paper-camphor-flower-full.png`
+- `assets/sprites/stages/paper-camphor-fruit-full.png`
+- `assets/sprites/stages/paper-cherry-tree-full.png`
+- `assets/sprites/stages/paper-cherry-flower-full.png`
+- `assets/sprites/stages/paper-cherry-fruit-full.png`
+- `assets/sprites/stages/paper-ginkgo-tree-full.png`
+- `assets/sprites/stages/paper-ginkgo-flower-full.png`
+- `assets/sprites/stages/paper-ginkgo-fruit-full.png`
+- `assets/sprites/stages/paper-maple-tree-full.png`
+- `assets/sprites/stages/paper-maple-flower-full.png`
+- `assets/sprites/stages/paper-maple-fruit-full.png`
+- `assets/sprites/stages/paper-pine-tree-full.png`
+- `assets/sprites/stages/paper-pine-flower-full.png`
+- `assets/sprites/stages/paper-pine-fruit-full.png`
+- `assets/sprites/stages/paper-willow-tree-full.png`
+- `assets/sprites/stages/paper-willow-flower-full.png`
+- `assets/sprites/stages/paper-willow-fruit-full.png`
+- `assets/sprites/stages/course-daisy-seed_saved-map.png`
+- `assets/sprites/stages/course-hydrangea-seed_saved-map.png`
+- `assets/sprites/stages/course-lavender-seed_saved-map.png`
+- `assets/sprites/stages/course-lotus-seed_saved-map.png`
+- `assets/sprites/stages/course-rose-seed_saved-map.png`
+- `assets/sprites/stages/course-sunflower-seed_saved-map.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- No new GPT-Image-2 generation was needed for this slice.
+- The eighteen `paper-*-tree-full.png`, `paper-*-flower-full.png`, and `paper-*-fruit-full.png` runtime sprites were derived locally from the complete `tree-*.png` assets, with small flower/fruit marker overlays added to preserve stage differences while keeping full trunks, canopies, and bases.
+- The six `course-*-seed_saved-map.png` runtime sprites were derived locally from the existing `course-*-seed_saved.png` / fruit-stage sprites by adding a small seed-saved marker treatment, preserving alpha transparency.
+- No source sheets were added; the derived runtime sprites live under `assets/sprites/stages/` because they are app-ready transparent PNGs.
+
+### Verification
+
+- Ran initial baseline checks: `git status --short`; `git diff -- src/app.js styles.css index.html src/domain.js scripts/domain.test.mjs docs/pending-changes.md`; `node --check src\app.js`; `node --test scripts\domain.test.mjs scripts\server.test.mjs`.
+- Watched new domain regression tests fail before changing production sprite routing, then pass after the fix.
+- Ran `node --check src\app.js`.
+- Ran `node --test scripts\domain.test.mjs scripts\server.test.mjs`; 24 tests passed.
+- Ran `git diff --check`; only existing Windows line-ending warnings were reported.
+- Ran a native PowerShell/System.Drawing chroma-key scan on the 24 new derived runtime sprites; 0 magenta pixels found.
+- Started local preview at `http://127.0.0.1:4173/`.
+- Browser plugin attempt failed with a Windows sandbox startup error (`windows sandbox failed: spawn setup refresh`), so rendered QA used headless Microsoft Edge via CDP.
+- Captured desktop and 390px fixture screenshots with seeded active/harvested/dormant plants and owned decorations; verified lifecycle stages are distinct, sprites remain inside the map, decorations sit on their slots, and mobile `scrollWidth` stays 390.
+- Re-rendered fixture screenshots after replacing cropped tree stage PNGs with full-height tree stage assets; verified mature trees now show complete trunks, canopies, and bases on desktop and 390px mobile.
+- Used CDP interaction checks at 390px to verify the dormant homepage entrance switches `selectedFarmZone` to `dormant`, leaves project management hidden, shop opens from the toolbar, and a decoration drop target center matches the final decoration landing center (`centerDelta: { x: 0, y: 0 }`).
+
+### Notes
+
+- Existing unrelated `AGENTS.md` local change was left untouched.
+- Temporary QA helper files used for IndexedDB seeding and CDP checks were removed before final verification.
+- This is GitHub Pages frontend/domain asset work. OpenClaw deploy needed: no.
+
 ## 2026-06-02 - House hotspot and decoration asset redraw pass
 
 ### Summary

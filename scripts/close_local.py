@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# DEPRECATED WEB RUNTIME: historical browser-service shutdown helper only.
+# Active product work has moved to godot-prototype.
+
 import json
 from pathlib import Path
 from urllib.error import URLError
