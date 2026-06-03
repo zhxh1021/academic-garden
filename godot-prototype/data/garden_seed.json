@@ -1,6 +1,6 @@
 {
   "selected_zone": "active",
-  "layout_version": 3,
+  "layout_version": 4,
   "coins": 80,
   "zones": [
     {
@@ -23,7 +23,13 @@
           "visits": 0,
           "logs": 2,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-ginkgo-tree-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 36,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         },
         {
           "id": "active-2",
@@ -38,7 +44,13 @@
           "visits": 0,
           "logs": 1,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-cherry-flower-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 54,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         },
         {
           "id": "active-3",
@@ -53,7 +65,14 @@
           "visits": 0,
           "logs": 3,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/course-daisy-bloom-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 36,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          },
+          "sessions": 0
         },
         {
           "id": "active-4",
@@ -68,7 +87,13 @@
           "visits": 0,
           "logs": 0,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-maple-sapling-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 18,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         },
         {
           "id": "active-5",
@@ -83,7 +108,14 @@
           "visits": 0,
           "logs": 1,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/course-rose-growing-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 18,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          },
+          "sessions": 0
         },
         {
           "id": "active-6",
@@ -98,7 +130,13 @@
           "visits": 0,
           "logs": 0,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-pine-seed-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 0,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         },
         {
           "id": "active-7",
@@ -113,7 +151,14 @@
           "visits": 0,
           "logs": 4,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/course-lotus-fruit-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 54,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          },
+          "sessions": 0
         },
         {
           "id": "active-8",
@@ -128,7 +173,13 @@
           "visits": 0,
           "logs": 2,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-willow-flower-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 54,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         },
         {
           "id": "active-9",
@@ -137,7 +188,7 @@
           "stage": "empty",
           "status": "Available",
           "note": "Tap to inspect the detail-card flow.",
-          "sprite": "res://assets/sprites/sprout/ground/empty-plot-1.png",
+          "sprite": "res://assets/sprites/sprout/ground/empty-plot-sign.png",
           "x": 0.719,
           "y": 0.676,
           "visits": 0,
@@ -148,26 +199,32 @@
       "decorations": [
         {
           "id": "bench",
-          "x": 0.192,
-          "y": 0.85,
+          "x": 0.17,
+          "y": 0.822,
           "size_scale": 1.0
         },
         {
           "id": "lamp",
-          "x": 0.84,
-          "y": 0.85,
+          "x": 0.835,
+          "y": 0.806,
           "size_scale": 1.0
         },
         {
           "id": "pond",
-          "x": 0.71,
-          "y": 0.82,
+          "x": 0.705,
+          "y": 0.832,
           "size_scale": 1.0
         },
         {
-          "id": "lamp",
-          "x": 0.71,
-          "y": 0.82,
+          "id": "sign",
+          "x": 0.148,
+          "y": 0.424,
+          "size_scale": 1.0
+        },
+        {
+          "id": "flower-rock",
+          "x": 0.842,
+          "y": 0.62,
           "size_scale": 1.0
         }
       ]
@@ -187,12 +244,19 @@
           "status": "Archived",
           "note": "Finished course notes waiting for review.",
           "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-sunflower-seed_saved-rebuilt.png",
-          "x": 0.35,
-          "y": 0.57,
+          "x": 0.293,
+          "y": 0.488,
           "visits": 0,
           "logs": 5,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/course-sunflower-seed_saved-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 72,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          },
+          "sessions": 0
         },
         {
           "id": "harvested-2",
@@ -202,25 +266,153 @@
           "status": "Harvested",
           "note": "Useful references and summary cards are ready.",
           "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-camphor-fruit-rebuilt.png",
-          "x": 0.65,
-          "y": 0.69,
+          "x": 0.503,
+          "y": 0.488,
           "visits": 0,
           "logs": 6,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-camphor-fruit-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 72,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
+        },
+        {
+          "title": "Paper Cherry",
+          "kind": "paper",
+          "stage": "fruit",
+          "status": "Harvested",
+          "note": "Accepted paper with final summary notes.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-cherry-fruit-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-cherry-fruit-portrait.png",
+          "id": "harvested-3",
+          "x": 0.719,
+          "y": 0.488
+        },
+        {
+          "title": "Course Lavender",
+          "kind": "course",
+          "stage": "seed_saved",
+          "status": "Archived",
+          "note": "Course material distilled into reusable seeds.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-lavender-seed_saved-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-lavender-seed_saved-portrait.png",
+          "id": "harvested-4",
+          "x": 0.293,
+          "y": 0.585
+        },
+        {
+          "title": "Paper Ginkgo",
+          "kind": "paper",
+          "stage": "flower",
+          "status": "Published",
+          "note": "A completed reading trail with useful citations.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-ginkgo-flower-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-ginkgo-flower-portrait.png",
+          "id": "harvested-5",
+          "x": 0.503,
+          "y": 0.585
+        },
+        {
+          "title": "Course Lotus",
+          "kind": "course",
+          "stage": "fruit",
+          "status": "Completed",
+          "note": "Finished exercises and reflections.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-lotus-fruit-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-lotus-fruit-portrait.png",
+          "id": "harvested-6",
+          "x": 0.719,
+          "y": 0.585
+        },
+        {
+          "title": "Paper Maple",
+          "kind": "paper",
+          "stage": "fruit",
+          "status": "Harvested",
+          "note": "Methods notes are ready for reuse.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-maple-fruit-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-maple-fruit-portrait.png",
+          "id": "harvested-7",
+          "x": 0.293,
+          "y": 0.676
+        },
+        {
+          "title": "Course Daisy",
+          "kind": "course",
+          "stage": "seed_saved",
+          "status": "Archived",
+          "note": "Small course loop closed cleanly.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-daisy-seed_saved-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-daisy-seed_saved-portrait.png",
+          "id": "harvested-8",
+          "x": 0.503,
+          "y": 0.676
+        },
+        {
+          "title": "Empty Plot",
+          "kind": "empty",
+          "stage": "empty",
+          "status": "Available",
+          "note": "Reserved for future completed work.",
+          "sprite": "res://assets/sprites/sprout/ground/empty-plot-sign.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "id": "harvested-9",
+          "x": 0.719,
+          "y": 0.676
         }
       ],
       "decorations": [
         {
           "id": "well",
-          "x": 0.21,
-          "y": 0.82,
+          "x": 0.16,
+          "y": 0.8,
           "size_scale": 1.0
         },
         {
           "id": "picnic",
-          "x": 0.74,
-          "y": 0.84,
+          "x": 0.735,
+          "y": 0.832,
+          "size_scale": 1.0
+        },
+        {
+          "id": "path",
+          "x": 0.5,
+          "y": 0.775,
+          "size_scale": 1.0
+        },
+        {
+          "id": "bench",
+          "x": 0.82,
+          "y": 0.615,
+          "size_scale": 1.0
+        },
+        {
+          "id": "workbench",
+          "x": 0.172,
+          "y": 0.43,
           "size_scale": 1.0
         }
       ]
@@ -240,12 +432,18 @@
           "status": "Paused",
           "note": "A quiet project that should stay visible.",
           "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-pine-sapling-rebuilt.png",
-          "x": 0.36,
-          "y": 0.58,
+          "x": 0.293,
+          "y": 0.488,
           "visits": 0,
           "logs": 1,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-pine-sapling-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 18,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         },
         {
           "id": "dormant-2",
@@ -255,25 +453,153 @@
           "status": "Waiting",
           "note": "A course seed for the next study cycle.",
           "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-hydrangea-sowing-rebuilt.png",
-          "x": 0.64,
-          "y": 0.72,
+          "x": 0.503,
+          "y": 0.488,
           "visits": 0,
           "logs": 0,
           "portrait_sprite": "res://assets/sprites/sprout/portraits/course-hydrangea-sowing-portrait.png",
-          "size_scale": 1.0
+          "size_scale": 1.0,
+          "growth": 0,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          },
+          "sessions": 0
+        },
+        {
+          "title": "Paper Willow",
+          "kind": "paper",
+          "stage": "sapling",
+          "status": "Paused",
+          "note": "Literature cluster waiting for a better moment.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-willow-sapling-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-willow-sapling-portrait.png",
+          "id": "dormant-3",
+          "x": 0.719,
+          "y": 0.488
+        },
+        {
+          "title": "Course Rose",
+          "kind": "course",
+          "stage": "growing",
+          "status": "Paused",
+          "note": "Practice cycle stopped midway.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-rose-growing-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-rose-growing-portrait.png",
+          "id": "dormant-4",
+          "x": 0.293,
+          "y": 0.585
+        },
+        {
+          "title": "Paper Maple",
+          "kind": "paper",
+          "stage": "seed",
+          "status": "Someday",
+          "note": "A captured idea with no active reading yet.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-maple-seed-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-maple-seed-portrait.png",
+          "id": "dormant-5",
+          "x": 0.503,
+          "y": 0.585
+        },
+        {
+          "title": "Course Lotus",
+          "kind": "course",
+          "stage": "sowing",
+          "status": "Waiting",
+          "note": "Course seed waiting for the next study sprint.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/course-lotus-sowing-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/course-lotus-sowing-portrait.png",
+          "id": "dormant-6",
+          "x": 0.719,
+          "y": 0.585
+        },
+        {
+          "title": "Empty Plot",
+          "kind": "empty",
+          "stage": "empty",
+          "status": "Available",
+          "note": "Quiet land for parked ideas.",
+          "sprite": "res://assets/sprites/sprout/ground/empty-plot-sign.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "id": "dormant-7",
+          "x": 0.293,
+          "y": 0.676
+        },
+        {
+          "title": "Paper Ginkgo",
+          "kind": "paper",
+          "stage": "sapling",
+          "status": "Paused",
+          "note": "Useful but not urgent.",
+          "sprite": "res://assets/sprites/sprout/plants-rebuilt/paper-ginkgo-sapling-rebuilt.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/sprout/portraits/paper-ginkgo-sapling-portrait.png",
+          "id": "dormant-8",
+          "x": 0.503,
+          "y": 0.676
+        },
+        {
+          "title": "Empty Plot",
+          "kind": "empty",
+          "stage": "empty",
+          "status": "Available",
+          "note": "Open dormant space.",
+          "sprite": "res://assets/sprites/sprout/ground/empty-plot-sign.png",
+          "visits": 0,
+          "logs": 0,
+          "size_scale": 1.0,
+          "id": "dormant-9",
+          "x": 0.719,
+          "y": 0.676
         }
       ],
       "decorations": [
         {
           "id": "pond",
-          "x": 0.22,
-          "y": 0.84,
+          "x": 0.18,
+          "y": 0.812,
           "size_scale": 1.0
         },
         {
           "id": "sign",
-          "x": 0.78,
-          "y": 0.55,
+          "x": 0.83,
+          "y": 0.548,
+          "size_scale": 1.0
+        },
+        {
+          "id": "lamp",
+          "x": 0.22,
+          "y": 0.43,
+          "size_scale": 1.0
+        },
+        {
+          "id": "flower-rock",
+          "x": 0.79,
+          "y": 0.82,
+          "size_scale": 1.0
+        },
+        {
+          "id": "bridge",
+          "x": 0.5,
+          "y": 0.772,
           "size_scale": 1.0
         }
       ]

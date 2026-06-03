@@ -4,12 +4,13 @@ const SAVE_PATH := "user://garden_state.json"
 const SEED_PATH := "res://data/garden_seed.json"
 const DEBUG_EXPORT_PATH := "user://layout_debug_export.json"
 const DEBUG_EXPORT_PROJECT_PATH := "res://layout_debug_export.json"
-const LAYOUT_VERSION := 3
+const LAYOUT_VERSION := 4
 const MAP_DISPLAY_ASPECT := 780.0 / 1240.0
+const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/empty-plot-sign.png"
 const DEFAULT_PLOT_SIZES := {
 	"paper": Vector2(96, 108),
 	"course": Vector2(88, 98),
-	"empty": Vector2(64, 54)
+	"empty": Vector2(78, 62)
 }
 const STAGE_PLOT_SIZES := {
 	"paper:seed": Vector2(28, 32),
@@ -20,7 +21,7 @@ const STAGE_PLOT_SIZES := {
 	"course:fruit": Vector2(64, 72),
 	"course:seed_saved": Vector2(36, 40)
 }
-const DEFAULT_DECOR_SIZE := Vector2(52, 52)
+const DEFAULT_DECOR_SIZE := Vector2(78, 78)
 const DECOR_SLOTS := [
 	Vector2(0.200, 0.319),
 	Vector2(0.781, 0.340),
@@ -39,24 +40,46 @@ const PLOT_ANCHORS := {
 	"active-7": Vector2(0.293, 0.676),
 	"active-8": Vector2(0.503, 0.676),
 	"active-9": Vector2(0.719, 0.676),
-	"harvested-1": Vector2(0.350, 0.570),
-	"harvested-2": Vector2(0.650, 0.690),
-	"dormant-1": Vector2(0.36, 0.58),
-	"dormant-2": Vector2(0.64, 0.72)
+	"harvested-1": Vector2(0.293, 0.488),
+	"harvested-2": Vector2(0.503, 0.488),
+	"harvested-3": Vector2(0.719, 0.488),
+	"harvested-4": Vector2(0.293, 0.585),
+	"harvested-5": Vector2(0.503, 0.585),
+	"harvested-6": Vector2(0.719, 0.585),
+	"harvested-7": Vector2(0.293, 0.676),
+	"harvested-8": Vector2(0.503, 0.676),
+	"harvested-9": Vector2(0.719, 0.676),
+	"dormant-1": Vector2(0.293, 0.488),
+	"dormant-2": Vector2(0.503, 0.488),
+	"dormant-3": Vector2(0.719, 0.488),
+	"dormant-4": Vector2(0.293, 0.585),
+	"dormant-5": Vector2(0.503, 0.585),
+	"dormant-6": Vector2(0.719, 0.585),
+	"dormant-7": Vector2(0.293, 0.676),
+	"dormant-8": Vector2(0.503, 0.676),
+	"dormant-9": Vector2(0.719, 0.676)
 }
 const DECOR_ANCHORS := {
 	"active": {
-		"bench": Vector2(0.192, 0.850),
-		"lamp": Vector2(0.840, 0.850),
-		"pond": Vector2(0.710, 0.820)
+		"bench": Vector2(0.170, 0.822),
+		"lamp": Vector2(0.835, 0.806),
+		"pond": Vector2(0.705, 0.832),
+		"sign": Vector2(0.148, 0.424),
+		"flower-rock": Vector2(0.842, 0.620)
 	},
 	"harvested": {
-		"well": Vector2(0.210, 0.820),
-		"picnic": Vector2(0.740, 0.840)
+		"well": Vector2(0.160, 0.800),
+		"picnic": Vector2(0.735, 0.832),
+		"path": Vector2(0.500, 0.775),
+		"bench": Vector2(0.820, 0.615),
+		"workbench": Vector2(0.172, 0.430)
 	},
 	"dormant": {
-		"pond": Vector2(0.220, 0.840),
-		"sign": Vector2(0.780, 0.550)
+		"pond": Vector2(0.180, 0.812),
+		"sign": Vector2(0.830, 0.548),
+		"lamp": Vector2(0.220, 0.430),
+		"flower-rock": Vector2(0.790, 0.820),
+		"bridge": Vector2(0.500, 0.772)
 	}
 }
 const ZONE_HOTSPOTS := {
@@ -73,6 +96,36 @@ const ZONE_HOTSPOTS := {
 		{"target": "harvested", "label": "Harvest", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
 	]
 }
+const STAGE_FLOW := {
+	"paper": ["seed", "sapling", "tree", "flower", "fruit"],
+	"course": ["sowing", "growing", "bloom", "fruit", "seed_saved"]
+}
+const STAGE_LABELS := {
+	"seed": "Seed",
+	"sapling": "Sapling",
+	"tree": "Tree",
+	"flower": "Flower",
+	"fruit": "Fruit",
+	"sowing": "Sowing",
+	"growing": "Growing",
+	"bloom": "Bloom",
+	"seed_saved": "Seed saved",
+	"empty": "Empty"
+}
+const NEXT_ACTION_LABELS := {
+	"paper:seed": "Start reading",
+	"paper:sapling": "Draft notes",
+	"paper:tree": "Submit paper",
+	"paper:flower": "Mark accepted",
+	"course:sowing": "Start teaching",
+	"course:growing": "Finish lectures",
+	"course:bloom": "Record outcome",
+	"course:fruit": "Save seeds"
+}
+const CARE_GROWTH := {"sun": 3, "water": 4, "fertilizer": 5}
+const CARE_LABELS := {"sun": "Sun", "water": "Water", "fertilizer": "Fertilizer"}
+const MILESTONE_GROWTH := 18
+const MILESTONE_COINS := 12
 
 var garden_data: Dictionary = {}
 var selected_zone_id := "active"
@@ -80,6 +133,7 @@ var selected_plot_id := ""
 var selected_decor_id := ""
 var texture_cache: Dictionary = {}
 var animated_plot_buttons: Array[Button] = []
+var animated_ambient_nodes: Array[Control] = []
 var animation_time := 0.0
 var debug_mode := false
 var debug_selected: Dictionary = {}
@@ -100,8 +154,16 @@ var detail_panel: PanelContainer
 var detail_icon: TextureRect
 var detail_title: Label
 var detail_meta: Label
+var detail_stats: Label
+var detail_care: Label
 var detail_note: Label
+var detail_actions: GridContainer
 var log_button: Button
+var teach_button: Button
+var advance_button: Button
+var sleep_button: Button
+var wake_button: Button
+var remove_button: Button
 var decor_bar: HBoxContainer
 var debug_panel: PanelContainer
 var debug_title_label: Label
@@ -131,9 +193,20 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(button):
 			continue
 		var phase := float(button.get_meta("phase", 0.0))
-		var amount := float(button.get_meta("amount", 0.018))
-		var pulse := sin((animation_time + phase) * TAU * 0.42) * amount
-		button.scale = Vector2(1.0 + pulse, 1.0 - pulse * 0.45)
+		var amount := float(button.get_meta("amount", 0.026))
+		var base_position: Vector2 = button.get_meta("base_position", button.position)
+		var sway := sin((animation_time + phase) * TAU * 0.34)
+		button.position = base_position + Vector2(sway * 2.0, 0.0)
+		button.rotation = sway * amount
+	for node in animated_ambient_nodes:
+		if not is_instance_valid(node):
+			continue
+		var phase := float(node.get_meta("phase", 0.0))
+		var base_position: Vector2 = node.get_meta("base_position", node.position)
+		var drift := sin((animation_time + phase) * TAU * 0.22)
+		var flutter := cos((animation_time + phase) * TAU * 0.48)
+		node.position = base_position + Vector2(drift * 8.0, flutter * 4.0)
+		node.rotation = drift * 0.35
 
 
 func _input(event: InputEvent) -> void:
@@ -181,7 +254,7 @@ func _load_or_seed_data() -> void:
 func _upgrade_saved_maps() -> void:
 	var saved_layout_version := int(garden_data.get("layout_version", 0))
 	var should_migrate_plot_positions := saved_layout_version < LAYOUT_VERSION
-	var should_migrate_decor_positions := saved_layout_version < 2
+	var should_migrate_decor_positions := saved_layout_version < LAYOUT_VERSION
 	for index in garden_data.get("zones", []).size():
 		var zone: Dictionary = garden_data["zones"][index]
 		var zone_id := str(zone.get("id", "active"))
@@ -194,8 +267,18 @@ func _upgrade_saved_maps() -> void:
 				var plot_anchor: Vector2 = PLOT_ANCHORS[plot_id]
 				plot["x"] = plot_anchor.x
 				plot["y"] = plot_anchor.y
-			plot["sprite"] = _rebuilt_plant_sprite_path(plot.get("sprite", ""))
-			plot["portrait_sprite"] = _portrait_plant_sprite_path(plot.get("portrait_sprite", plot.get("sprite", "")))
+			if str(plot.get("kind", "")) == "empty":
+				plot["sprite"] = EMPTY_PLOT_SIGN_SPRITE
+				plot.erase("portrait_sprite")
+			else:
+				plot["sprite"] = _rebuilt_plant_sprite_path(plot.get("sprite", ""))
+				plot["portrait_sprite"] = _portrait_plant_sprite_path(plot.get("portrait_sprite", plot.get("sprite", "")))
+				if not plot.has("growth"):
+					plot["growth"] = _default_growth_for_stage(plot)
+				if not plot.has("care_today"):
+					plot["care_today"] = {"sun": 0, "water": 0, "fertilizer": 0}
+				if str(plot.get("kind", "")) == "course" and not plot.has("sessions"):
+					plot["sessions"] = 0
 			plots[plot_index] = plot
 		zone["plots"] = plots
 		var zone_decor_anchors: Dictionary = DECOR_ANCHORS.get(zone_id, {})
@@ -322,9 +405,9 @@ func _build_detail_panel() -> void:
 	detail_panel.anchor_right = 1.0
 	detail_panel.anchor_bottom = 1.0
 	detail_panel.offset_left = 18
-	detail_panel.offset_top = -392
+	detail_panel.offset_top = -448
 	detail_panel.offset_right = -18
-	detail_panel.offset_bottom = -104
+	detail_panel.offset_bottom = -92
 	detail_panel.visible = false
 	add_child(detail_panel)
 
@@ -358,17 +441,42 @@ func _build_detail_panel() -> void:
 	detail_meta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_box.add_child(detail_meta)
 
-	log_button = Button.new()
-	log_button.text = "Log"
-	log_button.custom_minimum_size = Vector2(58, 32)
-	log_button.pressed.connect(_on_log_pressed)
-	row.add_child(log_button)
+	var close_button := Button.new()
+	close_button.text = "Close"
+	close_button.custom_minimum_size = Vector2(58, 32)
+	close_button.pressed.connect(_close_detail)
+	row.add_child(close_button)
+
+	detail_stats = Label.new()
+	detail_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail_stats.add_theme_font_size_override("font_size", 11)
+	detail_stats.add_theme_color_override("font_color", Color("#5b4a2a"))
+	box.add_child(detail_stats)
+
+	detail_care = Label.new()
+	detail_care.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail_care.add_theme_font_size_override("font_size", 11)
+	detail_care.add_theme_color_override("font_color", Color("#456342"))
+	box.add_child(detail_care)
 
 	detail_note = Label.new()
 	detail_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail_note.add_theme_font_size_override("font_size", 12)
 	detail_note.add_theme_color_override("font_color", Color("#334231"))
 	box.add_child(detail_note)
+
+	detail_actions = GridContainer.new()
+	detail_actions.columns = 2
+	detail_actions.add_theme_constant_override("h_separation", 6)
+	detail_actions.add_theme_constant_override("v_separation", 5)
+	box.add_child(detail_actions)
+
+	log_button = _detail_action_button("Record +Sun", _on_log_pressed)
+	teach_button = _detail_action_button("Teach +Water", _on_teach_pressed)
+	advance_button = _detail_action_button("Advance", _on_advance_pressed)
+	sleep_button = _detail_action_button("Sleep", _on_sleep_pressed)
+	wake_button = _detail_action_button("Wake", _on_wake_pressed)
+	remove_button = _detail_action_button("Remove", _on_remove_pressed)
 
 
 func _build_decor_bar() -> void:
@@ -428,6 +536,16 @@ func _build_debug_panel() -> void:
 	box.add_child(debug_export_button)
 
 
+func _detail_action_button(text: String, callable: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0, 32)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.pressed.connect(callable)
+	detail_actions.add_child(button)
+	return button
+
+
 func _render_all() -> void:
 	_update_header()
 	_render_map()
@@ -449,6 +567,7 @@ func _render_map() -> void:
 	for child in overlay_layer.get_children():
 		child.queue_free()
 	animated_plot_buttons.clear()
+	animated_ambient_nodes.clear()
 
 	var zone := _current_zone()
 	map_texture.texture = _load_texture(zone.get("map", ""))
@@ -526,6 +645,7 @@ func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
 		overlay_layer.add_child(button)
 		if kind != "empty" and not debug_mode:
 			_animate_plot_button(button, plot)
+			_render_plot_ambient(map_rect, plot, button_size)
 		if debug_mode:
 			_add_debug_tag(button, plot.get("id", "plot"))
 
@@ -588,23 +708,52 @@ func _render_detail() -> void:
 
 	detail_icon.texture = _load_texture(plot.get("portrait_sprite", plot.get("sprite", "")))
 	detail_title.text = plot.get("title", "Plot")
-	detail_meta.text = "%s / %s / visits %d / logs %d" % [
-		plot.get("kind", "kind"),
-		plot.get("status", "status"),
-		int(plot.get("visits", 0)),
-		int(plot.get("logs", 0))
+	var kind := str(plot.get("kind", "kind"))
+	var stage := str(plot.get("stage", ""))
+	detail_meta.text = "%s / %s / %s" % [
+		_kind_label(kind),
+		_stage_label(stage),
+		plot.get("status", "status")
 	]
+	detail_stats.text = "Growth %d / visits %d / logs %d / coins %d" % [
+		int(plot.get("growth", 0)),
+		int(plot.get("visits", 0)),
+		int(plot.get("logs", 0)),
+		int(garden_data.get("coins", 0))
+	]
+	detail_care.text = _care_line(plot)
 	detail_note.text = plot.get("note", "")
-	log_button.disabled = plot.get("kind", "") == "empty"
+	_update_detail_actions(plot)
 
 
 func _animate_plot_button(button: Button, plot: Dictionary) -> void:
-	button.pivot_offset = button.size * 0.5
+	button.pivot_offset = Vector2(button.size.x * 0.5, button.size.y * 0.82)
 	var stage := str(plot.get("stage", ""))
-	var amount := 0.024 if stage in ["tree", "flower", "bloom", "fruit"] else 0.014
+	var amount := 0.035 if stage in ["tree", "flower", "bloom", "fruit"] else 0.018
 	button.set_meta("amount", amount)
 	button.set_meta("phase", float(abs(str(plot.get("id", "")).hash()) % 100) / 100.0)
+	button.set_meta("base_position", button.position)
 	animated_plot_buttons.append(button)
+
+
+func _render_plot_ambient(map_rect: Rect2, plot: Dictionary, button_size: Vector2) -> void:
+	var stage := str(plot.get("stage", ""))
+	if not (stage in ["tree", "flower", "bloom", "fruit"]):
+		return
+	var origin := _map_point(map_rect, Vector2(plot.get("x", 0.5), plot.get("y", 0.5)))
+	var colors := [Color("#d8a13b"), Color("#f2cf76")] if str(plot.get("kind", "")) == "paper" else [Color("#ffe08a"), Color("#f6a6c9")]
+	var offsets := [Vector2(-button_size.x * 0.20, -button_size.y * 0.78), Vector2(button_size.x * 0.24, -button_size.y * 0.66)]
+	for index in offsets.size():
+		var mote := ColorRect.new()
+		mote.color = colors[index]
+		mote.size = Vector2(5, 3) if str(plot.get("kind", "")) == "paper" else Vector2(6, 4)
+		mote.pivot_offset = mote.size * 0.5
+		mote.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		mote.position = origin + offsets[index]
+		mote.set_meta("base_position", mote.position)
+		mote.set_meta("phase", float((abs(str(plot.get("id", "")).hash()) + index * 37) % 100) / 100.0)
+		overlay_layer.add_child(mote)
+		animated_ambient_nodes.append(mote)
 
 
 func _render_decor_bar() -> void:
@@ -888,7 +1037,22 @@ func _select_plot(plot_id: String) -> void:
 	call_deferred("_render_map")
 
 
+func _close_detail() -> void:
+	selected_plot_id = ""
+	if detail_panel != null:
+		detail_panel.visible = false
+	call_deferred("_render_map")
+
+
 func _on_log_pressed() -> void:
+	_record_care("sun", "Recorded")
+
+
+func _on_teach_pressed() -> void:
+	_record_care("water", "Teaching logged")
+
+
+func _record_care(care_type: String, status_text: String) -> void:
 	var zone_index := _current_zone_index()
 	if zone_index < 0 or selected_plot_id.is_empty():
 		return
@@ -896,12 +1060,77 @@ func _on_log_pressed() -> void:
 	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
 	for index in plots.size():
 		if plots[index].get("id", "") == selected_plot_id:
+			if str(plots[index].get("kind", "")) == "empty":
+				return
 			plots[index]["logs"] = int(plots[index].get("logs", 0)) + 1
-			plots[index]["status"] = "Updated"
+			plots[index]["status"] = status_text
+			plots[index]["growth"] = int(plots[index].get("growth", 0)) + int(CARE_GROWTH.get(care_type, 0))
+			var care: Dictionary = plots[index].get("care_today", {"sun": 0, "water": 0, "fertilizer": 0})
+			care[care_type] = int(care.get(care_type, 0)) + 1
+			plots[index]["care_today"] = care
+			if str(plots[index].get("kind", "")) == "course" and care_type == "water":
+				plots[index]["sessions"] = int(plots[index].get("sessions", 0)) + 1
 			garden_data["zones"][zone_index]["plots"] = plots
 			break
 	_save_data()
 	_render_detail()
+	call_deferred("_render_map")
+
+
+func _on_advance_pressed() -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") != selected_plot_id:
+			continue
+		var plot: Dictionary = plots[index]
+		var kind := str(plot.get("kind", ""))
+		if kind == "empty":
+			return
+		var next_stage := _next_stage(plot)
+		if next_stage.is_empty():
+			return
+		plot["stage"] = next_stage
+		plot["growth"] = int(plot.get("growth", 0)) + MILESTONE_GROWTH
+		garden_data["coins"] = int(garden_data.get("coins", 0)) + MILESTONE_COINS
+		_set_plot_stage_sprites(plot)
+		if _is_final_stage(plot):
+			plot["status"] = "Harvested"
+			_move_plot_to_zone(plot, zone_index, "harvested")
+		else:
+			plot["status"] = "Advanced"
+			plots[index] = plot
+			garden_data["zones"][zone_index]["plots"] = plots
+		break
+	_save_data()
+	_render_all()
+
+
+func _on_sleep_pressed() -> void:
+	_move_selected_plot_status("dormant", "Paused")
+
+
+func _on_wake_pressed() -> void:
+	_move_selected_plot_status("active", "Waking")
+
+
+func _on_remove_pressed() -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") == selected_plot_id and str(plots[index].get("kind", "")) != "empty":
+			plots.remove_at(index)
+			break
+	garden_data["zones"][zone_index]["plots"] = plots
+	selected_plot_id = ""
+	_save_data()
+	_render_all()
 
 
 func _select_decoration(decor_id: String) -> void:
@@ -945,6 +1174,170 @@ func _remove_decoration(placed: Dictionary) -> void:
 	selected_decor_id = ""
 	_save_data()
 	_render_all()
+
+
+func _move_selected_plot_status(target_zone_id: String, status_text: String) -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") != selected_plot_id:
+			continue
+		var plot: Dictionary = plots[index]
+		if str(plot.get("kind", "")) == "empty" or selected_zone_id == target_zone_id:
+			return
+		plot["status"] = status_text
+		_move_plot_to_zone(plot, zone_index, target_zone_id)
+		break
+	_save_data()
+	_render_all()
+
+
+func _move_plot_to_zone(plot: Dictionary, source_zone_index: int, target_zone_id: String) -> void:
+	var target_zone_index := _zone_index_by_id(target_zone_id)
+	if source_zone_index < 0 or target_zone_index < 0:
+		return
+
+	var source_plots: Array = garden_data["zones"][source_zone_index].get("plots", [])
+	for index in source_plots.size():
+		if source_plots[index].get("id", "") == plot.get("id", ""):
+			source_plots.remove_at(index)
+			break
+	garden_data["zones"][source_zone_index]["plots"] = source_plots
+
+	var target_plots: Array = garden_data["zones"][target_zone_index].get("plots", [])
+	plot["id"] = _next_zone_plot_id(target_zone_id, target_plots)
+	var anchor: Vector2 = PLOT_ANCHORS.get(plot["id"], Vector2(0.5, 0.64))
+	plot["x"] = anchor.x
+	plot["y"] = anchor.y
+	target_plots.append(plot)
+	garden_data["zones"][target_zone_index]["plots"] = target_plots
+	selected_zone_id = target_zone_id
+	selected_plot_id = plot["id"]
+	selected_decor_id = ""
+
+
+func _zone_index_by_id(zone_id: String) -> int:
+	var zones: Array = garden_data.get("zones", [])
+	for index in zones.size():
+		if zones[index].get("id", "") == zone_id:
+			return index
+	return -1
+
+
+func _next_zone_plot_id(zone_id: String, plots: Array) -> String:
+	var used := {}
+	for plot in plots:
+		used[str(plot.get("id", ""))] = true
+	for index in range(1, 10):
+		var candidate := "%s-%d" % [zone_id, index]
+		if not used.has(candidate):
+			return candidate
+	return "%s-%d" % [zone_id, plots.size() + 1]
+
+
+func _update_detail_actions(plot: Dictionary) -> void:
+	var kind := str(plot.get("kind", ""))
+	var is_empty := kind == "empty"
+	var is_active := selected_zone_id == "active"
+	var is_dormant := selected_zone_id == "dormant"
+	log_button.text = "Record +%s" % CARE_LABELS.get("sun", "Sun")
+	teach_button.text = "Teach +%s" % CARE_LABELS.get("water", "Water")
+	advance_button.text = _next_action_label(plot)
+	sleep_button.text = "Sleep"
+	wake_button.text = "Wake"
+	remove_button.text = "Remove"
+	log_button.disabled = is_empty or not is_active
+	teach_button.disabled = is_empty or kind != "course" or not is_active
+	advance_button.disabled = is_empty or not is_active or _next_stage(plot).is_empty()
+	sleep_button.disabled = is_empty or not is_active
+	wake_button.disabled = is_empty or not is_dormant
+	remove_button.disabled = is_empty
+	if is_empty:
+		log_button.text = "Plant later"
+		teach_button.text = "Choose type"
+		advance_button.text = "No stage"
+		sleep_button.text = "Reserved"
+		wake_button.text = "Reserved"
+		remove_button.text = "Empty"
+
+
+func _kind_label(kind: String) -> String:
+	if kind == "paper":
+		return "Paper tree"
+	if kind == "course":
+		return "Course flower"
+	if kind == "empty":
+		return "Open land"
+	return kind.capitalize()
+
+
+func _stage_label(stage: String) -> String:
+	return STAGE_LABELS.get(stage, stage.capitalize())
+
+
+func _care_line(plot: Dictionary) -> String:
+	var care: Dictionary = plot.get("care_today", {"sun": 0, "water": 0, "fertilizer": 0})
+	return "Today: Sun %d / Water %d / Fertilizer %d" % [
+		int(care.get("sun", 0)),
+		int(care.get("water", 0)),
+		int(care.get("fertilizer", 0))
+	]
+
+
+func _next_action_label(plot: Dictionary) -> String:
+	var key := "%s:%s" % [plot.get("kind", ""), plot.get("stage", "")]
+	return NEXT_ACTION_LABELS.get(key, "Advance")
+
+
+func _next_stage(plot: Dictionary) -> String:
+	var kind := str(plot.get("kind", ""))
+	var stage := str(plot.get("stage", ""))
+	var flow: Array = STAGE_FLOW.get(kind, [])
+	var index := flow.find(stage)
+	if index < 0 or index >= flow.size() - 1:
+		return ""
+	return str(flow[index + 1])
+
+
+func _is_final_stage(plot: Dictionary) -> bool:
+	var kind := str(plot.get("kind", ""))
+	var flow: Array = STAGE_FLOW.get(kind, [])
+	return flow.size() > 0 and str(plot.get("stage", "")) == str(flow[flow.size() - 1])
+
+
+func _set_plot_stage_sprites(plot: Dictionary) -> void:
+	var base := _plant_variety_base(plot)
+	if base.is_empty():
+		return
+	var stage := str(plot.get("stage", ""))
+	var file_base := "%s-%s" % [base, stage]
+	plot["sprite"] = "res://assets/sprites/sprout/plants-rebuilt/%s-rebuilt.png" % file_base
+	plot["portrait_sprite"] = "res://assets/sprites/sprout/portraits/%s-portrait.png" % file_base
+
+
+func _plant_variety_base(plot: Dictionary) -> String:
+	var kind := str(plot.get("kind", ""))
+	if kind.is_empty() or kind == "empty":
+		return ""
+	var file_name := str(plot.get("sprite", "")).get_file().get_basename()
+	if file_name.ends_with("-rebuilt"):
+		file_name = file_name.trim_suffix("-rebuilt")
+	var flow: Array = STAGE_FLOW.get(kind, [])
+	for stage in flow:
+		var suffix := "-%s" % stage
+		if file_name.ends_with(suffix):
+			return file_name.trim_suffix(suffix)
+	return file_name
+
+
+func _default_growth_for_stage(plot: Dictionary) -> int:
+	var kind := str(plot.get("kind", ""))
+	var flow: Array = STAGE_FLOW.get(kind, [])
+	var index := flow.find(str(plot.get("stage", "")))
+	return maxi(index, 0) * MILESTONE_GROWTH
 
 
 func _current_zone() -> Dictionary:

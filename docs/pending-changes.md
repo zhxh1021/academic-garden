@@ -1,5 +1,97 @@
 # Pending Changes
 
+## 2026-06-04 - Godot decoration redraw, three-garden layout, and sway animation
+
+### Summary
+
+- Redrew the 10 runtime decoration sprites with `imagegen` from a single GPT-Image-2 style sprite sheet, replacing the tiny rough Sprout decor cutouts with 96x96 transparent sprites.
+- Added local processing/QA scripts to preserve the generated source sheet, remove the chroma-key background, crop app-ready sprites, create a contact sheet, extend the seed layout, and verify asset references.
+- Increased Godot map decoration display size from `52x52` to `78x78`, closer to the visual footprint of a plot tile.
+- Extended the active garden's 3x3 homepage plot layout to the harvested and dormant gardens, giving all three zones matching columns and rows.
+- Expanded each zone to 5 placed decorations with zone-specific placement, so the two secondary gardens no longer feel sparse compared with the homepage.
+- Replaced the old plant scale pulse with bottom-anchored side-to-side sway and small drifting leaf/butterfly-like ambient motes, avoiding the previous land-and-plant vertical bobbing.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/art/decoration-sheet-gpt-v3-source.png`
+- `godot-prototype/assets/art/decoration-sheet-gpt-v3-contact.png`
+- `godot-prototype/assets/sprites/sprout/decor/*.png`
+- `scripts/rebuild_godot_decor_assets.py`
+- `scripts/make_godot_decor_contact_sheet.py`
+- `scripts/extend_godot_garden_layout.py`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Generated source purpose: a cohesive, polished decoration sprite sheet for the Godot mobile garden map.
+- Prompt constraints: cozy pixel-art academic garden decorations, 5x2 sheet, no text/watermark/characters, flat `#00ff66` chroma-key background, items sized like plot tiles.
+- Source sheet kept under `godot-prototype/assets/art/`; app-ready cropped sprites overwrite the existing `godot-prototype/assets/sprites/sprout/decor/` runtime files.
+- Processing iterated through fixed grid cropping, manual crop boxes, and small-fragment cleanup before final contact-sheet QA.
+
+### Verification
+
+- Ran `python scripts\rebuild_godot_decor_assets.py`.
+- Ran `python scripts\make_godot_decor_contact_sheet.py` and visually inspected `decoration-sheet-gpt-v3-contact.png`.
+- Ran `python scripts\extend_godot_garden_layout.py`.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile` for all new helper scripts.
+- Queried Godot MCP project info; it recognized `godot-prototype` with Godot `4.6.3.stable.official.7d41c59c4`.
+- Launched `res://scenes/main.tscn` through Godot MCP; output reported the Vulkan device and no errors.
+- Stopped the Godot MCP debug run cleanly; final output had no errors.
+
+### Notes
+
+- Existing parallel Godot detail-action/signpost changes were left intact and are documented in the adjacent 2026-06-04 pending-changes entry.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot plant detail actions and signpost empty plot
+
+### Summary
+
+- Expanded the Godot plant detail drawer from a simple log card into a mobile action panel with portrait art, kind/stage/status, growth, visit/log counts, today care totals, note text, and action buttons.
+- Adapted the deprecated web runtime's local gameplay mechanisms into the Godot prototype:
+  - record progress as daily care and growth,
+  - course teaching shortcut increments water care and session count,
+  - milestone advance moves plants through paper/course stage flows,
+  - completed active plants move to the harvest garden with a coin reward,
+  - active plants can sleep into the dormant garden and dormant plants can wake back into active,
+  - non-empty plants can be removed from the current local prototype save.
+- Replaced the empty plot's paper-like sprite with a transparent Sprout-style soil block plus inserted signpost, composed from existing Godot prototype soil/sign assets.
+- Bumped Godot `layout_version` to `4` so existing local saves migrate empty plots to the new signpost land sprite and receive missing growth/care/session fields.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/sprites/sprout/ground/empty-plot-sign.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- No GPT-Image-2 generation was used for this slice.
+- The new empty plot runtime sprite was locally composed from `plot-soil-gpt-v3.png` and the top sign tile from `decor-sign.png`.
+- Output sprite: `112x88` transparent RGBA PNG under `godot-prototype/assets/sprites/sprout/ground/`.
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Checked all `sprite` and `portrait_sprite` paths referenced by seed plots exist.
+- Checked `empty-plot-sign.png` is `112x88` RGBA.
+- Queried Godot MCP project info; it recognized `godot-prototype` with Godot `4.6.3.stable.official.7d41c59c4`.
+- Launched `res://scenes/main.tscn` through Godot MCP; output reported the Vulkan device and no errors.
+- Stopped the Godot MCP debug run cleanly; final output had no errors.
+
+### Notes
+
+- Existing unrelated modified decoration sprites, decoration contact/source art, and decoration rebuild scripts were left untouched.
+- Web cloud sync and backup/export remain historical web-runtime mechanisms and were not moved into the local Godot prototype in this slice.
+- OpenClaw deploy needed: no.
+
 ## 2026-06-03 - Godot exported layout bake and plot alignment
 
 ### Summary
