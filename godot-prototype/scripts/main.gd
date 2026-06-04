@@ -4,22 +4,30 @@ const SAVE_PATH := "user://garden_state.json"
 const SEED_PATH := "res://data/garden_seed.json"
 const DEBUG_EXPORT_PATH := "user://layout_debug_export.json"
 const DEBUG_EXPORT_PROJECT_PATH := "res://layout_debug_export.json"
-const LAYOUT_VERSION := 4
+const LAYOUT_VERSION := 18
 const MAP_DISPLAY_ASPECT := 780.0 / 1240.0
-const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/empty-plot-sign.png"
+const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/empty-plot-square-gpt-v1.png"
+const ZONE_MAP_PATHS := {
+	"active": "res://assets/sprites/sprout/maps/sprout-map-active-gpt-v4-noplot-tallfield.png",
+	"harvested": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v4-noplot-tallfield-warm.png",
+	"dormant": "res://assets/sprites/sprout/maps/sprout-map-dormant-gpt-v4-noplot-tallfield-night.png"
+}
 const DEFAULT_PLOT_SIZES := {
 	"paper": Vector2(96, 108),
 	"course": Vector2(88, 98),
-	"empty": Vector2(78, 62)
+	"empty": Vector2(72, 72)
 }
 const STAGE_PLOT_SIZES := {
-	"paper:seed": Vector2(28, 32),
-	"paper:sapling": Vector2(48, 54),
-	"course:sowing": Vector2(26, 30),
-	"course:growing": Vector2(42, 48),
-	"course:bloom": Vector2(56, 64),
-	"course:fruit": Vector2(64, 72),
-	"course:seed_saved": Vector2(36, 40)
+	"paper:seed": Vector2(52, 56),
+	"paper:sapling": Vector2(68, 88),
+	"paper:tree": Vector2(116, 138),
+	"paper:flower": Vector2(116, 138),
+	"paper:fruit": Vector2(116, 138),
+	"course:sowing": Vector2(50, 56),
+	"course:growing": Vector2(82, 102),
+	"course:bloom": Vector2(92, 112),
+	"course:fruit": Vector2(92, 112),
+	"course:seed_saved": Vector2(92, 112)
 }
 const DEFAULT_DECOR_SIZE := Vector2(78, 78)
 const DECOR_SLOTS := [
@@ -28,36 +36,51 @@ const DECOR_SLOTS := [
 	Vector2(0.081, 0.650),
 	Vector2(0.834, 0.716),
 	Vector2(0.370, 0.842),
-	Vector2(0.577, 0.754)
+	Vector2(0.596, 0.796)
 ]
 const PLOT_ANCHORS := {
-	"active-1": Vector2(0.293, 0.488),
-	"active-2": Vector2(0.503, 0.488),
-	"active-3": Vector2(0.719, 0.488),
-	"active-4": Vector2(0.293, 0.585),
-	"active-5": Vector2(0.503, 0.585),
-	"active-6": Vector2(0.719, 0.585),
-	"active-7": Vector2(0.293, 0.676),
-	"active-8": Vector2(0.503, 0.676),
-	"active-9": Vector2(0.719, 0.676),
-	"harvested-1": Vector2(0.293, 0.488),
-	"harvested-2": Vector2(0.503, 0.488),
-	"harvested-3": Vector2(0.719, 0.488),
-	"harvested-4": Vector2(0.293, 0.585),
-	"harvested-5": Vector2(0.503, 0.585),
-	"harvested-6": Vector2(0.719, 0.585),
-	"harvested-7": Vector2(0.293, 0.676),
-	"harvested-8": Vector2(0.503, 0.676),
-	"harvested-9": Vector2(0.719, 0.676),
-	"dormant-1": Vector2(0.293, 0.488),
-	"dormant-2": Vector2(0.503, 0.488),
-	"dormant-3": Vector2(0.719, 0.488),
-	"dormant-4": Vector2(0.293, 0.585),
-	"dormant-5": Vector2(0.503, 0.585),
-	"dormant-6": Vector2(0.719, 0.585),
-	"dormant-7": Vector2(0.293, 0.676),
-	"dormant-8": Vector2(0.503, 0.676),
-	"dormant-9": Vector2(0.719, 0.676)
+	"active-1": Vector2(0.295, 0.471),
+	"active-2": Vector2(0.500, 0.471),
+	"active-3": Vector2(0.720, 0.471),
+	"active-4": Vector2(0.295, 0.592),
+	"active-5": Vector2(0.500, 0.592),
+	"active-6": Vector2(0.720, 0.592),
+	"active-7": Vector2(0.295, 0.728),
+	"active-8": Vector2(0.500, 0.728),
+	"active-9": Vector2(0.720, 0.728),
+	"harvested-1": Vector2(0.293, 0.445),
+	"harvested-2": Vector2(0.503, 0.445),
+	"harvested-3": Vector2(0.719, 0.445),
+	"harvested-4": Vector2(0.293, 0.590),
+	"harvested-5": Vector2(0.503, 0.590),
+	"harvested-6": Vector2(0.719, 0.590),
+	"harvested-7": Vector2(0.293, 0.735),
+	"harvested-8": Vector2(0.503, 0.735),
+	"harvested-9": Vector2(0.719, 0.735),
+	"dormant-1": Vector2(0.293, 0.445),
+	"dormant-2": Vector2(0.503, 0.445),
+	"dormant-3": Vector2(0.719, 0.445),
+	"dormant-4": Vector2(0.293, 0.590),
+	"dormant-5": Vector2(0.503, 0.590),
+	"dormant-6": Vector2(0.719, 0.590),
+	"dormant-7": Vector2(0.293, 0.735),
+	"dormant-8": Vector2(0.503, 0.735),
+	"dormant-9": Vector2(0.719, 0.735)
+}
+const PLOT_SIZE_SCALES := {
+	"active-1": 0.75,
+	"active-2": 0.75,
+	"active-3": 0.75,
+	"active-4": 0.75,
+	"active-5": 0.75,
+	"active-6": 0.75,
+	"active-7": 0.75,
+	"active-8": 0.75,
+	"active-9": 1.0,
+	"harvested-1": 0.75,
+	"harvested-2": 0.75,
+	"dormant-1": 0.75,
+	"dormant-2": 0.75
 }
 const DECOR_ANCHORS := {
 	"active": {
@@ -154,13 +177,26 @@ var detail_panel: PanelContainer
 var detail_icon: TextureRect
 var detail_title: Label
 var detail_meta: Label
-var detail_stats: Label
-var detail_care: Label
+var detail_growth_bar: ProgressBar
+var detail_care_grid: GridContainer
+var detail_water_value: Label
+var detail_sun_value: Label
+var detail_fertilizer_value: Label
 var detail_note: Label
 var detail_actions: GridContainer
+var record_panel: PanelContainer
+var record_note_input: LineEdit
+var plant_panel: PanelContainer
+var plant_title_label: Label
+var plant_paper_button: Button
+var plant_course_button: Button
 var log_button: Button
 var teach_button: Button
 var advance_button: Button
+var record_water_button: Button
+var record_sun_button: Button
+var record_fertilizer_button: Button
+var record_note_button: Button
 var sleep_button: Button
 var wake_button: Button
 var remove_button: Button
@@ -258,7 +294,7 @@ func _upgrade_saved_maps() -> void:
 	for index in garden_data.get("zones", []).size():
 		var zone: Dictionary = garden_data["zones"][index]
 		var zone_id := str(zone.get("id", "active"))
-		zone["map"] = "res://assets/sprites/sprout/maps/sprout-map-%s-gpt-v5.png" % zone_id
+		zone["map"] = ZONE_MAP_PATHS.get(zone_id, ZONE_MAP_PATHS["active"])
 		var plots: Array = zone.get("plots", [])
 		for plot_index in plots.size():
 			var plot: Dictionary = plots[plot_index]
@@ -267,12 +303,13 @@ func _upgrade_saved_maps() -> void:
 				var plot_anchor: Vector2 = PLOT_ANCHORS[plot_id]
 				plot["x"] = plot_anchor.x
 				plot["y"] = plot_anchor.y
+				plot["size_scale"] = PLOT_SIZE_SCALES.get(plot_id, 1.0)
 			if str(plot.get("kind", "")) == "empty":
 				plot["sprite"] = EMPTY_PLOT_SIGN_SPRITE
 				plot.erase("portrait_sprite")
 			else:
-				plot["sprite"] = _rebuilt_plant_sprite_path(plot.get("sprite", ""))
-				plot["portrait_sprite"] = _portrait_plant_sprite_path(plot.get("portrait_sprite", plot.get("sprite", "")))
+				plot["sprite"] = _web_stage_sprite_path(plot)
+				plot["portrait_sprite"] = plot["sprite"]
 				if not plot.has("growth"):
 					plot["growth"] = _default_growth_for_stage(plot)
 				if not plot.has("care_today"):
@@ -409,10 +446,13 @@ func _build_detail_panel() -> void:
 	detail_panel.offset_right = -18
 	detail_panel.offset_bottom = -92
 	detail_panel.visible = false
+	detail_panel.z_as_relative = false
+	detail_panel.z_index = 1500
+	detail_panel.add_theme_stylebox_override("panel", _panel_style(Color("#f7e7c7"), Color("#5c4128")))
 	add_child(detail_panel)
 
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 5)
+	box.add_theme_constant_override("separation", 6)
 	detail_panel.add_child(box)
 
 	detail_icon = TextureRect.new()
@@ -441,23 +481,23 @@ func _build_detail_panel() -> void:
 	detail_meta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_box.add_child(detail_meta)
 
-	var close_button := Button.new()
-	close_button.text = "Close"
-	close_button.custom_minimum_size = Vector2(58, 32)
-	close_button.pressed.connect(_close_detail)
-	row.add_child(close_button)
+	var close_button := _corner_close_button(_close_detail)
+	detail_panel.add_child(close_button)
 
-	detail_stats = Label.new()
-	detail_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail_stats.add_theme_font_size_override("font_size", 11)
-	detail_stats.add_theme_color_override("font_color", Color("#5b4a2a"))
-	box.add_child(detail_stats)
+	detail_growth_bar = ProgressBar.new()
+	detail_growth_bar.custom_minimum_size = Vector2(0, 16)
+	detail_growth_bar.max_value = 100.0
+	detail_growth_bar.show_percentage = false
+	box.add_child(detail_growth_bar)
 
-	detail_care = Label.new()
-	detail_care.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail_care.add_theme_font_size_override("font_size", 11)
-	detail_care.add_theme_color_override("font_color", Color("#456342"))
-	box.add_child(detail_care)
+	detail_care_grid = GridContainer.new()
+	detail_care_grid.columns = 3
+	detail_care_grid.add_theme_constant_override("h_separation", 5)
+	box.add_child(detail_care_grid)
+
+	detail_water_value = _detail_care_cell("W", "Water", Color("#76b7d4"))
+	detail_sun_value = _detail_care_cell("S", "Sun", Color("#e4b94c"))
+	detail_fertilizer_value = _detail_care_cell("F", "Fertilizer", Color("#8b6846"))
 
 	detail_note = Label.new()
 	detail_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -477,6 +517,10 @@ func _build_detail_panel() -> void:
 	sleep_button = _detail_action_button("Sleep", _on_sleep_pressed)
 	wake_button = _detail_action_button("Wake", _on_wake_pressed)
 	remove_button = _detail_action_button("Remove", _on_remove_pressed)
+
+	_build_record_panel()
+	_build_plant_panel()
+	_detail_panel_action_visibility()
 
 
 func _build_decor_bar() -> void:
@@ -529,6 +573,31 @@ func _build_debug_panel() -> void:
 	debug_export_label.add_theme_color_override("font_color", Color("#6b4a1f"))
 	box.add_child(debug_export_label)
 
+	var scale_buttons := HBoxContainer.new()
+	scale_buttons.add_theme_constant_override("separation", 6)
+	box.add_child(scale_buttons)
+
+	var shrink_button := Button.new()
+	shrink_button.text = "All plants -"
+	shrink_button.custom_minimum_size = Vector2(0, 26)
+	shrink_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shrink_button.pressed.connect(_adjust_all_plot_sizes.bind(-0.05))
+	scale_buttons.add_child(shrink_button)
+
+	var grow_button := Button.new()
+	grow_button.text = "All plants +"
+	grow_button.custom_minimum_size = Vector2(0, 26)
+	grow_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grow_button.pressed.connect(_adjust_all_plot_sizes.bind(0.05))
+	scale_buttons.add_child(grow_button)
+
+	var reset_button := Button.new()
+	reset_button.text = "Reset plants"
+	reset_button.custom_minimum_size = Vector2(0, 26)
+	reset_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reset_button.pressed.connect(_reset_all_plot_sizes)
+	scale_buttons.add_child(reset_button)
+
 	debug_export_button = Button.new()
 	debug_export_button.text = "Export layout"
 	debug_export_button.custom_minimum_size = Vector2(0, 28)
@@ -539,11 +608,251 @@ func _build_debug_panel() -> void:
 func _detail_action_button(text: String, callable: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(0, 32)
+	button.custom_minimum_size = Vector2(0, 30)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_stylebox_override("normal", _button_style(Color("#7b9b58")))
+	button.add_theme_stylebox_override("disabled", _button_style(Color("#8a8774")))
 	button.pressed.connect(callable)
 	detail_actions.add_child(button)
 	return button
+
+
+func _panel_style(fill_color: Color, border_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill_color
+	style.border_color = border_color
+	style.border_width_left = 3
+	style.border_width_top = 3
+	style.border_width_right = 3
+	style.border_width_bottom = 3
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 10
+	style.content_margin_top = 10
+	style.content_margin_right = 10
+	style.content_margin_bottom = 10
+	return style
+
+
+func _button_style(fill_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill_color
+	style.border_color = Color("#5c4128")
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 7
+	style.corner_radius_top_right = 7
+	style.corner_radius_bottom_left = 7
+	style.corner_radius_bottom_right = 7
+	style.content_margin_left = 6
+	style.content_margin_top = 4
+	style.content_margin_right = 6
+	style.content_margin_bottom = 4
+	return style
+
+
+func _corner_close_button(callable: Callable) -> Button:
+	var button := Button.new()
+	button.text = "x"
+	button.anchor_left = 1.0
+	button.anchor_top = 0.0
+	button.anchor_right = 1.0
+	button.anchor_bottom = 0.0
+	button.offset_left = -34
+	button.offset_top = 6
+	button.offset_right = -6
+	button.offset_bottom = 32
+	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
+	button.pressed.connect(callable)
+	return button
+
+
+func _detail_care_cell(icon_text: String, label_text: String, icon_color: Color) -> Label:
+	var cell := HBoxContainer.new()
+	cell.custom_minimum_size = Vector2(0, 36)
+	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cell.add_theme_constant_override("separation", 4)
+	detail_care_grid.add_child(cell)
+
+	var icon := Label.new()
+	icon.text = icon_text
+	icon.custom_minimum_size = Vector2(22, 22)
+	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon.add_theme_font_size_override("font_size", 11)
+	icon.add_theme_color_override("font_color", Color("#fff9dc"))
+	icon.add_theme_color_override("font_shadow_color", Color("#4c3725"))
+	icon.add_theme_constant_override("shadow_offset_x", 1)
+	icon.add_theme_constant_override("shadow_offset_y", 1)
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = icon_color
+	icon_style.border_width_left = 2
+	icon_style.border_width_top = 2
+	icon_style.border_width_right = 2
+	icon_style.border_width_bottom = 2
+	icon_style.border_color = Color("#5b452b")
+	icon_style.corner_radius_top_left = 5
+	icon_style.corner_radius_top_right = 5
+	icon_style.corner_radius_bottom_left = 5
+	icon_style.corner_radius_bottom_right = 5
+	icon.add_theme_stylebox_override("normal", icon_style)
+	cell.add_child(icon)
+
+	var text_box := VBoxContainer.new()
+	text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_box.add_theme_constant_override("separation", 0)
+	cell.add_child(text_box)
+
+	var value_label := Label.new()
+	value_label.text = "0"
+	value_label.add_theme_font_size_override("font_size", 13)
+	value_label.add_theme_color_override("font_color", Color("#334231"))
+	text_box.add_child(value_label)
+
+	var caption := Label.new()
+	caption.text = label_text
+	caption.add_theme_font_size_override("font_size", 8)
+	caption.add_theme_color_override("font_color", Color("#5a6c52"))
+	text_box.add_child(caption)
+	return value_label
+
+
+func _build_record_panel() -> void:
+	record_panel = PanelContainer.new()
+	record_panel.anchor_left = 0.0
+	record_panel.anchor_top = 1.0
+	record_panel.anchor_right = 1.0
+	record_panel.anchor_bottom = 1.0
+	record_panel.offset_left = 24
+	record_panel.offset_top = -308
+	record_panel.offset_right = -24
+	record_panel.offset_bottom = -98
+	record_panel.visible = false
+	record_panel.z_as_relative = false
+	record_panel.z_index = 1600
+	record_panel.add_theme_stylebox_override("panel", _panel_style(Color("#f7e7c7"), Color("#5c4128")))
+	add_child(record_panel)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	record_panel.add_child(box)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	box.add_child(row)
+
+	var title := Label.new()
+	title.text = "Record today"
+	title.add_theme_font_size_override("font_size", 14)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(title)
+
+	var close_button := Button.new()
+	close_button.text = "x"
+	close_button.custom_minimum_size = Vector2(32, 28)
+	close_button.add_theme_font_size_override("font_size", 12)
+	close_button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
+	close_button.pressed.connect(_hide_record_panel)
+	row.add_child(close_button)
+
+	var quick_grid := GridContainer.new()
+	quick_grid.columns = 3
+	quick_grid.add_theme_constant_override("h_separation", 5)
+	box.add_child(quick_grid)
+
+	record_water_button = _record_button("Water", _record_quick_water_pressed, quick_grid)
+	record_sun_button = _record_button("Sun", _record_quick_sun_pressed, quick_grid)
+	record_fertilizer_button = _record_button("Fertilizer", _record_quick_fertilizer_pressed, quick_grid)
+
+	record_note_input = LineEdit.new()
+	record_note_input.placeholder_text = "Optional note..."
+	box.add_child(record_note_input)
+
+	record_note_button = Button.new()
+	record_note_button.text = "Save note"
+	record_note_button.custom_minimum_size = Vector2(0, 32)
+	record_note_button.add_theme_font_size_override("font_size", 12)
+	record_note_button.add_theme_stylebox_override("normal", _button_style(Color("#cf8d45")))
+	record_note_button.pressed.connect(_record_note_pressed)
+	box.add_child(record_note_button)
+
+
+func _build_plant_panel() -> void:
+	plant_panel = PanelContainer.new()
+	plant_panel.anchor_left = 0.0
+	plant_panel.anchor_top = 1.0
+	plant_panel.anchor_right = 1.0
+	plant_panel.anchor_bottom = 1.0
+	plant_panel.offset_left = 28
+	plant_panel.offset_top = -292
+	plant_panel.offset_right = -28
+	plant_panel.offset_bottom = -114
+	plant_panel.visible = false
+	plant_panel.z_as_relative = false
+	plant_panel.z_index = 1500
+	plant_panel.add_theme_stylebox_override("panel", _panel_style(Color("#f7e7c7"), Color("#5c4128")))
+	add_child(plant_panel)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	plant_panel.add_child(box)
+
+	plant_title_label = Label.new()
+	plant_title_label.text = "Choose what to plant"
+	plant_title_label.add_theme_font_size_override("font_size", 15)
+	plant_title_label.add_theme_color_override("font_color", Color("#334231"))
+	box.add_child(plant_title_label)
+
+	var subtitle := Label.new()
+	subtitle.text = "Turn this empty plot into a paper tree or course flower."
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	subtitle.add_theme_font_size_override("font_size", 10)
+	subtitle.add_theme_color_override("font_color", Color("#5a6c52"))
+	box.add_child(subtitle)
+
+	var choices := GridContainer.new()
+	choices.columns = 2
+	choices.add_theme_constant_override("h_separation", 8)
+	box.add_child(choices)
+
+	plant_paper_button = _record_button("Paper Tree", _plant_empty_plot.bind("paper"), choices)
+	plant_course_button = _record_button("Course Flower", _plant_empty_plot.bind("course"), choices)
+
+	var close_button := _corner_close_button(_close_detail)
+	plant_panel.add_child(close_button)
+
+
+func _record_button(text: String, callable: Callable, parent: Control) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0, 32)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.add_theme_font_size_override("font_size", 11)
+	button.add_theme_stylebox_override("normal", _button_style(Color("#7b9b58")))
+	button.pressed.connect(callable)
+	parent.add_child(button)
+	return button
+
+
+func _detail_panel_action_visibility(show_record := true, show_advance := true, show_wake := false, show_remove := false) -> void:
+	if log_button != null:
+		log_button.visible = show_record
+	if teach_button != null:
+		teach_button.visible = false
+	if advance_button != null:
+		advance_button.visible = show_advance
+	if sleep_button != null:
+		sleep_button.visible = false
+	if wake_button != null:
+		wake_button.visible = show_wake
+	if remove_button != null:
+		remove_button.visible = show_remove
 
 
 func _render_all() -> void:
@@ -622,7 +931,15 @@ func _render_hotspots(map_rect: Rect2) -> void:
 
 
 func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
-	for plot in zone.get("plots", []):
+	var plots: Array = zone.get("plots", []).duplicate()
+	plots.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var ay := float(a.get("y", 0.5))
+		var by := float(b.get("y", 0.5))
+		if not is_equal_approx(ay, by):
+			return ay < by
+		return float(a.get("x", 0.5)) < float(b.get("x", 0.5))
+	)
+	for plot in plots:
 		var button := Button.new()
 		var kind := str(plot.get("kind", ""))
 		var button_size := _plot_button_size(plot)
@@ -632,11 +949,11 @@ func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
 		button.custom_minimum_size = button_size
 		button.size = button_size
 		button.position = _map_point(map_rect, Vector2(plot.get("x", 0.5), plot.get("y", 0.5))) - Vector2(button_size.x * 0.5, button_size.y * 0.82)
-		button.icon = _load_texture(plot.get("sprite", ""))
-		button.expand_icon = true
+		button.z_index = _depth_z_index(plot)
 		button.clip_text = true
 		button.text = ""
 		button.tooltip_text = "%s\n%s" % [plot.get("title", "Plot"), plot.get("status", "")]
+		_add_button_texture(button, plot.get("sprite", ""))
 		var item := {"type": "plot", "zone": selected_zone_id, "id": str(plot.get("id", ""))}
 		if debug_mode:
 			_make_debug_target(button, item)
@@ -665,10 +982,10 @@ func _render_decorations(map_rect: Rect2, zone: Dictionary) -> void:
 		button.custom_minimum_size = button_size
 		button.size = button_size
 		button.position = _map_point(map_rect, Vector2(placed.get("x", 0.5), placed.get("y", 0.5))) - Vector2(button_size.x * 0.5, button_size.y * 0.82)
-		button.icon = _load_texture(decor.get("sprite", ""))
-		button.expand_icon = true
+		button.z_index = _depth_z_index(placed)
 		button.text = ""
 		button.tooltip_text = "Return %s to inventory" % decor.get("title", "decor")
+		_add_button_texture(button, decor.get("sprite", ""))
 		var item := {"type": "decoration", "zone": selected_zone_id, "index": decor_index, "id": str(placed.get("id", ""))}
 		if debug_mode:
 			_make_debug_target(button, item)
@@ -704,6 +1021,7 @@ func _render_detail() -> void:
 	var plot := _selected_plot()
 	detail_panel.visible = not plot.is_empty()
 	if plot.is_empty():
+		_hide_record_panel()
 		return
 
 	detail_icon.texture = _load_texture(plot.get("portrait_sprite", plot.get("sprite", "")))
@@ -715,13 +1033,11 @@ func _render_detail() -> void:
 		_stage_label(stage),
 		plot.get("status", "status")
 	]
-	detail_stats.text = "Growth %d / visits %d / logs %d / coins %d" % [
-		int(plot.get("growth", 0)),
-		int(plot.get("visits", 0)),
-		int(plot.get("logs", 0)),
-		int(garden_data.get("coins", 0))
-	]
-	detail_care.text = _care_line(plot)
+	detail_growth_bar.value = clampi(int(plot.get("growth", 0)), 0, 100)
+	var care: Dictionary = plot.get("care_today", {"sun": 0, "water": 0, "fertilizer": 0})
+	detail_water_value.text = str(int(care.get("water", 0)))
+	detail_sun_value.text = str(int(care.get("sun", 0)))
+	detail_fertilizer_value.text = str(int(care.get("fertilizer", 0)))
 	detail_note.text = plot.get("note", "")
 	_update_detail_actions(plot)
 
@@ -750,6 +1066,7 @@ func _render_plot_ambient(map_rect: Rect2, plot: Dictionary, button_size: Vector
 		mote.pivot_offset = mote.size * 0.5
 		mote.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		mote.position = origin + offsets[index]
+		mote.z_index = _depth_z_index(plot) + 1
 		mote.set_meta("base_position", mote.position)
 		mote.set_meta("phase", float((abs(str(plot.get("id", "")).hash()) + index * 37) % 100) / 100.0)
 		overlay_layer.add_child(mote)
@@ -902,6 +1219,40 @@ func _adjust_selected_size(delta: float) -> void:
 	_update_debug_panel()
 
 
+func _adjust_all_plot_sizes(delta: float) -> void:
+	for zone_index in garden_data.get("zones", []).size():
+		var zone: Dictionary = garden_data["zones"][zone_index]
+		var plots: Array = zone.get("plots", [])
+		for plot_index in plots.size():
+			var plot: Dictionary = plots[plot_index]
+			if str(plot.get("kind", "")) == "empty":
+				continue
+			plot["size_scale"] = clampf(float(plot.get("size_scale", 1.0)) + delta, 0.45, 1.5)
+			plots[plot_index] = plot
+		zone["plots"] = plots
+		garden_data["zones"][zone_index] = zone
+	_save_data()
+	_render_map()
+	_update_debug_panel()
+
+
+func _reset_all_plot_sizes() -> void:
+	for zone_index in garden_data.get("zones", []).size():
+		var zone: Dictionary = garden_data["zones"][zone_index]
+		var plots: Array = zone.get("plots", [])
+		for plot_index in plots.size():
+			var plot: Dictionary = plots[plot_index]
+			if str(plot.get("kind", "")) == "empty":
+				continue
+			plot["size_scale"] = 1.0
+			plots[plot_index] = plot
+		zone["plots"] = plots
+		garden_data["zones"][zone_index] = zone
+	_save_data()
+	_render_map()
+	_update_debug_panel()
+
+
 func _export_debug_layout() -> void:
 	var export := {
 		"selected_zone": selected_zone_id,
@@ -1016,6 +1367,8 @@ func _switch_zone(zone_id: String) -> void:
 	selected_zone_id = zone_id
 	selected_decor_id = ""
 	selected_plot_id = ""
+	_hide_record_panel()
+	_hide_plant_panel()
 	_save_data()
 	_render_all()
 
@@ -1023,12 +1376,19 @@ func _switch_zone(zone_id: String) -> void:
 func _select_plot(plot_id: String) -> void:
 	selected_plot_id = plot_id
 	selected_decor_id = ""
+	_hide_record_panel()
 	var zone_index := _current_zone_index()
 	if zone_index < 0:
 		return
 	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
 	for index in plots.size():
 		if plots[index].get("id", "") == plot_id:
+			if str(plots[index].get("kind", "")) == "empty":
+				_save_data()
+				_show_plant_panel()
+				call_deferred("_render_map")
+				return
+			_hide_plant_panel()
 			plots[index]["visits"] = int(plots[index].get("visits", 0)) + 1
 			garden_data["zones"][zone_index]["plots"] = plots
 			break
@@ -1041,15 +1401,100 @@ func _close_detail() -> void:
 	selected_plot_id = ""
 	if detail_panel != null:
 		detail_panel.visible = false
+	_hide_record_panel()
+	_hide_plant_panel()
 	call_deferred("_render_map")
 
 
 func _on_log_pressed() -> void:
-	_record_care("sun", "Recorded")
+	_show_record_panel()
 
 
 func _on_teach_pressed() -> void:
 	_record_care("water", "Teaching logged")
+
+
+func _show_record_panel() -> void:
+	if record_panel == null:
+		return
+	_hide_plant_panel()
+	record_panel.visible = not selected_plot_id.is_empty()
+	if record_note_input != null:
+		record_note_input.text = ""
+
+
+func _hide_record_panel() -> void:
+	if record_panel != null:
+		record_panel.visible = false
+
+
+func _show_plant_panel() -> void:
+	if plant_panel == null:
+		return
+	if detail_panel != null:
+		detail_panel.visible = false
+	_hide_record_panel()
+	var plot := _selected_plot()
+	plant_title_label.text = "Plant on %s" % plot.get("title", "Empty Plot")
+	plant_panel.visible = not selected_plot_id.is_empty()
+
+
+func _hide_plant_panel() -> void:
+	if plant_panel != null:
+		plant_panel.visible = false
+
+
+func _plant_empty_plot(kind: String) -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") != selected_plot_id:
+			continue
+		var plot: Dictionary = plots[index]
+		if str(plot.get("kind", "")) != "empty":
+			return
+		plot["kind"] = kind
+		plot["stage"] = "seed" if kind == "paper" else "sowing"
+		plot["title"] = "New Paper Tree" if kind == "paper" else "New Course Flower"
+		plot["status"] = "Planted"
+		plot["note"] = "Newly planted. Add a note when you record progress."
+		plot["growth"] = 0
+		plot["visits"] = 0
+		plot["logs"] = 0
+		plot["care_today"] = {"sun": 0, "water": 0, "fertilizer": 0}
+		if kind == "course":
+			plot["sessions"] = 0
+		var file_base := "paper-ginkgo-seed" if kind == "paper" else "course-daisy-sowing"
+		plot["sprite"] = _web_stage_file_path(file_base)
+		plot["portrait_sprite"] = plot["sprite"]
+		plots[index] = plot
+		garden_data["zones"][zone_index]["plots"] = plots
+		break
+	_save_data()
+	_hide_plant_panel()
+	_render_all()
+
+
+func _record_quick_water_pressed() -> void:
+	_record_care("water", "Watered")
+
+
+func _record_quick_sun_pressed() -> void:
+	_record_care("sun", "Recorded")
+
+
+func _record_quick_fertilizer_pressed() -> void:
+	_record_care("fertilizer", "Fertilized")
+
+
+func _record_note_pressed() -> void:
+	if record_note_input == null or record_note_input.text.strip_edges().is_empty():
+		_record_care("sun", "Recorded")
+		return
+	_record_note(record_note_input.text.strip_edges())
 
 
 func _record_care(care_type: String, status_text: String) -> void:
@@ -1073,6 +1518,28 @@ func _record_care(care_type: String, status_text: String) -> void:
 			garden_data["zones"][zone_index]["plots"] = plots
 			break
 	_save_data()
+	_hide_record_panel()
+	_render_detail()
+	call_deferred("_render_map")
+
+
+func _record_note(note_text: String) -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") == selected_plot_id:
+			if str(plots[index].get("kind", "")) == "empty":
+				return
+			plots[index]["logs"] = int(plots[index].get("logs", 0)) + 1
+			plots[index]["status"] = "Note saved"
+			plots[index]["note"] = note_text
+			garden_data["zones"][zone_index]["plots"] = plots
+			break
+	_save_data()
+	_hide_record_panel()
 	_render_detail()
 	call_deferred("_render_map")
 
@@ -1129,6 +1596,8 @@ func _on_remove_pressed() -> void:
 			break
 	garden_data["zones"][zone_index]["plots"] = plots
 	selected_plot_id = ""
+	_hide_record_panel()
+	_hide_plant_panel()
 	_save_data()
 	_render_all()
 
@@ -1136,6 +1605,8 @@ func _on_remove_pressed() -> void:
 func _select_decoration(decor_id: String) -> void:
 	selected_plot_id = ""
 	selected_decor_id = decor_id
+	_hide_record_panel()
+	_hide_plant_panel()
 	_render_detail()
 	call_deferred("_render_map")
 
@@ -1243,8 +1714,8 @@ func _update_detail_actions(plot: Dictionary) -> void:
 	var is_empty := kind == "empty"
 	var is_active := selected_zone_id == "active"
 	var is_dormant := selected_zone_id == "dormant"
-	log_button.text = "Record +%s" % CARE_LABELS.get("sun", "Sun")
-	teach_button.text = "Teach +%s" % CARE_LABELS.get("water", "Water")
+	log_button.text = "Record"
+	teach_button.text = "Quick %s" % CARE_LABELS.get("water", "Water")
 	advance_button.text = _next_action_label(plot)
 	sleep_button.text = "Sleep"
 	wake_button.text = "Wake"
@@ -1255,6 +1726,7 @@ func _update_detail_actions(plot: Dictionary) -> void:
 	sleep_button.disabled = is_empty or not is_active
 	wake_button.disabled = is_empty or not is_dormant
 	remove_button.disabled = is_empty
+	_detail_panel_action_visibility(is_active and not is_empty, is_active and not is_empty, is_dormant and not is_empty, not is_empty and not is_active)
 	if is_empty:
 		log_button.text = "Plant later"
 		teach_button.text = "Choose type"
@@ -1262,6 +1734,7 @@ func _update_detail_actions(plot: Dictionary) -> void:
 		sleep_button.text = "Reserved"
 		wake_button.text = "Reserved"
 		remove_button.text = "Empty"
+		_detail_panel_action_visibility(false, false, false, false)
 
 
 func _kind_label(kind: String) -> String:
@@ -1314,8 +1787,8 @@ func _set_plot_stage_sprites(plot: Dictionary) -> void:
 		return
 	var stage := str(plot.get("stage", ""))
 	var file_base := "%s-%s" % [base, stage]
-	plot["sprite"] = "res://assets/sprites/sprout/plants-rebuilt/%s-rebuilt.png" % file_base
-	plot["portrait_sprite"] = "res://assets/sprites/sprout/portraits/%s-portrait.png" % file_base
+	plot["sprite"] = _web_stage_file_path(file_base)
+	plot["portrait_sprite"] = plot["sprite"]
 
 
 func _plant_variety_base(plot: Dictionary) -> String:
@@ -1325,6 +1798,12 @@ func _plant_variety_base(plot: Dictionary) -> String:
 	var file_name := str(plot.get("sprite", "")).get_file().get_basename()
 	if file_name.ends_with("-rebuilt"):
 		file_name = file_name.trim_suffix("-rebuilt")
+	if file_name.ends_with("-full"):
+		file_name = file_name.trim_suffix("-full")
+	var current_stage := str(plot.get("stage", ""))
+	var stage_marker := "-%s" % current_stage
+	if not current_stage.is_empty() and file_name.contains(stage_marker):
+		return file_name.split(stage_marker, false, 1)[0]
 	var flow: Array = STAGE_FLOW.get(kind, [])
 	for stage in flow:
 		var suffix := "-%s" % stage
@@ -1405,6 +1884,10 @@ func _plot_button_size(plot: Dictionary) -> Vector2:
 	return base * float(plot.get("size_scale", 1.0))
 
 
+func _depth_z_index(item: Dictionary) -> int:
+	return int(round(float(item.get("y", 0.5)) * 1000.0))
+
+
 func _decor_slot(index: int) -> Vector2:
 	if index >= 0 and index < debug_decor_slots.size():
 		return debug_decor_slots[index]
@@ -1464,18 +1947,32 @@ func _load_texture(path: String) -> Texture2D:
 	return texture
 
 
-func _rebuilt_plant_sprite_path(path: String) -> String:
-	var base := _plant_sprite_base(path)
-	if base.is_empty():
-		return path
-	return "res://assets/sprites/sprout/plants-rebuilt/%s-rebuilt.png" % base
+func _add_button_texture(button: Button, path: String) -> void:
+	var icon := TextureRect.new()
+	icon.texture = _load_texture(path)
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	button.add_child(icon)
 
 
-func _portrait_plant_sprite_path(path: String) -> String:
-	var base := _plant_sprite_base(path)
+func _web_stage_sprite_path(plot: Dictionary) -> String:
+	var base := _plant_variety_base(plot)
 	if base.is_empty():
-		return path
-	return "res://assets/sprites/sprout/portraits/%s-portrait.png" % base
+		return str(plot.get("sprite", ""))
+	return _web_stage_file_path("%s-%s" % [base, str(plot.get("stage", ""))])
+
+
+func _web_stage_file_path(file_base: String) -> String:
+	var normalized_path := "res://assets/sprites/web-normalized-stages/%s.png" % file_base
+	if FileAccess.file_exists(normalized_path):
+		return normalized_path
+	var full_path := "res://assets/sprites/stages/%s-full.png" % file_base
+	if FileAccess.file_exists(full_path):
+		return full_path
+	return "res://assets/sprites/stages/%s.png" % file_base
 
 
 func _plant_sprite_base(path: String) -> String:
@@ -1486,4 +1983,6 @@ func _plant_sprite_base(path: String) -> String:
 		file_name = file_name.trim_suffix("-rebuilt")
 	if file_name.ends_with("-portrait"):
 		file_name = file_name.trim_suffix("-portrait")
+	if file_name.ends_with("-full"):
+		file_name = file_name.trim_suffix("-full")
 	return file_name

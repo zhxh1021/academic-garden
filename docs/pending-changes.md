@@ -1,5 +1,338 @@
 # Pending Changes
 
+## 2026-06-04 - Godot detail layering, empty planting panel, and zone map tones
+
+### Summary
+
+- Moved the detail card close button into the panel's top-right corner.
+- Raised detail, record, and planting panels above map plants/decorations using bounded Godot z-index values.
+- Added a separate empty-plot planting panel with Paper Tree and Course Flower choices instead of reusing the tree detail card for empty land.
+- Added warm harvested and cool nighttime dormant map variants generated from the current v4 tallfield maps.
+- Updated Godot map migration and seed data so harvested/dormant zones use their distinct map tones.
+- Strengthened local verification to check panel layering, empty planting UI, and zone map asset existence.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-harvested-gpt-v4-noplot-tallfield-warm.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-dormant-gpt-v4-noplot-tallfield-night.png`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/colorize_godot_zone_maps.py`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/colorize_godot_zone_maps.py`.
+- Visually inspected the warm harvested and night dormant map variants.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all zones reported 9 plots/5 decorations and 0 missing map/sprite references.
+- Ran `python -m py_compile scripts/colorize_godot_zone_maps.py scripts/verify_godot_garden_assets.py`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- The harvested/dormant maps are local color treatments of the existing v4 tallfield maps, not new GPT-Image-2 generations.
+- Existing unrelated local work was left untouched.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot active plot grid realignment
+
+### Summary
+
+- Re-aligned the hand-dragged active garden plot coordinates into a clean 3x3 grid while preserving the user's approximate layout area and exported plot scales.
+- Normalized active garden columns to `0.295`, `0.500`, `0.720` and rows to `0.471`, `0.592`, `0.728`.
+- Updated both Godot default plot anchors and seed data so fresh saves and migrated saves use the same aligned coordinates.
+- Bumped the Godot layout version to `17` so existing local saves pick up the corrected active plot alignment.
+- Regenerated the active preview image after the alignment pass.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`.
+- Ran `python scripts/verify_godot_garden_assets.py`; active plots now report exactly three x columns and three y rows, and all referenced sprites exist.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python -m py_compile scripts/preview_godot_web_assets.py scripts/stretch_godot_v5_field_maps.py scripts/verify_godot_garden_assets.py`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local changes, including the deleted GitHub Pages workflow and unrelated import metadata, were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot tree detail A-style record drawer
+
+### Summary
+
+- Updated the Godot plant detail drawer toward the selected A-style design direction: the portrait remains prominent, growth is shown as a progress bar, and today's Water/Sun/Fertilizer care counts appear as a compact icon row.
+- Added a lightweight Record panel with quick Water/Sun/Fertilizer buttons plus an optional note input.
+- Changed the main Record action to open the lightweight record panel instead of immediately logging Sun.
+- Added explicit opaque panel/button styling and hid legacy secondary action buttons from the active tree detail card so the UI renders as a compact card instead of transparent text over the map.
+- Added a small static verification script for the new detail UI structure.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `.gitignore`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Queried Godot MCP project info; it recognized `godot-prototype` with Godot `4.6.3.stable.official.7d41c59c4`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- No new image assets were generated; the care icons are lightweight in-UI placeholders for now.
+- Added `.superpowers/` to `.gitignore` so local visual brainstorming mockups stay out of Git.
+- Existing unrelated local work was left untouched.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot square empty plot sprite
+
+### Summary
+
+- Generated a new square empty soil plot sprite with the built-in imagegen workflow to replace the temporary signboard empty plot art.
+- Preserved the generated chroma-key source under `godot-prototype/assets/art/` and processed a transparent runtime sprite under `godot-prototype/assets/sprites/sprout/ground/`.
+- Updated Godot seed data and existing-save migration to use `empty-plot-square-gpt-v1.png` for empty plots.
+- Changed empty plot display boxes from a wide rectangle to a square `72x72` footprint.
+- Updated the preview script so empty plots render with the same square footprint.
+- Bumped the Godot layout version to `16` so existing local saves pick up the new empty plot sprite.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/art/empty-plot-square-gpt-v1-source.png`
+- `godot-prototype/assets/art/empty-plot-square-gpt-v1-transparent-raw.png`
+- `godot-prototype/assets/sprites/sprout/ground/empty-plot-square-gpt-v1.png`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `scripts/preview_godot_web_assets.py`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Generated with the built-in imagegen tool on a flat magenta chroma-key background, then removed the key locally.
+- Prompt constraints: square tilled brown soil plot, grassy rim, crisp colorful pixel art, no signpost, no text, no characters, no shadow, no watermark, generous padding.
+- Runtime output: `96x96` transparent RGBA PNG, displayed in Godot as a square `72x72` empty plot.
+
+### Verification
+
+- Ran `python C:\Users\75843\.codex\skills\.system\imagegen\scripts\remove_chroma_key.py` on the generated source.
+- Checked the runtime sprite is RGBA and has transparent corners.
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile scripts/preview_godot_web_assets.py scripts/stretch_godot_v5_field_maps.py scripts/verify_godot_garden_assets.py`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local changes, including the deleted GitHub Pages workflow and unrelated import metadata, were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot exported plant layout applied
+
+### Summary
+
+- Applied the latest `godot-prototype/layout_debug_export.json` plot layout to the Godot defaults and seed data.
+- Updated the active garden's exported plant anchors and set exported non-empty active plants to `size_scale: 0.75`.
+- Applied the exported `size_scale: 0.75` to harvested/dormant plots that were present in the export, while leaving unexported plots and placed decoration instances unchanged.
+- Updated the sixth decoration slot anchor from the exported layout.
+- Added `PLOT_SIZE_SCALES` so existing local saves migrate to the exported per-plot scales instead of resetting all plants to `1.0`.
+- Updated the preview script so generated previews honor each plot's `size_scale`.
+- Bumped the Godot layout version to `15` so existing saves pick up the exported layout.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `scripts/preview_godot_web_assets.py`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile scripts/preview_godot_web_assets.py scripts/stretch_godot_v5_field_maps.py scripts/verify_godot_garden_assets.py`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- The export's placed decoration list was partial and did not match the seed's decoration instances, so placed decoration instances were left unchanged to avoid deleting/replacing unrelated decor.
+- Existing unrelated local changes, including the deleted GitHub Pages workflow and unrelated import metadata, were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot runtime sprite sizing and v4 map color restore
+
+### Summary
+
+- Fixed the mismatch between the local preview PNG and the Godot runtime by replacing map plot/decor `Button.icon` rendering with fixed-size child `TextureRect` nodes.
+- Prevented large legacy web plant source images from expanding Godot button minimum sizes, which made the user's runtime trees and flowers much larger than the Python preview.
+- Rebuilt the taller no-plot map set from the more saturated `gpt-v4` maps instead of the cream-toned `gpt-v5` maps.
+- Updated Godot seed data and existing-save map migration to use `sprout-map-*-gpt-v4-noplot-tallfield.png`.
+- Bumped the Godot layout version to `13` so existing local saves pick up the fixed runtime map paths and migrated layout.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-*-gpt-v4-noplot-tallfield.png`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `scripts/stretch_godot_v5_field_maps.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/stretch_godot_v5_field_maps.py`.
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`; the map color is back to the more saturated v4 direction and the plants stay within their fixed preview boxes.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile scripts/stretch_godot_v5_field_maps.py scripts/preview_godot_web_assets.py scripts/verify_godot_garden_assets.py`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local changes, including the deleted GitHub Pages workflow and unrelated import metadata, were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot taller central field map
+
+### Summary
+
+- Added stretched `v5-noplot-tallfield` map variants for active, harvested, and dormant gardens.
+- Kept the upper building area fixed, stretched the central fenced field vertically, and compressed the lower entrance band slightly so the lowest plant row no longer sits on the bottom fence/wall.
+- Updated Godot seed data and existing-save map migration to use the taller-field maps.
+- Bumped the Godot layout version to `12` so existing local saves pick up the new base map paths.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-*-gpt-v5-noplot-tallfield.png`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `scripts/stretch_godot_v5_field_maps.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/stretch_godot_v5_field_maps.py`.
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`; the lowest row now sits inside the field instead of on the bottom fence/wall.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile scripts/stretch_godot_v5_field_maps.py scripts/preview_godot_web_assets.py scripts/verify_godot_garden_assets.py`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local changes, including the deleted GitHub Pages workflow and unrelated import metadata, were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot plant depth spacing and draw order
+
+### Summary
+
+- Increased the Godot 3x3 plot row spacing for all three garden zones so larger legacy web tree/flower sprites do not cover the row behind them.
+- Bumped the Godot layout version to `11` so existing local saves migrate to the wider depth spacing.
+- Added deterministic y/x sorting plus y-based `z_index` for plants, decorations, and plant ambient motes, keeping foreground depth predictable without letting lower-row trees swallow the next row's body.
+- Synced the empty-plot migration constant to the current `empty-plot-sign.png` sprite so upgraded saves do not regress to an older empty-plot asset.
+- Updated the local active-map preview script to render plants in the same sorted depth order as Godot.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `scripts/preview_godot_web_assets.py`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-stage-fit-audit.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`; the lower-row willow no longer blocks the middle-row plant.
+- Ran `python scripts/audit_godot_stage_fit.py`; used normalized sprites still reported non-transparent content away from source edges.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile` for the Godot art helper and verification scripts.
+- Ran `git diff --check` for the touched Godot/script/docs files.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local changes, including the deleted GitHub Pages workflow and unrelated import metadata, were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
+## 2026-06-04 - Godot v5 map with legacy web plant sprites
+
+### Summary
+
+- Switched the Godot prototype foreground plants from Sprout `plants-rebuilt` sprites back to the older high-resolution web-stage tree/flower sprites under `godot-prototype/assets/sprites/stages/`.
+- Added a normalized Godot runtime copy of all 60 legacy web-stage sprites under `godot-prototype/assets/sprites/web-normalized-stages/`, so every tree/flower stage is cropped to its actual subject plus padding instead of relying on tight or partially clipped web-era source canvases.
+- Added `*-full.png` preference for source mature stage sprites when available, while keeping seed/sapling/growing source stages on their regular files before normalization.
+- Increased Godot stage display boxes for the larger legacy web sprites, replacing the smaller Sprout-oriented sizes that made several plants read as half-height.
+- Generated three vertical `v5-noplot` map variants from the existing Godot v5 maps, removing the built-in 3x3 soil blocks from the background while keeping the same portrait garden composition.
+- Cleaned chroma-key magenta backgrounds from the legacy stage sprites so they composite cleanly over the v5 map.
+- Added a local active-map preview image at `godot-prototype/assets/art/godot-web-assets-active-preview.png` for quick visual review.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-*-gpt-v5-noplot.png`
+- `godot-prototype/assets/sprites/stages/*.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/*.png`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-stage-fit-audit.png`
+- `godot-prototype/assets/art/godot-normalized-stage-sheet.png`
+- `scripts/create_godot_v5_noplot_maps.py`
+- `scripts/clean_web_stage_transparency.py`
+- `scripts/build_godot_normalized_stage_sprites.py`
+- `scripts/audit_godot_stage_fit.py`
+- `scripts/preview_normalized_stage_sheet.py`
+- `scripts/switch_godot_to_web_assets.py`
+- `scripts/preview_godot_web_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/create_godot_v5_noplot_maps.py`.
+- Ran `python scripts/clean_web_stage_transparency.py`.
+- Ran `python scripts/build_godot_normalized_stage_sprites.py`; generated normalized runtime copies for all 60 paper/course stage sprites.
+- Ran `python scripts/switch_godot_to_web_assets.py`.
+- Ran `python scripts/audit_godot_stage_fit.py` and visually inspected `godot-stage-fit-audit.png`; current visible stages no longer have non-transparent pixels touching the source edge.
+- Ran full normalized-stage edge check; all 60 normalized sprites reported `edge_bad 0`.
+- Ran `python scripts/preview_normalized_stage_sheet.py` and visually inspected `godot-normalized-stage-sheet.png`.
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-web-assets-active-preview.png`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced sprites.
+- Ran `python -m py_compile` for all seven helper scripts.
+- Launched the Godot project through Godot MCP; it started successfully.
+- Stopped the Godot MCP run cleanly; final output had no errors.
+
+### Notes
+
+- The deprecated root web runtime behavior was not modified; this only reuses its older stage-art assets inside the active Godot prototype.
+- Existing unrelated local changes such as `.github/workflows/pages.yml` deletion and prior decoration/import metadata were left untouched.
+- OpenClaw deploy needed: no.
+
 ## 2026-06-04 - Godot decoration redraw, three-garden layout, and sway animation
 
 ### Summary
@@ -1473,3 +1806,25 @@
 
 - No new visual assets were generated for this slice.
 - Existing empty-plot assets, `AGENTS.md`, and unrelated `docs/art-progress.md` edits were left untouched.
+
+## 2026-06-04 - Disable deprecated GitHub Pages workflow
+
+### Summary
+
+- Removed the deprecated GitHub Pages deployment workflow so pushes to `main` no longer trigger Pages deploy failures or email notifications.
+- Left the historical root web runtime files in place as reference.
+
+### Files Changed
+
+- `.github/workflows/pages.yml`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Confirmed the worktree was clean before the change.
+- Verified the failing workflow source was `.github/workflows/pages.yml`.
+
+### Notes
+
+- This is deprecated GitHub Pages workflow cleanup. OpenClaw deploy needed: no.
+- Existing unrelated local work was left untouched.

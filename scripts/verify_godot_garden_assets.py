@@ -20,6 +20,9 @@ def main():
 
     missing = []
     for zone in data["zones"]:
+        path = zone.get("map")
+        if path and path.startswith("res://") and not res_exists(path):
+            missing.append((zone["id"], "map", path))
         for plot in zone["plots"]:
             for key in ("sprite", "portrait_sprite"):
                 path = plot.get(key)
