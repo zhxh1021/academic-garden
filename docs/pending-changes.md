@@ -1,5 +1,132 @@
 # Pending Changes
 
+## 2026-06-05 - Godot three-round art polish, FX, and UI icon pass
+
+### Summary
+
+- Completed three review/improvement rounds for the Godot mobile portrait prototype, focused on migrated rough edges in FX, decoration presentation, care UI, and verification coverage.
+- Round 1 replaced ColorRect ambient motes and text-like placement slots with GPT-Image-2 pixel FX sprites, added light decoration bob/tilt animation, and localized remaining player-facing map hints/tooltips.
+- Round 2 generated care UI icons and upgraded detail care cells, record buttons, planting buttons, and the decoration inventory bar toward icon-led pixel UI instead of default Godot button/icon layout.
+- Round 3 expanded preview and asset verification so all three zones, placed decorations, and `main.gd` asset constants are covered.
+- Updated the art progress note with the new FX/icon state and current follow-up areas.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `scripts/slice_godot_fx_sheet.py`
+- `scripts/slice_godot_care_icons.py`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/art-progress.md`
+- `docs/pending-changes.md`
+- `godot-prototype/assets/art/garden-fx-sheet-gpt-v1-source.png`
+- `godot-prototype/assets/art/garden-fx-sheet-gpt-v1-contact.png`
+- `godot-prototype/assets/art/care-ui-icons-gpt-v1-source.png`
+- `godot-prototype/assets/art/care-ui-icons-gpt-v1-contact.png`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `godot-prototype/assets/sprites/sprout/fx/*.png`
+- `godot-prototype/assets/sprites/ui/care-*-gpt-v1.png`
+
+### Asset Notes
+
+- Generated the FX sheet with the built-in imagegen workflow on a flat `#ff00ff` chroma-key background.
+- FX prompt constraints: cozy Sprout Lands inspired pixel-art garden effects, 4x2 grid, separate paper sparkle, course petal, dormant moon, harvest leaf, placement ring, water burst, lantern twinkle, and seed puff cells; no text/UI/characters/watermark.
+- Generated the care UI sheet with the built-in imagegen workflow on a flat `#ff00ff` chroma-key background.
+- Care icon prompt constraints: Sprout Lands inspired pixel-art UI icons, 3x2 grid, sun, water, fertilizer pouch, record notebook, coin, and seed packet; no text/UI labels/characters/watermark.
+- Preserved source sheets under `godot-prototype/assets/art/`, removed chroma-key locally, and sliced runtime transparent PNGs under `godot-prototype/assets/sprites/sprout/fx/` and `godot-prototype/assets/sprites/ui/`.
+
+### Verification
+
+- Visually inspected `garden-fx-sheet-gpt-v1-contact.png`, `care-ui-icons-gpt-v1-contact.png`, and `godot-web-assets-zone-preview-contact.png`.
+- Ran `python scripts/slice_godot_fx_sheet.py`.
+- Ran `python scripts/slice_godot_care_icons.py`.
+- Ran `python scripts/preview_godot_web_assets.py`; generated active, harvested, dormant, and combined zone previews.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and `missing 0`, including `main.gd` asset constants.
+- Ran `python -m py_compile scripts/preview_godot_web_assets.py scripts/verify_godot_garden_assets.py scripts/slice_godot_care_icons.py scripts/slice_godot_fx_sheet.py`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd scripts/preview_godot_web_assets.py scripts/verify_godot_garden_assets.py scripts/slice_godot_care_icons.py scripts/slice_godot_fx_sheet.py`; only normal CRLF warnings appeared.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP after rounds 1 and 2; final outputs had no errors.
+
+### Notes
+
+- Existing unrelated local work in `AGENTS.md`, `garden_seed.json`, `verify_detail_ui.ps1`, and earlier v6 harvested/dormant map assets was left intact and is still part of the combined local worktree.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot structural harvested and dormant map generations
+
+### Summary
+
+- Generated new harvested and dormant Godot base maps with the built-in imagegen workflow instead of reusing color-only variants.
+- Preserved the active map's broad structure: top destination-building area, forked path, large clear fenced field, and centered bottom gate.
+- Changed concrete scene details for immersion: harvested uses amber harvest clutter, crates, seed sacks, autumn foliage, and a cool dormant destination cottage; dormant uses blue twilight, resting tools, moss, lantern glows, and a warm harvest archive/granary destination.
+- Kept destination-building identities consistent by treating the active garden as the green-roof timber cottage, the harvested garden as the warm archive/granary cottage, and the dormant garden as the cool stone cottage.
+- Updated Godot map defaults and seed data so harvested/dormant zones use the new structural v6 maps.
+- Bumped the Godot layout version to `19` so existing local saves migrate to the new map paths.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/art/sprout-map-harvested-gpt-v6-structural-source.png`
+- `godot-prototype/assets/art/sprout-map-dormant-gpt-v6-structural-source.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-harvested-gpt-v6-structural.png`
+- `godot-prototype/assets/sprites/sprout/maps/sprout-map-dormant-gpt-v6-structural.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Generated with the built-in imagegen tool using the current active tallfield map as the visual reference in conversation.
+- Source outputs were preserved under `godot-prototype/assets/art/` at `984x1598`.
+- Runtime outputs were resized to `768x1248` under `godot-prototype/assets/sprites/sprout/maps/` to match the existing Godot map dimensions.
+- Prompt constraints: Sprout Lands inspired cozy pixel art, preserve overall portrait map structure, keep central field clear, no 3x3 soil blocks, no UI/text/characters/watermark, and change concrete edge details beyond color.
+
+### Verification
+
+- Visually inspected both generated source images and both resized runtime maps.
+- Checked source and runtime PNG dimensions with Pillow; source images are `984x1598`, runtime maps are `768x1248`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced assets.
+- Ran `python -m py_compile scripts/verify_godot_garden_assets.py`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json docs/pending-changes.md`; only existing CRLF warnings appeared.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local work and untracked `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot zone sprite filters and entrance labels
+
+### Summary
+
+- Replaced the weak map-plant `modulate` tint with a per-zone sprite shader filter that mixes sprites toward the garden color and adjusts brightness.
+- Applied the same zone filter to placed decorations, so dormant/harvested scene props no longer sit over the map in their original bright colors.
+- Kept empty plots and detail-card portraits untinted so only placed map sprites inherit the garden mood.
+- Renamed the in-map garden entrance labels from English to Chinese: `生长园`, `收获园`, and `沉睡园`.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and 0 missing referenced assets.
+- Ran `python -m py_compile scripts/verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Searched `godot-prototype/scripts/main.gd` for old entrance labels and confirmed hotspot labels now use the Chinese names.
+- Started `res://scenes/main.tscn` through Godot MCP; the process returned without a persistent active Godot instance to stop.
+
+### Notes
+
+- Existing unrelated local work and import metadata were left untouched.
+- The deprecated root web runtime was not modified.
+- OpenClaw deploy needed: no.
+
 ## 2026-06-04 - Godot detail layering, empty planting panel, and zone map tones
 
 ### Summary
@@ -1828,3 +1955,48 @@
 
 - This is deprecated GitHub Pages workflow cleanup. OpenClaw deploy needed: no.
 - Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Remove OpenClaw project rule
+
+### Summary
+
+- Removed the project-level instruction requiring Codex to report OpenClaw deployment status.
+- Left historical deployment notes in prior change-log entries untouched.
+
+### Files Changed
+
+- `AGENTS.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Searched project docs for the active OpenClaw rule location before editing.
+- Reviewed the resulting diff.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Fix Godot detail card close button and Chinese copy
+
+### Summary
+
+- Fixed the plant detail card close button so it sits as a small top-right control inside the card header instead of being stretched by the panel container.
+- Localized the plant detail card, record drawer, empty-plot planting panel, care labels, action labels, status labels, title labels, and seed notes shown in the detail flow.
+- Updated the detail UI static check so it catches the stretched-close-button regression and verifies the Chinese care labels.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `git diff --check`; only normal CRLF warnings appeared.
+- Ran Godot `res://scenes/main.tscn` through the Godot debug tool and confirmed the final output had no errors.
+
+### Notes
+
+- Existing unrelated local work was left untouched, including prior AGENTS/pending-changes edits and map/import-file changes already present in the worktree.

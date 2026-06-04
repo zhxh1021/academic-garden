@@ -1,6 +1,6 @@
 {
   "selected_zone": "active",
-  "layout_version": 18,
+  "layout_version": 19,
   "coins": 80,
   "zones": [
     {
@@ -233,7 +233,7 @@
       "id": "harvested",
       "title": "Harvest Garden",
       "subtitle": "已经收获、可复盘的成果",
-      "map": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v4-noplot-tallfield-warm.png",
+      "map": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v6-structural.png",
       "accent": "#a9783b",
       "plots": [
         {
@@ -421,7 +421,7 @@
       "id": "dormant",
       "title": "Dormant Garden",
       "subtitle": "暂停、沉淀或等待重启",
-      "map": "res://assets/sprites/sprout/maps/sprout-map-dormant-gpt-v4-noplot-tallfield-night.png",
+      "map": "res://assets/sprites/sprout/maps/sprout-map-dormant-gpt-v6-structural.png",
       "accent": "#55708a",
       "plots": [
         {

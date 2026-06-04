@@ -1,9 +1,11 @@
 import json
+import re
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1] / "godot-prototype"
 SEED = ROOT / "data" / "garden_seed.json"
+MAIN_SCRIPT = ROOT / "scripts" / "main.gd"
 
 
 def res_exists(path):
@@ -32,6 +34,11 @@ def main():
         path = decor["sprite"]
         if path.startswith("res://") and not res_exists(path):
             missing.append((decor["id"], "sprite", path))
+    for path in sorted(set(re.findall(r'"(res://assets/[^"]+)"', MAIN_SCRIPT.read_text(encoding="utf-8")))):
+        if "%" in path:
+            continue
+        if not res_exists(path):
+            missing.append(("main.gd", "asset", path))
 
     print(f"missing {len(missing)}")
     for item in missing:

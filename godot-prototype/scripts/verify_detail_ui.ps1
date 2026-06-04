@@ -17,13 +17,20 @@ $requiredSnippets = @(
   "_show_record_panel",
   "_record_quick_water_pressed",
   "_record_quick_sun_pressed",
-  "_record_quick_fertilizer_pressed"
+  "_record_quick_fertilizer_pressed",
+  'CARE_LABELS := {"sun": "阳光", "water": "水", "fertilizer": "肥料"}',
+  "header_row",
+  "在%s种植"
 )
 
 foreach ($snippet in $requiredSnippets) {
   if (-not $main.Contains($snippet)) {
     Write-Error "Missing expected detail UI snippet: $snippet"
   }
+}
+
+if ($main.Contains("detail_panel.add_child(close_button)")) {
+  Write-Error "Detail close button must not be a direct PanelContainer child."
 }
 
 Write-Host "Detail UI static checks passed."

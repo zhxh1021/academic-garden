@@ -4,13 +4,18 @@ const SAVE_PATH := "user://garden_state.json"
 const SEED_PATH := "res://data/garden_seed.json"
 const DEBUG_EXPORT_PATH := "user://layout_debug_export.json"
 const DEBUG_EXPORT_PROJECT_PATH := "res://layout_debug_export.json"
-const LAYOUT_VERSION := 18
+const LAYOUT_VERSION := 19
 const MAP_DISPLAY_ASPECT := 780.0 / 1240.0
 const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/empty-plot-square-gpt-v1.png"
 const ZONE_MAP_PATHS := {
 	"active": "res://assets/sprites/sprout/maps/sprout-map-active-gpt-v4-noplot-tallfield.png",
-	"harvested": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v4-noplot-tallfield-warm.png",
-	"dormant": "res://assets/sprites/sprout/maps/sprout-map-dormant-gpt-v4-noplot-tallfield-night.png"
+	"harvested": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v6-structural.png",
+	"dormant": "res://assets/sprites/sprout/maps/sprout-map-dormant-gpt-v6-structural.png"
+}
+const ZONE_SPRITE_FILTERS := {
+	"active": {"color": Color(1.0, 1.0, 1.0, 1.0), "strength": 0.0, "brightness": 1.0},
+	"harvested": {"color": Color(1.0, 0.70, 0.24, 1.0), "strength": 0.48, "brightness": 0.94},
+	"dormant": {"color": Color(0.22, 0.31, 0.40, 1.0), "strength": 0.72, "brightness": 0.58}
 }
 const DEFAULT_PLOT_SIZES := {
 	"paper": Vector2(96, 108),
@@ -30,6 +35,14 @@ const STAGE_PLOT_SIZES := {
 	"course:seed_saved": Vector2(92, 112)
 }
 const DEFAULT_DECOR_SIZE := Vector2(78, 78)
+const FX_SPRITES := {
+	"paper": "res://assets/sprites/sprout/fx/fx-paper-sparkle.png",
+	"course": "res://assets/sprites/sprout/fx/fx-course-petal.png",
+	"dormant": "res://assets/sprites/sprout/fx/fx-dormant-moon.png",
+	"harvested": "res://assets/sprites/sprout/fx/fx-harvest-leaf.png",
+	"placement": "res://assets/sprites/sprout/fx/fx-placement-ring.png",
+	"lantern": "res://assets/sprites/sprout/fx/fx-lantern-twinkle.png"
+}
 const DECOR_SLOTS := [
 	Vector2(0.200, 0.319),
 	Vector2(0.781, 0.340),
@@ -107,16 +120,16 @@ const DECOR_ANCHORS := {
 }
 const ZONE_HOTSPOTS := {
 	"active": [
-		{"target": "harvested", "label": "Harvest", "pos": Vector2(0.29, 0.15), "size": Vector2(124, 92)},
-		{"target": "dormant", "label": "Dormant", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
+		{"target": "harvested", "label": "收获园", "pos": Vector2(0.29, 0.15), "size": Vector2(124, 92)},
+		{"target": "dormant", "label": "沉睡园", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
 	],
 	"harvested": [
-		{"target": "active", "label": "Active", "pos": Vector2(0.29, 0.15), "size": Vector2(124, 92)},
-		{"target": "dormant", "label": "Dormant", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
+		{"target": "active", "label": "生长园", "pos": Vector2(0.29, 0.15), "size": Vector2(124, 92)},
+		{"target": "dormant", "label": "沉睡园", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
 	],
 	"dormant": [
-		{"target": "active", "label": "Active", "pos": Vector2(0.29, 0.15), "size": Vector2(124, 92)},
-		{"target": "harvested", "label": "Harvest", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
+		{"target": "active", "label": "生长园", "pos": Vector2(0.29, 0.15), "size": Vector2(124, 92)},
+		{"target": "harvested", "label": "收获园", "pos": Vector2(0.70, 0.15), "size": Vector2(132, 96)}
 	]
 }
 const STAGE_FLOW := {
@@ -124,29 +137,106 @@ const STAGE_FLOW := {
 	"course": ["sowing", "growing", "bloom", "fruit", "seed_saved"]
 }
 const STAGE_LABELS := {
-	"seed": "Seed",
-	"sapling": "Sapling",
-	"tree": "Tree",
-	"flower": "Flower",
-	"fruit": "Fruit",
-	"sowing": "Sowing",
-	"growing": "Growing",
-	"bloom": "Bloom",
-	"seed_saved": "Seed saved",
-	"empty": "Empty"
+	"seed": "种子",
+	"sapling": "幼苗",
+	"tree": "成树",
+	"flower": "开花",
+	"fruit": "结果",
+	"sowing": "播种",
+	"growing": "生长中",
+	"bloom": "盛开",
+	"seed_saved": "留种",
+	"empty": "空地"
 }
 const NEXT_ACTION_LABELS := {
-	"paper:seed": "Start reading",
-	"paper:sapling": "Draft notes",
-	"paper:tree": "Submit paper",
-	"paper:flower": "Mark accepted",
-	"course:sowing": "Start teaching",
-	"course:growing": "Finish lectures",
-	"course:bloom": "Record outcome",
-	"course:fruit": "Save seeds"
+	"paper:seed": "开始阅读",
+	"paper:sapling": "整理笔记",
+	"paper:tree": "提交论文",
+	"paper:flower": "标记接收",
+	"course:sowing": "开始课程",
+	"course:growing": "完成学习",
+	"course:bloom": "记录成果",
+	"course:fruit": "保存种子"
 }
 const CARE_GROWTH := {"sun": 3, "water": 4, "fertilizer": 5}
-const CARE_LABELS := {"sun": "Sun", "water": "Water", "fertilizer": "Fertilizer"}
+const CARE_LABELS := {"sun": "阳光", "water": "水", "fertilizer": "肥料"}
+const CARE_ICON_SPRITES := {
+	"sun": "res://assets/sprites/ui/care-sun-gpt-v1.png",
+	"water": "res://assets/sprites/ui/care-water-gpt-v1.png",
+	"fertilizer": "res://assets/sprites/ui/care-fertilizer-gpt-v1.png",
+	"record": "res://assets/sprites/ui/care-record-gpt-v1.png",
+	"seed": "res://assets/sprites/ui/care-seed-packet-gpt-v1.png"
+}
+const STATUS_LABELS := {
+	"Reading": "阅读中",
+	"Annotating": "批注中",
+	"Practicing": "练习中",
+	"Queued": "排队中",
+	"Reviewing": "复盘中",
+	"Captured": "已记录",
+	"Consolidating": "整理中",
+	"Comparing": "对比中",
+	"Available": "可种植",
+	"Archived": "已归档",
+	"Harvested": "已丰收",
+	"Published": "已发表",
+	"Completed": "已完成",
+	"Paused": "暂停中",
+	"Waiting": "等待中",
+	"Someday": "以后再说",
+	"Planted": "已种下",
+	"Watered": "已浇水",
+	"Recorded": "已记录",
+	"Fertilized": "已施肥",
+	"Advanced": "已推进"
+}
+const TITLE_LABELS := {
+	"Paper Ginkgo": "论文银杏",
+	"Paper Cherry": "论文樱桃树",
+	"Paper Maple": "论文枫树",
+	"Paper Pine": "论文松树",
+	"Paper Willow": "论文柳树",
+	"Paper Camphor": "论文香樟",
+	"Course Daisy": "课程雏菊",
+	"Course Rose": "课程玫瑰",
+	"Course Lotus": "课程莲花",
+	"Course Sunflower": "课程向日葵",
+	"Course Lavender": "课程薰衣草",
+	"Course Hydrangea": "课程绣球",
+	"Empty Plot": "空地",
+	"New Paper Tree": "新的论文树",
+	"New Course Flower": "新的课程花"
+}
+const NOTE_LABELS := {
+	"A long-running paper thread with mature notes.": "这是一条长期推进的论文线索，笔记已经比较成熟。",
+	"Needs a detail pass on methods and figures.": "方法和图表还需要再细看一轮。",
+	"A course flower used to test non-paper projects.": "用于测试非论文项目流程的课程花。",
+	"Early reading notes, not yet mature.": "早期阅读笔记，还没有完全成熟。",
+	"Practice set is half finished.": "练习集完成了一半。",
+	"Only a seed idea so far.": "目前还只是一个种子想法。",
+	"Close to harvest, needs summary notes.": "接近丰收，还需要补总结笔记。",
+	"Good candidate for a literature cluster.": "适合发展成一个文献主题簇。",
+	"Tap to inspect the detail-card flow.": "点击查看详情卡片流程。",
+	"Finished course notes waiting for review.": "课程笔记已完成，等待复盘。",
+	"Useful references and summary cards are ready.": "有用参考和总结卡片已经整理好。",
+	"Accepted paper with final summary notes.": "已接收论文，最终总结笔记已完成。",
+	"Course material distilled into reusable seeds.": "课程材料已沉淀成可复用的种子。",
+	"A completed reading trail with useful citations.": "完整阅读路径已沉淀出可用引用。",
+	"Finished exercises and reflections.": "练习和反思已完成。",
+	"Methods notes are ready for reuse.": "方法笔记已经可以复用。",
+	"Small course loop closed cleanly.": "一个小课程循环已经顺利收尾。",
+	"Reserved for future completed work.": "预留给未来完成的成果。",
+	"A quiet project that should stay visible.": "一个暂停中的项目，仍值得保持可见。",
+	"A course seed for the next study cycle.": "下一个学习周期的课程种子。",
+	"Literature cluster waiting for a better moment.": "等待更合适时机重启的文献簇。",
+	"Practice cycle stopped midway.": "练习周期暂时停在中途。",
+	"A captured idea with no active reading yet.": "已记录的想法，还没有开始正式阅读。",
+	"Course seed waiting for the next study sprint.": "等待下一轮学习冲刺的课程种子。",
+	"Quiet land for parked ideas.": "用来停放想法的安静土地。",
+	"Useful but not urgent.": "有用，但暂时不急。",
+	"Open dormant space.": "可用于暂停项目的空地。",
+	"Newly planted. Add a note when you record progress.": "刚刚种下。记录进展时可以补一条说明。"
+}
 const MILESTONE_GROWTH := 18
 const MILESTONE_COINS := 12
 
@@ -155,7 +245,9 @@ var selected_zone_id := "active"
 var selected_plot_id := ""
 var selected_decor_id := ""
 var texture_cache: Dictionary = {}
+var sprite_filter_shader: Shader
 var animated_plot_buttons: Array[Button] = []
+var animated_decor_buttons: Array[Button] = []
 var animated_ambient_nodes: Array[Control] = []
 var animation_time := 0.0
 var debug_mode := false
@@ -234,6 +326,15 @@ func _process(delta: float) -> void:
 		var sway := sin((animation_time + phase) * TAU * 0.34)
 		button.position = base_position + Vector2(sway * 2.0, 0.0)
 		button.rotation = sway * amount
+	for button in animated_decor_buttons:
+		if not is_instance_valid(button):
+			continue
+		var phase := float(button.get_meta("phase", 0.0))
+		var base_position: Vector2 = button.get_meta("base_position", button.position)
+		var bob := sin((animation_time + phase) * TAU * 0.18)
+		var tilt := cos((animation_time + phase) * TAU * 0.12)
+		button.position = base_position + Vector2(0.0, bob * 1.6)
+		button.rotation = tilt * 0.012
 	for node in animated_ambient_nodes:
 		if not is_instance_valid(node):
 			continue
@@ -241,8 +342,13 @@ func _process(delta: float) -> void:
 		var base_position: Vector2 = node.get_meta("base_position", node.position)
 		var drift := sin((animation_time + phase) * TAU * 0.22)
 		var flutter := cos((animation_time + phase) * TAU * 0.48)
-		node.position = base_position + Vector2(drift * 8.0, flutter * 4.0)
-		node.rotation = drift * 0.35
+		var travel := float(node.get_meta("travel", 1.0))
+		var scale_amount := float(node.get_meta("scale_amount", 0.0))
+		node.position = base_position + Vector2(drift * 8.0 * travel, flutter * 4.0 * travel)
+		node.rotation = drift * 0.18
+		if scale_amount > 0.0:
+			var fx_scale := 1.0 + flutter * scale_amount
+			node.scale = Vector2(fx_scale, fx_scale)
 
 
 func _input(event: InputEvent) -> void:
@@ -455,6 +561,17 @@ func _build_detail_panel() -> void:
 	box.add_theme_constant_override("separation", 6)
 	detail_panel.add_child(box)
 
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 8)
+	box.add_child(header_row)
+
+	var header_spacer := Control.new()
+	header_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_row.add_child(header_spacer)
+
+	var close_button := _corner_close_button(_close_detail)
+	header_row.add_child(close_button)
+
 	detail_icon = TextureRect.new()
 	detail_icon.custom_minimum_size = Vector2(0, 132)
 	detail_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
@@ -481,9 +598,6 @@ func _build_detail_panel() -> void:
 	detail_meta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_box.add_child(detail_meta)
 
-	var close_button := _corner_close_button(_close_detail)
-	detail_panel.add_child(close_button)
-
 	detail_growth_bar = ProgressBar.new()
 	detail_growth_bar.custom_minimum_size = Vector2(0, 16)
 	detail_growth_bar.max_value = 100.0
@@ -495,9 +609,9 @@ func _build_detail_panel() -> void:
 	detail_care_grid.add_theme_constant_override("h_separation", 5)
 	box.add_child(detail_care_grid)
 
-	detail_water_value = _detail_care_cell("W", "Water", Color("#76b7d4"))
-	detail_sun_value = _detail_care_cell("S", "Sun", Color("#e4b94c"))
-	detail_fertilizer_value = _detail_care_cell("F", "Fertilizer", Color("#8b6846"))
+	detail_water_value = _detail_care_cell(CARE_ICON_SPRITES["water"], "水", Color("#d7f0f4"))
+	detail_sun_value = _detail_care_cell(CARE_ICON_SPRITES["sun"], "阳光", Color("#fff2b8"))
+	detail_fertilizer_value = _detail_care_cell(CARE_ICON_SPRITES["fertilizer"], "肥料", Color("#e6d0a4"))
 
 	detail_note = Label.new()
 	detail_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -511,12 +625,12 @@ func _build_detail_panel() -> void:
 	detail_actions.add_theme_constant_override("v_separation", 5)
 	box.add_child(detail_actions)
 
-	log_button = _detail_action_button("Record +Sun", _on_log_pressed)
-	teach_button = _detail_action_button("Teach +Water", _on_teach_pressed)
-	advance_button = _detail_action_button("Advance", _on_advance_pressed)
-	sleep_button = _detail_action_button("Sleep", _on_sleep_pressed)
-	wake_button = _detail_action_button("Wake", _on_wake_pressed)
-	remove_button = _detail_action_button("Remove", _on_remove_pressed)
+	log_button = _detail_action_button("记录", _on_log_pressed)
+	teach_button = _detail_action_button("快速浇水", _on_teach_pressed)
+	advance_button = _detail_action_button("推进阶段", _on_advance_pressed)
+	sleep_button = _detail_action_button("移入睡眠园", _on_sleep_pressed)
+	wake_button = _detail_action_button("唤醒", _on_wake_pressed)
+	remove_button = _detail_action_button("移除", _on_remove_pressed)
 
 	_build_record_panel()
 	_build_plant_panel()
@@ -658,38 +772,25 @@ func _button_style(fill_color: Color) -> StyleBoxFlat:
 
 func _corner_close_button(callable: Callable) -> Button:
 	var button := Button.new()
-	button.text = "x"
-	button.anchor_left = 1.0
-	button.anchor_top = 0.0
-	button.anchor_right = 1.0
-	button.anchor_bottom = 0.0
-	button.offset_left = -34
-	button.offset_top = 6
-	button.offset_right = -6
-	button.offset_bottom = 32
+	button.text = "X"
+	button.custom_minimum_size = Vector2(30, 26)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	button.add_theme_font_size_override("font_size", 12)
 	button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
 	button.pressed.connect(callable)
 	return button
 
 
-func _detail_care_cell(icon_text: String, label_text: String, icon_color: Color) -> Label:
+func _detail_care_cell(icon_path: String, label_text: String, icon_color: Color) -> Label:
 	var cell := HBoxContainer.new()
 	cell.custom_minimum_size = Vector2(0, 36)
 	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cell.add_theme_constant_override("separation", 4)
 	detail_care_grid.add_child(cell)
 
-	var icon := Label.new()
-	icon.text = icon_text
-	icon.custom_minimum_size = Vector2(22, 22)
-	icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	icon.add_theme_font_size_override("font_size", 11)
-	icon.add_theme_color_override("font_color", Color("#fff9dc"))
-	icon.add_theme_color_override("font_shadow_color", Color("#4c3725"))
-	icon.add_theme_constant_override("shadow_offset_x", 1)
-	icon.add_theme_constant_override("shadow_offset_y", 1)
+	var icon_frame := PanelContainer.new()
+	icon_frame.custom_minimum_size = Vector2(28, 28)
 	var icon_style := StyleBoxFlat.new()
 	icon_style.bg_color = icon_color
 	icon_style.border_width_left = 2
@@ -701,8 +802,21 @@ func _detail_care_cell(icon_text: String, label_text: String, icon_color: Color)
 	icon_style.corner_radius_top_right = 5
 	icon_style.corner_radius_bottom_left = 5
 	icon_style.corner_radius_bottom_right = 5
-	icon.add_theme_stylebox_override("normal", icon_style)
-	cell.add_child(icon)
+	icon_style.content_margin_left = 2
+	icon_style.content_margin_top = 2
+	icon_style.content_margin_right = 2
+	icon_style.content_margin_bottom = 2
+	icon_frame.add_theme_stylebox_override("panel", icon_style)
+	cell.add_child(icon_frame)
+
+	var icon := TextureRect.new()
+	icon.texture = _load_texture(icon_path)
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.custom_minimum_size = Vector2(24, 24)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_frame.add_child(icon)
 
 	var text_box := VBoxContainer.new()
 	text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -748,7 +862,7 @@ func _build_record_panel() -> void:
 	box.add_child(row)
 
 	var title := Label.new()
-	title.text = "Record today"
+	title.text = "记录今天"
 	title.add_theme_font_size_override("font_size", 14)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(title)
@@ -766,16 +880,16 @@ func _build_record_panel() -> void:
 	quick_grid.add_theme_constant_override("h_separation", 5)
 	box.add_child(quick_grid)
 
-	record_water_button = _record_button("Water", _record_quick_water_pressed, quick_grid)
-	record_sun_button = _record_button("Sun", _record_quick_sun_pressed, quick_grid)
-	record_fertilizer_button = _record_button("Fertilizer", _record_quick_fertilizer_pressed, quick_grid)
+	record_water_button = _record_button("浇水", _record_quick_water_pressed, quick_grid, CARE_ICON_SPRITES["water"])
+	record_sun_button = _record_button("晒太阳", _record_quick_sun_pressed, quick_grid, CARE_ICON_SPRITES["sun"])
+	record_fertilizer_button = _record_button("施肥", _record_quick_fertilizer_pressed, quick_grid, CARE_ICON_SPRITES["fertilizer"])
 
 	record_note_input = LineEdit.new()
-	record_note_input.placeholder_text = "Optional note..."
+	record_note_input.placeholder_text = "输入一条轻量记录..."
 	box.add_child(record_note_input)
 
 	record_note_button = Button.new()
-	record_note_button.text = "Save note"
+	record_note_button.text = "保存记录"
 	record_note_button.custom_minimum_size = Vector2(0, 32)
 	record_note_button.add_theme_font_size_override("font_size", 12)
 	record_note_button.add_theme_stylebox_override("normal", _button_style(Color("#cf8d45")))
@@ -803,14 +917,22 @@ func _build_plant_panel() -> void:
 	box.add_theme_constant_override("separation", 8)
 	plant_panel.add_child(box)
 
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	box.add_child(row)
+
 	plant_title_label = Label.new()
-	plant_title_label.text = "Choose what to plant"
+	plant_title_label.text = "选择要种什么"
 	plant_title_label.add_theme_font_size_override("font_size", 15)
 	plant_title_label.add_theme_color_override("font_color", Color("#334231"))
-	box.add_child(plant_title_label)
+	plant_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(plant_title_label)
+
+	var close_button := _corner_close_button(_close_detail)
+	row.add_child(close_button)
 
 	var subtitle := Label.new()
-	subtitle.text = "Turn this empty plot into a paper tree or course flower."
+	subtitle.text = "把这块空地种成论文树或课程花。"
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	subtitle.add_theme_font_size_override("font_size", 10)
 	subtitle.add_theme_color_override("font_color", Color("#5a6c52"))
@@ -821,20 +943,21 @@ func _build_plant_panel() -> void:
 	choices.add_theme_constant_override("h_separation", 8)
 	box.add_child(choices)
 
-	plant_paper_button = _record_button("Paper Tree", _plant_empty_plot.bind("paper"), choices)
-	plant_course_button = _record_button("Course Flower", _plant_empty_plot.bind("course"), choices)
-
-	var close_button := _corner_close_button(_close_detail)
-	plant_panel.add_child(close_button)
+	plant_paper_button = _record_button("论文树", _plant_empty_plot.bind("paper"), choices, CARE_ICON_SPRITES["seed"])
+	plant_course_button = _record_button("课程花", _plant_empty_plot.bind("course"), choices, CARE_ICON_SPRITES["seed"])
 
 
-func _record_button(text: String, callable: Callable, parent: Control) -> Button:
+func _record_button(text: String, callable: Callable, parent: Control, icon_path := "") -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(0, 32)
+	button.custom_minimum_size = Vector2(0, 36)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.add_theme_font_size_override("font_size", 11)
 	button.add_theme_stylebox_override("normal", _button_style(Color("#7b9b58")))
+	if not str(icon_path).is_empty():
+		button.icon = _load_texture(str(icon_path))
+		button.expand_icon = true
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.pressed.connect(callable)
 	parent.add_child(button)
 	return button
@@ -866,7 +989,7 @@ func _update_header() -> void:
 	var zone := _current_zone()
 	title_label.text = zone.get("title", "Garden")
 	meta_label.text = zone.get("subtitle", "")
-	coins_label.text = "%d coins" % int(garden_data.get("coins", 0))
+	coins_label.text = "%d 枚" % int(garden_data.get("coins", 0))
 
 
 func _render_map() -> void:
@@ -876,6 +999,7 @@ func _render_map() -> void:
 	for child in overlay_layer.get_children():
 		child.queue_free()
 	animated_plot_buttons.clear()
+	animated_decor_buttons.clear()
 	animated_ambient_nodes.clear()
 
 	var zone := _current_zone()
@@ -908,7 +1032,7 @@ func _render_hotspots(map_rect: Rect2) -> void:
 		button.custom_minimum_size = button_size
 		button.size = button_size
 		button.position = _map_point(map_rect, hotspot.get("pos", Vector2(0.5, 0.5))) - (button_size * 0.5)
-		button.tooltip_text = "Go to %s garden" % hotspot.get("label", "another")
+		button.tooltip_text = "前往%s" % hotspot.get("label", "另一片园地")
 		var item := {"type": "hotspot", "zone": selected_zone_id, "index": hotspot_index, "target": target}
 		if debug_mode:
 			_make_debug_target(button, item)
@@ -952,8 +1076,9 @@ func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
 		button.z_index = _depth_z_index(plot)
 		button.clip_text = true
 		button.text = ""
-		button.tooltip_text = "%s\n%s" % [plot.get("title", "Plot"), plot.get("status", "")]
-		_add_button_texture(button, plot.get("sprite", ""))
+		button.tooltip_text = "%s\n%s" % [_display_title(plot), _status_label(str(plot.get("status", "")))]
+		var sprite_filter := _zone_sprite_filter() if kind != "empty" else {}
+		_add_button_texture(button, plot.get("sprite", ""), sprite_filter)
 		var item := {"type": "plot", "zone": selected_zone_id, "id": str(plot.get("id", ""))}
 		if debug_mode:
 			_make_debug_target(button, item)
@@ -984,14 +1109,16 @@ func _render_decorations(map_rect: Rect2, zone: Dictionary) -> void:
 		button.position = _map_point(map_rect, Vector2(placed.get("x", 0.5), placed.get("y", 0.5))) - Vector2(button_size.x * 0.5, button_size.y * 0.82)
 		button.z_index = _depth_z_index(placed)
 		button.text = ""
-		button.tooltip_text = "Return %s to inventory" % decor.get("title", "decor")
-		_add_button_texture(button, decor.get("sprite", ""))
+		button.tooltip_text = "收回%s" % decor.get("title", "装饰")
+		_add_button_texture(button, decor.get("sprite", ""), _zone_sprite_filter())
 		var item := {"type": "decoration", "zone": selected_zone_id, "index": decor_index, "id": str(placed.get("id", ""))}
 		if debug_mode:
 			_make_debug_target(button, item)
 		else:
 			button.pressed.connect(_remove_decoration.bind(placed))
 		overlay_layer.add_child(button)
+		if not debug_mode:
+			_animate_decor_button(button, placed)
 		if debug_mode:
 			_add_debug_tag(button, "%s-%d" % [placed.get("id", "decor"), decor_index])
 		decor_index += 1
@@ -1004,11 +1131,21 @@ func _render_decor_slots(map_rect: Rect2) -> void:
 	for index in DECOR_SLOTS.size():
 		var slot: Vector2 = _decor_slot(index)
 		var button := Button.new()
-		button.text = "S%d" % (index + 1) if debug_mode else "+"
-		button.custom_minimum_size = Vector2(32, 32)
-		button.size = Vector2(32, 32)
-		button.position = _map_point(map_rect, slot) - Vector2(16, 26)
-		button.tooltip_text = "Place selected decoration"
+		button.flat = true
+		button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		button.text = "S%d" % (index + 1) if debug_mode else ""
+		button.custom_minimum_size = Vector2(44, 44)
+		button.size = Vector2(44, 44)
+		button.position = _map_point(map_rect, slot) - Vector2(22, 34)
+		button.tooltip_text = "放置选中的装饰"
+		if not debug_mode:
+			_add_button_texture(button, FX_SPRITES["placement"])
+			button.modulate = Color(1.0, 1.0, 1.0, 0.86)
+			button.set_meta("base_position", button.position)
+			button.set_meta("phase", float(index) * 0.17)
+			button.set_meta("travel", 0.25)
+			button.set_meta("scale_amount", 0.08)
+			animated_ambient_nodes.append(button)
 		var item := {"type": "decor_slot", "zone": selected_zone_id, "index": index}
 		if debug_mode:
 			_make_debug_target(button, item)
@@ -1025,20 +1162,20 @@ func _render_detail() -> void:
 		return
 
 	detail_icon.texture = _load_texture(plot.get("portrait_sprite", plot.get("sprite", "")))
-	detail_title.text = plot.get("title", "Plot")
+	detail_title.text = _display_title(plot)
 	var kind := str(plot.get("kind", "kind"))
 	var stage := str(plot.get("stage", ""))
 	detail_meta.text = "%s / %s / %s" % [
 		_kind_label(kind),
 		_stage_label(stage),
-		plot.get("status", "status")
+		_status_label(str(plot.get("status", "")))
 	]
 	detail_growth_bar.value = clampi(int(plot.get("growth", 0)), 0, 100)
 	var care: Dictionary = plot.get("care_today", {"sun": 0, "water": 0, "fertilizer": 0})
 	detail_water_value.text = str(int(care.get("water", 0)))
 	detail_sun_value.text = str(int(care.get("sun", 0)))
 	detail_fertilizer_value.text = str(int(care.get("fertilizer", 0)))
-	detail_note.text = plot.get("note", "")
+	detail_note.text = _display_note(plot)
 	_update_detail_actions(plot)
 
 
@@ -1052,23 +1189,33 @@ func _animate_plot_button(button: Button, plot: Dictionary) -> void:
 	animated_plot_buttons.append(button)
 
 
+func _animate_decor_button(button: Button, placed: Dictionary) -> void:
+	button.pivot_offset = Vector2(button.size.x * 0.5, button.size.y * 0.82)
+	button.set_meta("phase", float(abs(str(placed.get("id", "")).hash()) % 100) / 100.0)
+	button.set_meta("base_position", button.position)
+	animated_decor_buttons.append(button)
+
+
 func _render_plot_ambient(map_rect: Rect2, plot: Dictionary, button_size: Vector2) -> void:
 	var stage := str(plot.get("stage", ""))
 	if not (stage in ["tree", "flower", "bloom", "fruit"]):
 		return
 	var origin := _map_point(map_rect, Vector2(plot.get("x", 0.5), plot.get("y", 0.5)))
-	var colors := [Color("#d8a13b"), Color("#f2cf76")] if str(plot.get("kind", "")) == "paper" else [Color("#ffe08a"), Color("#f6a6c9")]
+	var kind := str(plot.get("kind", ""))
+	var fx_path := FX_SPRITES["paper"] if kind == "paper" else FX_SPRITES["course"]
+	if selected_zone_id == "dormant":
+		fx_path = FX_SPRITES["dormant"]
+	elif selected_zone_id == "harvested":
+		fx_path = FX_SPRITES["harvested"]
 	var offsets := [Vector2(-button_size.x * 0.20, -button_size.y * 0.78), Vector2(button_size.x * 0.24, -button_size.y * 0.66)]
 	for index in offsets.size():
-		var mote := ColorRect.new()
-		mote.color = colors[index]
-		mote.size = Vector2(5, 3) if str(plot.get("kind", "")) == "paper" else Vector2(6, 4)
-		mote.pivot_offset = mote.size * 0.5
-		mote.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		mote.position = origin + offsets[index]
+		var mote := _make_fx_sprite(fx_path, Vector2(24, 24))
+		mote.position = origin + offsets[index] - (mote.size * 0.5)
 		mote.z_index = _depth_z_index(plot) + 1
 		mote.set_meta("base_position", mote.position)
 		mote.set_meta("phase", float((abs(str(plot.get("id", "")).hash()) + index * 37) % 100) / 100.0)
+		mote.set_meta("travel", 0.55)
+		mote.set_meta("scale_amount", 0.08)
 		overlay_layer.add_child(mote)
 		animated_ambient_nodes.append(mote)
 
@@ -1080,14 +1227,30 @@ func _render_decor_bar() -> void:
 	for decor in garden_data.get("decoration_catalog", []):
 		var owned := _owned_count(decor.get("id", ""))
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(50, 62)
-		button.size = Vector2(50, 62)
-		button.icon = _load_texture(decor.get("sprite", ""))
-		button.expand_icon = true
+		button.custom_minimum_size = Vector2(54, 64)
+		button.size = Vector2(54, 64)
 		button.clip_text = true
-		button.text = "x%d" % owned
+		button.text = ""
 		button.disabled = owned <= 0
-		button.tooltip_text = "Select %s" % decor.get("title", "decor")
+		button.tooltip_text = "选择%s" % decor.get("title", "装饰")
+		var fill := Color("#f0d9a8") if str(decor.get("id", "")) == selected_decor_id else Color("#d8bd82")
+		button.add_theme_stylebox_override("normal", _button_style(fill))
+		button.add_theme_stylebox_override("disabled", _button_style(Color("#9c9275")))
+		button.modulate = Color(1, 1, 1, 1) if owned > 0 else Color(0.74, 0.70, 0.62, 0.72)
+		_add_button_texture(button, decor.get("sprite", ""))
+		var count_label := Label.new()
+		count_label.text = "x%d" % owned
+		count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		count_label.add_theme_font_size_override("font_size", 9)
+		count_label.add_theme_color_override("font_color", Color("#fff6d6"))
+		count_label.add_theme_color_override("font_shadow_color", Color("#4a2f19"))
+		count_label.add_theme_constant_override("shadow_offset_x", 1)
+		count_label.add_theme_constant_override("shadow_offset_y", 1)
+		count_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+		count_label.offset_top = -16
+		count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(count_label)
 		button.pressed.connect(_select_decoration.bind(decor.get("id", "")))
 		decor_bar.add_child(button)
 
@@ -1097,9 +1260,9 @@ func _update_hint() -> void:
 		hint_label.text = "DEBUG: drag items. [ / ] resize. \\ export. F2 exit."
 	elif not selected_decor_id.is_empty():
 		var decor := _decor_by_id(selected_decor_id)
-		hint_label.text = "Place %s on a glowing map slot" % decor.get("title", "Decoration")
+		hint_label.text = "把%s放到发光的园地位置" % decor.get("title", "装饰")
 	else:
-		hint_label.text = "Tap plants, placed decor, or the distant houses"
+		hint_label.text = "轻点植物、装饰或远处的小屋"
 
 
 func _init_debug_layout() -> void:
@@ -1170,7 +1333,7 @@ func _move_debug_selected(mouse_position: Vector2) -> void:
 		if str(debug_selected.get("type", "")) == "hotspot":
 			debug_drag_button.position = _map_point(map_rect, ratio) - (item_size * 0.5)
 		elif str(debug_selected.get("type", "")) == "decor_slot":
-			debug_drag_button.position = _map_point(map_rect, ratio) - Vector2(16, 26)
+			debug_drag_button.position = _map_point(map_rect, ratio) - Vector2(22, 34)
 	_update_debug_panel()
 
 
@@ -1435,7 +1598,7 @@ func _show_plant_panel() -> void:
 		detail_panel.visible = false
 	_hide_record_panel()
 	var plot := _selected_plot()
-	plant_title_label.text = "Plant on %s" % plot.get("title", "Empty Plot")
+	plant_title_label.text = "在%s种植" % _display_title(plot)
 	plant_panel.visible = not selected_plot_id.is_empty()
 
 
@@ -1714,12 +1877,12 @@ func _update_detail_actions(plot: Dictionary) -> void:
 	var is_empty := kind == "empty"
 	var is_active := selected_zone_id == "active"
 	var is_dormant := selected_zone_id == "dormant"
-	log_button.text = "Record"
-	teach_button.text = "Quick %s" % CARE_LABELS.get("water", "Water")
+	log_button.text = "记录"
+	teach_button.text = "快捷%s" % CARE_LABELS.get("water", "水")
 	advance_button.text = _next_action_label(plot)
-	sleep_button.text = "Sleep"
-	wake_button.text = "Wake"
-	remove_button.text = "Remove"
+	sleep_button.text = "移入睡眠园"
+	wake_button.text = "唤醒"
+	remove_button.text = "移除"
 	log_button.disabled = is_empty or not is_active
 	teach_button.disabled = is_empty or kind != "course" or not is_active
 	advance_button.disabled = is_empty or not is_active or _next_stage(plot).is_empty()
@@ -1728,22 +1891,22 @@ func _update_detail_actions(plot: Dictionary) -> void:
 	remove_button.disabled = is_empty
 	_detail_panel_action_visibility(is_active and not is_empty, is_active and not is_empty, is_dormant and not is_empty, not is_empty and not is_active)
 	if is_empty:
-		log_button.text = "Plant later"
-		teach_button.text = "Choose type"
-		advance_button.text = "No stage"
-		sleep_button.text = "Reserved"
-		wake_button.text = "Reserved"
-		remove_button.text = "Empty"
+		log_button.text = "稍后种植"
+		teach_button.text = "选择类型"
+		advance_button.text = "暂无阶段"
+		sleep_button.text = "预留"
+		wake_button.text = "预留"
+		remove_button.text = "空地"
 		_detail_panel_action_visibility(false, false, false, false)
 
 
 func _kind_label(kind: String) -> String:
 	if kind == "paper":
-		return "Paper tree"
+		return "论文树"
 	if kind == "course":
-		return "Course flower"
+		return "课程花"
 	if kind == "empty":
-		return "Open land"
+		return "空地"
 	return kind.capitalize()
 
 
@@ -1751,9 +1914,23 @@ func _stage_label(stage: String) -> String:
 	return STAGE_LABELS.get(stage, stage.capitalize())
 
 
+func _status_label(status: String) -> String:
+	return STATUS_LABELS.get(status, status)
+
+
+func _display_title(plot: Dictionary) -> String:
+	var title := str(plot.get("title", ""))
+	return TITLE_LABELS.get(title, title)
+
+
+func _display_note(plot: Dictionary) -> String:
+	var note := str(plot.get("note", ""))
+	return NOTE_LABELS.get(note, note)
+
+
 func _care_line(plot: Dictionary) -> String:
 	var care: Dictionary = plot.get("care_today", {"sun": 0, "water": 0, "fertilizer": 0})
-	return "Today: Sun %d / Water %d / Fertilizer %d" % [
+	return "今日：阳光 %d / 水 %d / 肥料 %d" % [
 		int(care.get("sun", 0)),
 		int(care.get("water", 0)),
 		int(care.get("fertilizer", 0))
@@ -1762,7 +1939,7 @@ func _care_line(plot: Dictionary) -> String:
 
 func _next_action_label(plot: Dictionary) -> String:
 	var key := "%s:%s" % [plot.get("kind", ""), plot.get("stage", "")]
-	return NEXT_ACTION_LABELS.get(key, "Advance")
+	return NEXT_ACTION_LABELS.get(key, "推进阶段")
 
 
 func _next_stage(plot: Dictionary) -> String:
@@ -1947,15 +2124,49 @@ func _load_texture(path: String) -> Texture2D:
 	return texture
 
 
-func _add_button_texture(button: Button, path: String) -> void:
+func _add_button_texture(button: Button, path: String, sprite_filter := {}) -> void:
 	var icon := TextureRect.new()
 	icon.texture = _load_texture(path)
+	icon.material = _sprite_filter_material(sprite_filter)
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	button.add_child(icon)
+
+
+func _make_fx_sprite(path: String, target_size: Vector2) -> TextureRect:
+	var icon := TextureRect.new()
+	icon.texture = _load_texture(path)
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.custom_minimum_size = target_size
+	icon.size = target_size
+	icon.pivot_offset = target_size * 0.5
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	return icon
+
+
+func _zone_sprite_filter() -> Dictionary:
+	return ZONE_SPRITE_FILTERS.get(selected_zone_id, ZONE_SPRITE_FILTERS["active"])
+
+
+func _sprite_filter_material(sprite_filter: Dictionary) -> Material:
+	var strength := float(sprite_filter.get("strength", 0.0))
+	var brightness := float(sprite_filter.get("brightness", 1.0))
+	if strength <= 0.0 and is_equal_approx(brightness, 1.0):
+		return null
+	if sprite_filter_shader == null:
+		sprite_filter_shader = Shader.new()
+		sprite_filter_shader.code = "shader_type canvas_item;\nuniform vec4 filter_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);\nuniform float filter_strength = 0.0;\nuniform float filter_brightness = 1.0;\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tvec3 filtered = mix(tex.rgb, filter_color.rgb, filter_strength) * filter_brightness;\n\tCOLOR = vec4(filtered, tex.a);\n}\n"
+	var shader_material := ShaderMaterial.new()
+	shader_material.shader = sprite_filter_shader
+	shader_material.set_shader_parameter("filter_color", sprite_filter.get("color", Color.WHITE))
+	shader_material.set_shader_parameter("filter_strength", strength)
+	shader_material.set_shader_parameter("filter_brightness", brightness)
+	return shader_material
 
 
 func _web_stage_sprite_path(plot: Dictionary) -> String:
