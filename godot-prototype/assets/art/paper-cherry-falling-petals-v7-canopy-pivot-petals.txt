@@ -1,0 +1,7 @@
+motion=full pink canopy micro-rotation around rooted base pivot with visible falling petals
+fixed_layers=trunk, branches, roots, grass base, ground flowers
+animated_layers=all pink blossom canopy pixels above base band plus falling petals
+pivot=(128, 232)
+angles_degrees=[0.0, -0.35, -0.55, -0.25, 0.35, 0.0]
+frame_size=256
+source=paper-cherry-fall-v3-crown-only-00.png

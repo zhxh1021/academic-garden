@@ -1,0 +1,6 @@
+motion=full pink canopy sway with visible falling petals
+fixed_layers=trunk, branches, roots, grass base, ground flowers
+animated_layers=all pink blossom canopy pixels above base band plus falling petals
+canopy_offsets_px=[0, 1, 2, 1, -1, 0]
+frame_size=256
+source=paper-cherry-fall-v3-crown-only-00.png

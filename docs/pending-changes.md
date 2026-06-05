@@ -1,5 +1,903 @@
 # Pending Changes
 
+## 2026-06-05 - Godot homepage mobile UI consolidation pass
+
+### Summary
+
+- Tightened the Godot portrait homepage HUD so the logo and coin counter read as compact mobile HUD elements instead of a large web header.
+- Rebalanced homepage foreground depth with smaller upper-row plants, medium middle-row plants, larger lower-row plants, softer harvested coloring, brighter dormant interactables, and shared contact shadows for plants and decorations.
+- Replaced floating garden entrance labels with wood-sign map markers while preserving the existing transparent hotspot click areas.
+- Restyled the bottom decoration tray to hide the horizontal scrollbar, keep real sprite previews and quantity badges, increase touch targets, and clarify selected/disabled/placeable states.
+- Shortened the bottom hint copy and moved it into a more readable in-game prompt strip.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; it reported `missing 0`, `paper tree stage animation errors 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json godot-prototype/scripts/verify_detail_ui.ps1 scripts/verify_godot_garden_assets.py`; only normal Windows line-ending warnings appeared.
+- Launched `res://scenes/main.tscn` through Godot MCP and confirmed final debug output had no errors.
+
+### Notes
+
+- No new visual assets were generated for this pass.
+- Existing unrelated local work, including deprecated root web runtime changes already present in the working tree, was left untouched.
+
+## 2026-06-05 - Brighten harvested garden sprite filter
+
+### Summary
+
+- Adjusted the Godot harvested garden sprite filter so trees, flowers, and placed decorations read as mature warm-gold highlights instead of being dimmed like the dormant garden.
+- Kept the dormant garden filter blue-gray and low-brightness so it still communicates sleep/rest.
+- Added a static detail-UI guard that fails if the harvested garden filter is ever changed back to a dimmer-than-normal treatment.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; it reported `missing 0`, `paper tree stage animation errors 0`, and `unstable paper mature stage paths 0`.
+
+### Notes
+
+- Existing unrelated local work and generated art assets were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Keep selected Godot tree visible behind detail
+
+### Summary
+
+- Changed the Godot map/detail interaction so tapping a planted tree keeps the original map tree rendered while opening the detail panel.
+- Removed the selected-plot render skip and the matching selected ambient-FX suppression tied to the old detail-card behavior.
+- Updated the detail UI static check so future changes do not reintroduce hiding the selected map plant when detail opens.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Confirmed `godot-prototype/scripts/main.gd` no longer contains `_hide_map_plot_behind_detail`.
+- Attempted to launch `res://scenes/main.tscn` twice through Godot MCP; the MCP reported the project started, then immediately reported no active Godot process before debug output was available.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - ImageGen camphor flower and fruit replacement
+
+### Summary
+
+- Replaced the hand-drawn camphor flower/fruit attempt with an ImageGen-generated source sheet after review feedback that the previous flower and fruit markers were effectively missing.
+- Generated a two-column ImageGen source for camphor flower and fruit stages with obvious cream blossoms and purple-blue berry clusters.
+- Removed the chroma-key background, normalized both sprites back into the existing 241x279 Godot canvas, and regenerated the stage animations and review GIFs.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-camphor-flower-fruit-imagegen-v1-source-cyan.png`
+- `godot-prototype/assets/art/paper-camphor-flower-fruit-imagegen-v1-sheet.png`
+- `godot-prototype/assets/art/paper-camphor-flower-fruit-imagegen-v1-review.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-camphor-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-camphor-fruit.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-flower.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-fruit.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-flower-full.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-fruit-full.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-camphor-flower/`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-camphor-fruit/`
+- `godot-prototype/assets/art/paper-camphor-flower-animation-v1.gif`
+- `godot-prototype/assets/art/paper-camphor-fruit-animation-v1.gif`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1-review.png`
+- `scripts/redraw_camphor_flower_fruit.py` removed because it was the superseded local drawing path.
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `paper-camphor-flower-fruit-imagegen-v1-review.png` and `paper-tree-stage-animation-v1-review.png`.
+- Confirmed `paper-camphor-flower.png` and `paper-camphor-fruit.png` are 241x279 with visible ImageGen blossoms/fruit and complete crowns.
+- Confirmed camphor flower/fruit preview GIFs have 6 frames.
+- Ran `python scripts/verify_godot_garden_assets.py`; it reported `paper tree stage animation errors 0`, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran syntax parsing for `scripts/generate_paper_tree_stage_animations.py`.
+- Launched `res://scenes/main.tscn` through Godot MCP and observed no debug errors.
+
+### Asset Notes
+
+- ImageGen prompt required the current camphor tree identity, a full rounded crown, obvious cream-white/yellow blossoms for flower, obvious purple-blue berries for fruit, equal two-column layout, no labels/UI, and a flat cyan chroma-key background.
+- Local processing only removed chroma key and normalized the generated trees to the existing Godot canvas; the flower/fruit artwork itself came from ImageGen.
+- The previous local pixel-marker camphor flower/fruit attempt is superseded by this ImageGen pass, and the local redraw script has been removed to prevent reuse.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Redraw camphor flower and fruit crowns
+
+### Summary
+
+- Fixed the camphor flower/fruit trees after review feedback showed the previous rightmost last-row trees had flat, incomplete-looking crowns.
+- Root cause: the camphor flower/fruit source sprites themselves had a flat-top canopy shape; the previous canvas-fit change only added transparent padding around the bad silhouette.
+- Rebuilt `paper-camphor-flower` and `paper-camphor-fruit` from the rounded `paper-camphor-tree` base, then added readable flowers or purple fruit markers on top.
+- Regenerated the paper tree animation frames and review GIFs from the corrected sprites.
+
+### Files Changed
+
+- `scripts/redraw_camphor_flower_fruit.py`
+- `scripts/generate_paper_tree_stage_animations.py`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-camphor-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-camphor-fruit.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-flower.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-fruit.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-flower-full.png`
+- `godot-prototype/assets/sprites/stages/paper-camphor-fruit-full.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-camphor-flower/`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-camphor-fruit/`
+- `godot-prototype/assets/art/paper-camphor-flower-animation-v1.gif`
+- `godot-prototype/assets/art/paper-camphor-fruit-animation-v1.gif`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1-review.png`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1.txt`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/redraw_camphor_flower_fruit.py`.
+- Ran `python scripts/generate_paper_tree_stage_animations.py`.
+- Visually inspected `paper-camphor-flower.png`, `paper-camphor-fruit.png`, and `paper-tree-stage-animation-v1-review.png`.
+- Confirmed camphor flower/fruit static sprites now have rounded full-crown bounding boxes `(8, 8, 233, 271)` and transparent corners.
+- Confirmed camphor flower/fruit animation frames keep full-crown bounds and transparent corners.
+- Ran `python scripts/verify_godot_garden_assets.py`; it reported `paper tree stage animation errors 0`, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran syntax parsing for `scripts/redraw_camphor_flower_fruit.py` and `scripts/generate_paper_tree_stage_animations.py`.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Fit camphor animation previews inside canvas
+
+### Summary
+
+- Adjusted the last-row rightmost paper tree animation previews after the camphor flower/fruit trees looked clipped at the top.
+- Added a targeted post-fit step for `paper-camphor-flower` and `paper-camphor-fruit`, scaling visible content to 92% inside the original canvas while preserving the lower anchor.
+- Regenerated all paper tree animation frames and preview GIFs with the updated generator.
+
+### Files Changed
+
+- `scripts/generate_paper_tree_stage_animations.py`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-camphor-flower/`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-camphor-fruit/`
+- `godot-prototype/assets/art/paper-camphor-flower-animation-v1.gif`
+- `godot-prototype/assets/art/paper-camphor-fruit-animation-v1.gif`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1-review.png`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1.txt`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/generate_paper_tree_stage_animations.py`.
+- Visually inspected `godot-prototype/assets/art/paper-tree-stage-animation-v1-review.png`.
+- Confirmed camphor flower/fruit animation frame bounding boxes now leave 32-36 px of top transparent padding while keeping transparent corners.
+- Ran `python scripts/verify_godot_garden_assets.py`; it reported `paper tree stage animation errors 0`, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot paper tree stage animations
+
+### Summary
+
+- Repeated the approved cherry v7 animation mode across all paper tree mature stage sprites.
+- Generated 18 six-frame animations for 6 tree varieties across the third, fourth, and fifth lifecycle columns: `tree`, `flower`, and `fruit`.
+- Third-column `tree` animations include rooted canopy micro-rotation plus falling petals/leaves; fourth/fifth `flower` and `fruit` animations use rooted canopy micro-rotation only.
+- Added a lightweight Godot texture-frame player so both map plant sprites and detail-card portrait sprites play the generated animation frames when a matching stage-animation folder exists.
+
+### Files Changed
+
+- `scripts/generate_paper_tree_stage_animations.py`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/`
+- `godot-prototype/assets/art/paper-*-animation-v1.gif`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1-review.png`
+- `godot-prototype/assets/art/paper-tree-stage-animation-v1.txt`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/generate_paper_tree_stage_animations.py`.
+- Ran `python -c "import ast, pathlib; ast.parse(pathlib.Path('scripts/generate_paper_tree_stage_animations.py').read_text(encoding='utf-8')); print('animation generator syntax ok')"`.
+- Ran `python scripts/verify_godot_garden_assets.py`; it reported `paper tree stage animation errors 0`, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Launched `res://scenes/main.tscn` through Godot MCP and confirmed final output had no errors.
+- Visually inspected `godot-prototype/assets/art/paper-tree-stage-animation-v1-review.png`.
+
+### Asset Notes
+
+- Runtime frames live under `assets/sprites/stage-animations/paper-trees/paper-<variety>-<stage>/frame-00.png` through `frame-05.png`.
+- Each animation preserves the original static sprite dimensions so Godot map and detail layouts keep their existing boxes and anchors.
+- The generated preview GIFs under `assets/art/` are for review; Godot runtime uses PNG frame sequences rather than GIF files.
+- Generated with local layer processing from existing Godot sprites; no new ImageGen call was used for this batch.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Cherry canopy pivot sway preview
+
+### Summary
+
+- Reworked the cherry falling-petals animation after review feedback that v6 still looked like horizontal translation.
+- Built a v7 preview where the full pink blossom canopy micro-rotates around a rooted base pivot instead of sliding left and right.
+- Kept the trunk, branches, roots, grass base, and ground flowers fixed, while preserving visible falling petals.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v7-canopy-pivot-petals-godot-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v7-canopy-pivot-petals-review.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v7-canopy-pivot-petals-preview.gif`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v7-canopy-pivot-petals.txt`
+- `godot-prototype/assets/sprites/sprout/fx/cherry-fall-v1/paper-cherry-fall-v7-canopy-pivot-petals-*.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `paper-cherry-falling-petals-v7-canopy-pivot-petals-review.png`.
+- Confirmed the preview GIF has 6 frames, the Godot preview sheet is 1536x256, and each normalized frame is 256x256 with transparent corners.
+- Confirmed the root/base band remains stable; visible bounding boxes only expand in frames with falling petals.
+
+### Asset Notes
+
+- Used the v3 clean base frame as the source and animated the full pink blossom canopy mask above the base band.
+- Motion sidecar records `pivot=(128, 232)` and `angles_degrees=[0.0, -0.35, -0.55, -0.25, 0.35, 0.0]`.
+- This remains preview art only; no Godot runtime script or scene reference was changed.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Cherry full-pink canopy sway with restored petals
+
+### Summary
+
+- Reworked the cherry falling-petals preview after review feedback that v3 only moved the top of the canopy and made the falling petals too subtle.
+- Built a v6 preview where the whole pink blossom canopy moves together while the trunk, branches, roots, grass base, and ground flowers stay fixed.
+- Restored more readable falling petals using small 2-3 px blossom particles along a right/down drift path.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v6-full-pink-sway-visible-petals-godot-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v6-full-pink-sway-visible-petals-review.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v6-full-pink-sway-visible-petals-preview.gif`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v6-full-pink-sway-visible-petals.txt`
+- `godot-prototype/assets/sprites/sprout/fx/cherry-fall-v1/paper-cherry-fall-v6-full-pink-sway-visible-petals-*.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `paper-cherry-falling-petals-v6-full-pink-sway-visible-petals-review.png`.
+- Confirmed the preview GIF has 6 frames, the Godot preview sheet is 1536x256, and each normalized frame is 256x256 with transparent corners.
+- Confirmed the root/base band remains stable; visible bounding boxes only expand in frames with falling petals.
+
+### Asset Notes
+
+- Used the v3 clean base frame as the source and expanded the animated mask to cover all pink blossom canopy pixels above the base band.
+- Motion sidecar records `canopy_offsets_px=[0, 1, 2, 1, -1, 0]`.
+- Ground flowers on the grass base remain fixed because they belong to the grounded base layer, not the wind-swaying canopy.
+- This remains preview art only; no Godot runtime script or scene reference was changed.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Cherry crown-only micro sway preview
+
+### Summary
+
+- Reworked the cherry falling-petals animation after review feedback that the root-anchored rotation still looked too large and made the ground/trunk behave incorrectly.
+- Built a v3 preview where the trunk, branches, roots, and grass base remain fixed, and only the pink blossom canopy gets a tiny crown-only sway.
+- Reduced motion amplitude to at most 1 px of canopy offset and slowed the GIF preview timing.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v3-crown-only-godot-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v3-crown-only-review.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v3-crown-only-preview.gif`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v3-crown-only.txt`
+- `godot-prototype/assets/sprites/sprout/fx/cherry-fall-v1/paper-cherry-fall-v3-crown-only-*.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `paper-cherry-falling-petals-v3-crown-only-review.png`.
+- Confirmed the preview GIF has 6 frames, the Godot preview sheet is 1536x256, and each normalized frame is 256x256 with transparent corners.
+- Confirmed all v3 frames share the same visible bounding box; central trunk/base pixels remain stable apart from tiny falling-petal pixels crossing the inspected area.
+
+### Asset Notes
+
+- Used the existing v2 transparent tree sheet as the source, then locally separated the pink blossom canopy from the fixed trunk/base layer.
+- Motion sidecar records `canopy_offsets_px=[0, 1, 1, 0, -1, 0]`; no full-sprite rotation or ground movement is used.
+- This remains preview art only; no Godot runtime script or scene reference was changed.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Cherry root-anchored falling-petals animation preview
+
+### Summary
+
+- Corrected the cherry falling-petals animation direction so the motion reads as a root-anchored tilt instead of left-right translation.
+- Generated a second ImageGen source strip, removed the cyan chroma-key background, then normalized and post-processed the frames with a fixed root pivot.
+- Applied a subtle tilt sequence around the root anchor while keeping the grass/root base visually fixed.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v2-source-cyan.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v2-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v2-anchor-godot-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v2-anchor-review.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v2-anchor-preview.gif`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v2-anchor.txt`
+- `godot-prototype/assets/sprites/sprout/fx/cherry-fall-v1/paper-cherry-fall-v2-anchor-*.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `paper-cherry-falling-petals-v2-anchor-review.png`.
+- Confirmed the root-anchor sidecar records `root_anchor=(128, 232)`, `base_y=210`, and tilt angles `[0.0, -1.1, -2.0, -0.7, 1.1, 0.0]`.
+- Confirmed the preview GIF has 6 frames, the Godot preview sheet is 1536x256, and all normalized frames are 256x256 with transparent corners.
+
+### Asset Notes
+
+- Built-in ImageGen mode was used for the updated full-tree source strip.
+- Local post-processing intentionally fixed the root/base band and rotated the tree around the root pivot so the animation follows the requested rooted sway behavior.
+- This remains preview art only; no Godot runtime script or scene reference was changed.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Cherry falling-petals animation art preview
+
+### Summary
+
+- Generated a first-pass complete-action falling-petals animation for the mature cherry tree.
+- Used a full 6-frame ImageGen sprite strip so each frame redraws the complete tree with petals in motion, instead of compositing a separate FX layer onto a static tree.
+- Removed the cyan chroma-key background, sliced the strip, normalized a Godot-preview frame set to 256x256 with a shared bottom-center anchor, and rendered review/GIF previews.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v1-source-cyan.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v1-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v1-godot-sheet.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v1-review.png`
+- `godot-prototype/assets/art/paper-cherry-falling-petals-v1-preview.gif`
+- `godot-prototype/assets/sprites/sprout/fx/cherry-fall-v1/`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually inspected `paper-cherry-falling-petals-v1-review.png`.
+- Confirmed the generated source is a 6-slot horizontal strip and the normalized runtime-preview frames are 256x256.
+- Confirmed the normalized frames retain alpha transparency.
+
+### Asset Notes
+
+- Built-in ImageGen mode was used with the current cherry tree sprite visible as style/silhouette reference.
+- Prompt constraints: complete tree redrawn in every frame, six equal chronological slots, stable bottom-center root anchor, Sprout Lands-like cozy pixel art, no text/UI/scenery, cyan chroma-key background for local removal.
+- This is preview art only; no Godot runtime script or scene reference was changed.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Revert overactive Godot plant FX attempt
+
+### Summary
+
+- Reverted the latest attempt to make every mature map plant render randomized ambient FX.
+- Root cause for the bad result: enabling `leaf`, `flyby`, and `sparkle` FX across all mature plants at once overloaded the portrait map with large repeated particles.
+- Removed the temporary balanced feedback chooser and its per-launch effect counter.
+- Restored selected-plot-only ambient FX behavior from before this attempt while keeping the existing detail-card suppression guard.
+- Left placed decorations unregistered for animation.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Confirmed `main.gd` no longer contains the temporary `plant_feedback_effect_counts` state or `_choose_plant_feedback_effect()` helper.
+- Confirmed `_render_plot_ambient()` is back behind the selected-plot guard.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md`; only normal CRLF warnings appeared.
+
+### Notes
+
+- Existing unrelated local Godot/web/audio/import-file work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Hide selected map plant behind Godot detail card
+
+### Summary
+
+- Fixed the detail-card visual leak where the selected map plant could keep swaying behind the open detail panel.
+- Root cause: the map renderer still drew and animated the selected plot after `_render_detail()` made the detail panel visible, and the static check had been guarding the wrong behavior.
+- Added a detail-state guard so the selected map plot and its selected ambient FX are skipped while the detail card is open; the detail portrait remains visible inside the card.
+- Updated the detail UI static check to require this guard instead of rejecting it.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported valid plot/decor counts, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local Godot/web/audio/import-file work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Fix Godot plant random FX freezing body sway
+
+### Summary
+
+- Fixed the Godot map plant animation regression where only plants randomly assigned `sway` moved.
+- Root cause: `_animate_plot_button()` returned early for `leaf`, `flyby`, and `sparkle`, so those plants never registered for the base body animation.
+- Restored base bottom-anchored body sway for every non-empty plant while keeping randomized FX selection for selected-plant ambient feedback.
+- Updated the detail UI static check so randomized FX cannot block plant body animation again.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Confirmed `_animate_plot_button()` no longer contains the non-`sway` early return and still appends plant buttons to `animated_plot_buttons`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local Godot/web/audio/import-file work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot mobile safe-area inspection pass
+
+### Summary
+
+- Used the Game Studio inspection flow against the current Godot mobile prototype rather than the deprecated root web runtime.
+- Checked the Godot project metadata, main scene, single-script runtime, resource references, seed data, detail UI guards, existing pending-change history, and current worktree boundaries.
+- Added safe-area-aware root layout margins so portrait mobile builds keep the header, map, detail panel, and bottom decoration bar away from notches and gesture areas while preserving the existing 10 px desktop/debug margin.
+- Recomputed the root safe-area offsets on resize so orientation/window changes keep the map layout and controls aligned.
+- Extended the Godot detail UI static check to guard the safe-area root layout behavior.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported valid plot/decor counts, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local Godot/web/audio/import-file work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Restore randomized Godot plant feedback semantics
+
+### Summary
+
+- Restored the requested randomized plant feedback semantics after a bad follow-up edit briefly forced every non-empty map plant into the same base sway path.
+- Kept body sway limited to plants assigned the `sway` feedback type; plants assigned `leaf`, `flyby`, or `sparkle` keep their selected-plant ambient FX path.
+- Removed the detail-card visibility guard that incorrectly disabled selected plant ambient FX.
+- Extended the detail UI static check so future edits reject forced all-plant sway and reject disabling selected FX just because the detail card is open.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Confirmed `main.gd` no longer contains `BASE_PLANT_SWAY_PX`.
+- Confirmed `_animate_plot_button()` returns early for non-`sway` feedback and `_render_plot_ambient()` still handles selected non-`sway` FX.
+
+### Notes
+
+- Existing unrelated local Godot/web/audio/import-file work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Fix ImageGen tree sprite crop and animation anchor regression
+
+### Summary
+
+- Investigated the broken homepage tree animation/half-tree regression after the ImageGen flower/fruit replacement.
+- Root cause: the first ImageGen slicing pass exported flower/fruit sprites with large transparent top padding, especially pine and willow, so Godot scaled and animated the full canvas while the visible tree sat in the lower half.
+- Regenerated the ImageGen source sheet with stricter tall-tree/full-height prompt constraints.
+- Replaced `paper-tree-flower-fruit-imagegen-v1-source.png` with the corrected generated sheet and re-sliced all paper tree flower/fruit runtime sprites.
+- Confirmed the homepage preview no longer shows half-height tree sprites.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-tree-flower-fruit-imagegen-v1-source.png`
+- `godot-prototype/assets/art/tree-stage-contact-sheet-imagegen-flower-fruit-v1.png`
+- `godot-prototype/assets/sprites/stages/paper-*-flower-full.png`
+- `godot-prototype/assets/sprites/stages/paper-*-fruit-full.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-fruit.png`
+- `scripts/slice_imagegen_tree_flower_fruit.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Checked alpha bounding boxes before/after; the broken pass had visible content starting as low as y=170, while the corrected pass brings most sprites back near the top of the canvas.
+- Ran `python scripts/slice_imagegen_tree_flower_fruit.py`.
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-prototype/assets/art/godot-web-assets-active-preview.png`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Launched `res://scenes/main.tscn` through Godot MCP; debug output reported no errors.
+
+### Notes
+
+- The animation code path was left intact; the regression was caused by sprite canvas/alpha bounds.
+- Existing unrelated local Godot work and untracked `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - ImageGen redraw for paper tree flower and fruit stages
+
+### Summary
+
+- Replaced the rough procedural flower/fruit overlay attempt with a GPT-Image-2/ImageGen-generated sprite sheet.
+- Generated a 6-row by 2-column pixel-art source sheet for all paper tree flower and fruit stages, with distinct visuals per variety.
+- Copied the generated source sheet into `assets/art/` for future edits, then sliced it into runtime sprites.
+- Wrote the sliced ImageGen results to both `assets/sprites/stages/*-full.png` and `assets/sprites/web-normalized-stages/*.png` so the Godot runtime displays the new art regardless of the current stage path branch.
+- Removed the rough procedural review sheet and replaced it with a new ImageGen numbered review sheet.
+
+### Files Changed
+
+- `godot-prototype/assets/art/paper-tree-flower-fruit-imagegen-v1-source.png`
+- `godot-prototype/assets/art/tree-stage-contact-sheet-imagegen-flower-fruit-v1.png`
+- `godot-prototype/assets/sprites/stages/paper-*-flower-full.png`
+- `godot-prototype/assets/sprites/stages/paper-*-fruit-full.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-fruit.png`
+- `scripts/slice_imagegen_tree_flower_fruit.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/slice_imagegen_tree_flower_fruit.py`.
+- Visually inspected `godot-prototype/assets/art/tree-stage-contact-sheet-imagegen-flower-fruit-v1.png`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Confirmed each sliced `flower`/`fruit` full sprite matches the corresponding `web-normalized-stages` sprite in pixels.
+
+### Asset Notes
+
+- ImageGen prompt required Sprout Lands style, transparent-background pixel art, full uncropped tree sprites, 6 rows by 2 columns, no labels/text, and distinct flower/fruit states.
+- The generated source contained a checkerboard transparency preview, so the slicer removes border-connected checkerboard pixels and strips row-overlap fragments before exporting transparent PNGs.
+
+### Notes
+
+- The previous procedural overlay attempt is superseded by this ImageGen pass.
+- Existing unrelated local Godot work and untracked `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot redrawn paper tree flower and fruit stages
+
+### Summary
+
+- Redrew the paper tree `flower` and `fruit` stages for all six tree varieties so the right two lifecycle columns read distinctly from `Mature`.
+- Ginkgo now uses visible hanging flower tassels and orange-gold fruit; cherry uses dense blossoms and red cherry clusters; maple uses bright flower speckles and winged samaras.
+- Pine uses yellow pollen/flower flecks and large pinecones; willow uses catkins and white seed fluff; camphor uses cream flowers and dark berry clusters.
+- Wrote the same redrawn output to both `assets/sprites/stages/*-full.png` and `assets/sprites/web-normalized-stages/*.png` so the result appears no matter which current runtime path is selected.
+- Added a reproducible redraw script and a fresh numbered review sheet.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/stages/paper-*-flower-full.png`
+- `godot-prototype/assets/sprites/stages/paper-*-fruit-full.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-fruit.png`
+- `godot-prototype/assets/art/tree-stage-contact-sheet-redrawn-flower-fruit.png`
+- `scripts/redraw_paper_tree_flower_fruit.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/redraw_paper_tree_flower_fruit.py`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Confirmed each redrawn `flower`/`fruit` full sprite matches the corresponding `web-normalized-stages` sprite in dimensions and pixels.
+- Visually inspected `godot-prototype/assets/art/tree-stage-contact-sheet-redrawn-flower-fruit.png`.
+
+### Notes
+
+- Runtime code was not changed in this slice.
+- Existing unrelated local work and untracked `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot full tree stage review sheet
+
+### Summary
+
+- Regenerated the paper tree stage contact sheet using complete mature-stage source sprites.
+- The previous review sheet used non-full `assets/sprites/stages/paper-*-tree|flower|fruit.png` crops, which made mature, flower, and fruit stages appear cut in half.
+- The new sheet uses `assets/sprites/stages/paper-*-tree|flower|fruit-full.png` for mature stages and keeps numbered labels for follow-up review.
+
+### Files Changed
+
+- `godot-prototype/assets/art/tree-stage-contact-sheet-full-numbered.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Inspected the complete source sprite dimensions and confirmed all 18 `paper-*-tree|flower|fruit-full.png` files exist.
+- Visually inspected `godot-prototype/assets/art/tree-stage-contact-sheet-full-numbered.png`.
+
+### Notes
+
+- Runtime code was not changed in this slice because adjacent Godot sprite-path logic is being edited concurrently.
+- Existing unrelated local work and untracked `.import` files were left untouched.
+
+## 2026-06-05 - Godot varied plant feedback animations
+
+### Summary
+
+- Changed Godot map plant feedback from one shared left-right sway pattern to per-plant session-random feedback.
+- Mature plants can now be assigned sway, falling leaf, flyby, or sparkle feedback, with varied phase, speed, and travel so selected-tree responses feel less identical each app run.
+- Stopped placed decorations from registering for bob/sway animation, so ponds, wells, benches, and similar static objects stay visually grounded.
+- Kept decoration placement slot glow animation because it represents the placement target, not a placed decoration object.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed, including the no placed-decoration animation guard.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Launched `res://scenes/main.tscn` through Godot MCP; debug output reported no errors.
+
+### Notes
+
+- Existing unrelated local Godot work and untracked `.import`/asset files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot tree stage review sheet and mature-stage sprite guard
+
+### Summary
+
+- Generated a numbered contact sheet for all current paper tree stage sprites so the 30 tree-stage images can be reviewed by index.
+- Switched paper tree mature runtime stages (`tree`, `flower`, `fruit`) to the visibly distinct `assets/sprites/stages/*.png` sprites instead of the nearly identical normalized mature sprites.
+- Raised the Godot layout version to 21 so existing local saves migrate to the updated stage sprite paths and plot sizes.
+- Added clipping/scaling guards around plot, decoration, and ambient FX texture rendering to prevent oversized source sprites from spilling outside their intended boxes.
+- Added verification checks that paper tree mature stages do not regress back to indistinct normalized sprite paths.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/assets/art/tree-stage-contact-sheet-numbered.png`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`; all zone assets existed, missing `0`, and indistinct mature paper-stage paths `0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Visually inspected `godot-prototype/assets/art/tree-stage-contact-sheet-numbered.png`.
+
+### Notes
+
+- Existing unrelated local work, including record/history UI edits, logo/background work, and untracked Godot `.import` files, was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot wood backdrop and coin HUD label
+
+### Summary
+
+- Replaced the light green app backdrop with a wooden plank pixel texture so the title sign sits on a matching wood-toned base.
+- Updated the coin HUD from a bare count suffix to an icon plus explicit `金币 N` text.
+- Reused the existing previous-web coin sprite already present in the Godot assets.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/assets/sprites/ui/app-wood-bg-v1.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Created `app-wood-bg-v1.png` locally as a deterministic pixel-art wooden plank texture; no new image generation was used.
+- Coin icon path uses the existing `res://assets/sprites/coin-v1.png` asset from the earlier web visual pass.
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Checked `app-wood-bg-v1.png` is `768x1248` RGBA and the reused coin sprite has a non-empty alpha bounding box.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local work and untracked Godot `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot homepage wooden pixel logo
+
+### Summary
+
+- Generated a wooden pixel-art title logo with `学术花园` above `Academic Garden`.
+- Preserved the generated source image and processed a transparent runtime PNG for the Godot header.
+- Replaced the visible homepage title/subtitle label stack with a `TextureRect` that loads the new logo, while keeping the old labels hidden as state holders.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/assets/art/academic-garden-logo-gpt-v1-source.png`
+- `godot-prototype/assets/sprites/ui/academic-garden-logo-gpt-v1.png`
+- `docs/pending-changes.md`
+
+### Asset Notes
+
+- Generated with the built-in imagegen workflow.
+- Prompt constraints: cozy Sprout Lands inspired pixel-art wooden title sign, large readable `学术花园`, `Academic Garden` subtitle, warm carved wood, leaf/moss accents, no characters, no extra text, no watermark.
+- The generated source contained a baked checkerboard backdrop, so the runtime sprite was locally processed by removing border-connected neutral checker pixels, cropping to the logo, and saving as transparent RGBA.
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and `missing 0`.
+- Checked the runtime logo PNG is `960x401` RGBA with transparent corners and a non-empty alpha bounding box.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local work and untracked Godot `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Restore Godot plant sprite alignment
+
+### Summary
+
+- Restored map plant sprites to the normalized/full-stage asset path so paper tree state changes no longer swap in tight partial stage canvases.
+- Removed forced clipping from plot/decoration buttons and their plant texture child so established sprite alignment and full silhouettes are preserved.
+- Updated the Godot asset verifier to reject mature paper sprites that point at unstable partial `assets/sprites/stages/` canvases.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations, `missing 0`, and `unstable paper mature stage paths 0`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json scripts/verify_godot_garden_assets.py docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing quick-record/history UI work, BGM work, and untracked Godot `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot customizable project record actions
+
+### Summary
+
+- Changed the Godot record drawer's three quick buttons from generic Water/Sun/Fertilizer actions to project-specific record actions.
+- Paper projects default to `更新文稿`, `进行讨论`, and `阅读文献`; course projects default to `备课`, `上课`, and `批改作业`.
+- Added editable text fields and a save button for the three quick record labels while preserving the free-form record input below them.
+- Added a `查看记录` detail-card entry and a lightweight project history panel backed by per-project `record_history` data.
+- Fixed record/plant button icon layout so UI icons no longer expand over button text.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and `missing 0`.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local work and untracked `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-05 - Godot homepage ambient FX restraint
+
+### Summary
+
+- Prevented mature-plant ambient FX from rendering across the whole active garden on initial home load.
+- Limited plant ambient FX to the selected plot only, reduced its display size, and clipped the FX texture rect so oversized source sprites cannot spill past their intended bounds.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; all three zones reported 9 plots/5 decorations and `missing 0`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Launched and stopped `res://scenes/main.tscn` through Godot MCP; final output had no errors.
+
+### Notes
+
+- Existing unrelated local work, including concurrent `main.gd` quick-record/history edits visible in the working tree, was left untouched.
+- Untracked Godot `.import` files were left untouched.
+- The deprecated root web runtime was not modified.
+
 ## 2026-06-05 - Godot three-round art polish, FX, and UI icon pass
 
 ### Summary
@@ -162,6 +1060,82 @@
 ### Notes
 
 - The harvested/dormant maps are local color treatments of the existing v4 tallfield maps, not new GPT-Image-2 generations.
+- Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Integrate sourced BGM loops for Godot zones
+
+### Summary
+
+- Used the user-provided `music/mixkit-silent-descent-614.mp3` as the source for two 48-second BGM loops.
+- Generated `garden_bgm_main_loop.wav` for the normal garden zones.
+- Generated `garden_bgm_dormant_loop.wav` for the dormant garden, with the user-provided cricket ambience mixed quietly into the track.
+- Added a small Godot audio layer that plays the main loop on startup and switches to the dormant loop when entering the dormant garden.
+- Removed temporary unsupported MP3 slice outputs and the separate cricket ambience output after moving to final WAV loops.
+
+### Files Changed
+
+- `godot-prototype/assets/audio/garden_bgm_main_loop.wav`
+- `godot-prototype/assets/audio/garden_bgm_dormant_loop.wav`
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Verified both final WAV loops are 48.00 seconds, 44.1 kHz, stereo.
+- Ran Godot `res://scenes/main.tscn` through the Godot debug tool and confirmed final output had no errors.
+- Ran `git diff --check` on the touched text files; only normal CRLF warnings appeared.
+
+### Notes
+
+- Source files under `music/` were read but not modified.
+- Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Add BGM toggle to deprecated web preview
+
+### Summary
+
+- Added a manual music toggle to the historical root web preview so the currently used browser preview can audition the same BGM files.
+- Reused the Godot-generated `garden_bgm_main_loop.wav` and `garden_bgm_dormant_loop.wav` assets from `godot-prototype/assets/audio/`.
+- The browser preview plays audio only after the user clicks the music button, matching browser autoplay restrictions.
+- The preview switches to the dormant loop when the active preview zone is dormant.
+
+### Files Changed
+
+- `index.html`
+- `src/app.js`
+- `styles.css`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `node --check src/app.js`.
+- Verified `index.html`, `src/app.js`, `garden_bgm_main_loop.wav`, and `garden_bgm_dormant_loop.wav` returned HTTP 200 from a temporary local static server.
+- Ran `git diff --check` on the touched text files; only normal CRLF warnings appeared.
+
+### Notes
+
+- This is a narrow compatibility fix for the deprecated web preview because the user-facing preview launcher still opens it.
+- Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Naturalize lightweight BGM audition loop
+
+### Summary
+
+- Replaced the softened BGM audition loop with a more natural procedural version.
+- Added slow phrase-level crescendo and decrescendo, very quiet background air texture, small timing/velocity variation, and gentle wrapped delay taps for softer space.
+
+### Files Changed
+
+- `godot-prototype/assets/audio/demo_garden_bgm_loop.wav`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Regenerated the WAV locally at 44.1 kHz stereo.
+- Verified the updated duration is about 25.95 seconds from the WAV metadata.
+
+### Notes
+
 - Existing unrelated local work was left untouched.
 - OpenClaw deploy needed: no.
 
@@ -2000,3 +2974,76 @@
 ### Notes
 
 - Existing unrelated local work was left untouched, including prior AGENTS/pending-changes edits and map/import-file changes already present in the worktree.
+
+## 2026-06-05 - Generate lightweight Godot BGM audition loop
+
+### Summary
+
+- Generated a short procedural background music audition loop for the Godot prototype.
+- The loop uses simple synthesized pad, kalimba-like arpeggio, soft bass pulse, and quiet paper/leaf tick layers for a lightweight garden-menu feel.
+
+### Files Changed
+
+- `godot-prototype/assets/audio/demo_garden_bgm_loop.wav`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Generated the WAV locally at 44.1 kHz stereo.
+- Verified the generated duration is about 20.87 seconds from the WAV metadata.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Soften lightweight BGM audition loop
+
+### Summary
+
+- Replaced the initial BGM audition loop with a softer procedural version.
+- Reduced high-frequency tick layers and busy arpeggios, slowed the tempo, lowered overall loudness, and shifted the tone toward warm pad plus sparse soft plucked notes.
+
+### Files Changed
+
+- `godot-prototype/assets/audio/demo_garden_bgm_loop.wav`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Regenerated the WAV locally at 44.1 kHz stereo.
+- Verified the updated duration is about 25.26 seconds from the WAV metadata.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+
+## 2026-06-05 - Clean Willow Bottom Crop Artifact
+
+### Summary
+
+- Removed the stray lower tree-crown fragment from the Godot willow flower sprite.
+- Applied the same cleanup to the matching willow fruit sprite and rebuilt the existing willow flower/fruit animation sheets so the artifact does not reappear during stage animation.
+- Kept the original sprite canvas sizes and baseline alignment unchanged.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-willow-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-willow-fruit.png`
+- `godot-prototype/assets/sprites/stages/paper-willow-flower-full.png`
+- `godot-prototype/assets/sprites/stages/paper-willow-fruit-full.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-willow-flower/`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-willow-fruit/`
+- `godot-prototype/assets/art/paper-willow-flower-clean-preview.png`
+- `godot-prototype/assets/art/paper-willow-fruit-clean-preview.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually checked the willow flower and fruit sprites on a light tan preview background.
+- Ran a connected-component alpha check confirming the large bottom fragments were removed from willow flower and fruit assets.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `git diff --check`; only normal CRLF warnings appeared.
+
+### Notes
+
+- Existing unrelated local work was left untouched.

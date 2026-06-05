@@ -246,6 +246,11 @@ textarea:focus-visible {
   background: #f6d6a2;
 }
 
+.audio-toggle.is-playing {
+  background: #8fb45f;
+  color: #fff4ce;
+}
+
 .primary-button:hover,
 .quiet-button:hover,
 .action-button:hover {

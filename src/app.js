@@ -80,9 +80,18 @@ let movingPlantId = null;
 let movingDecorationId = null;
 let nurtureTimer = null;
 let focusTimer = null;
+let previewAudio = null;
+let previewAudioEnabled = false;
+let previewAudioTrack = "";
+
+const PREVIEW_AUDIO_TRACKS = {
+  default: "./godot-prototype/assets/audio/garden_bgm_main_loop.wav",
+  dormant: "./godot-prototype/assets/audio/garden_bgm_dormant_loop.wav"
+};
 
 const elements = {
   coinCount: document.querySelector("#coin-count"),
+  audioToggle: document.querySelector("#audio-toggle"),
   syncStatus: document.querySelector("#sync-status"),
   syncDialog: document.querySelector("#sync-dialog"),
   syncForm: document.querySelector("#sync-form"),
@@ -134,6 +143,53 @@ const elements = {
   detailActivities: document.querySelector("#detail-activities"),
   saveDetail: document.querySelector("#save-detail")
 };
+
+function activePreviewAudioZone() {
+  return selectedView === "projects" ? selectedZone : selectedFarmZone;
+}
+
+function renderAudioToggle() {
+  if (!elements.audioToggle) return;
+  elements.audioToggle.textContent = previewAudioEnabled ? "音乐：开" : "音乐：关";
+  elements.audioToggle.setAttribute("aria-pressed", previewAudioEnabled ? "true" : "false");
+  elements.audioToggle.classList.toggle("is-playing", previewAudioEnabled);
+}
+
+function ensurePreviewAudio() {
+  if (previewAudio) return previewAudio;
+  previewAudio = new Audio();
+  previewAudio.loop = true;
+  previewAudio.volume = 0.42;
+  previewAudio.preload = "auto";
+  return previewAudio;
+}
+
+async function syncPreviewAudio() {
+  renderAudioToggle();
+  if (!previewAudioEnabled) return;
+  const audio = ensurePreviewAudio();
+  const nextTrack = activePreviewAudioZone() === "dormant"
+    ? PREVIEW_AUDIO_TRACKS.dormant
+    : PREVIEW_AUDIO_TRACKS.default;
+  if (previewAudioTrack !== nextTrack) {
+    audio.pause();
+    audio.src = nextTrack;
+    audio.currentTime = 0;
+    previewAudioTrack = nextTrack;
+  }
+  try {
+    await audio.play();
+  } catch {
+    previewAudioEnabled = false;
+    renderAudioToggle();
+  }
+}
+
+function stopPreviewAudio() {
+  previewAudioEnabled = false;
+  if (previewAudio) previewAudio.pause();
+  renderAudioToggle();
+}
 
 function plantsIn(zone) {
   return state.plants.filter((plant) => plant.status === zone);
@@ -353,6 +409,7 @@ function renderZone() {
     return;
   }
   elements.grid.innerHTML = plants.map(plantMarkup).join("");
+  void syncPreviewAudio();
 }
 
 function renderView() {
@@ -522,6 +579,7 @@ function renderOverview() {
       </div>
     </div>
   `;
+  void syncPreviewAudio();
 }
 
 function renderShop() {
@@ -559,6 +617,7 @@ function render() {
   renderOverview();
   renderShop();
   renderZone();
+  void syncPreviewAudio();
 }
 
 function updateVarieties() {
@@ -968,6 +1027,14 @@ document.querySelector("[data-home-action='projects']")?.addEventListener("click
 document.querySelector("#open-create")?.addEventListener("click", () => openForm(false));
 document.querySelector("#import-history").addEventListener("click", () => openForm(true));
 document.querySelector("#export-button").addEventListener("click", () => downloadBackup(state));
+elements.audioToggle?.addEventListener("click", async () => {
+  if (previewAudioEnabled) {
+    stopPreviewAudio();
+    return;
+  }
+  previewAudioEnabled = true;
+  await syncPreviewAudio();
+});
 elements.syncStatus?.addEventListener("click", openSyncDialog);
 document.querySelector("#close-sync")?.addEventListener("click", () => elements.syncDialog.close());
 document.querySelector("#cancel-sync")?.addEventListener("click", () => elements.syncDialog.close());

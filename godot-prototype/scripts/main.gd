@@ -4,9 +4,18 @@ const SAVE_PATH := "user://garden_state.json"
 const SEED_PATH := "res://data/garden_seed.json"
 const DEBUG_EXPORT_PATH := "user://layout_debug_export.json"
 const DEBUG_EXPORT_PROJECT_PATH := "res://layout_debug_export.json"
-const LAYOUT_VERSION := 19
+const LAYOUT_VERSION := 22
 const MAP_DISPLAY_ASPECT := 780.0 / 1240.0
+const ROOT_MARGIN_PX := 10.0
+const APP_BACKGROUND_SPRITE := "res://assets/sprites/ui/app-wood-bg-v1.png"
+const TITLE_LOGO_SPRITE := "res://assets/sprites/ui/academic-garden-logo-gpt-v1.png"
+const COIN_ICON_SPRITE := "res://assets/sprites/coin-v1.png"
 const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/empty-plot-square-gpt-v1.png"
+const MAIN_BGM_STREAM := "res://assets/audio/garden_bgm_main_loop.wav"
+const DORMANT_BGM_STREAM := "res://assets/audio/garden_bgm_dormant_loop.wav"
+const BGM_VOLUME_DB := -15.0
+const DORMANT_BGM_VOLUME_DB := -17.0
+const MUTED_VOLUME_DB := -80.0
 const ZONE_MAP_PATHS := {
 	"active": "res://assets/sprites/sprout/maps/sprout-map-active-gpt-v4-noplot-tallfield.png",
 	"harvested": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v6-structural.png",
@@ -14,8 +23,8 @@ const ZONE_MAP_PATHS := {
 }
 const ZONE_SPRITE_FILTERS := {
 	"active": {"color": Color(1.0, 1.0, 1.0, 1.0), "strength": 0.0, "brightness": 1.0},
-	"harvested": {"color": Color(1.0, 0.70, 0.24, 1.0), "strength": 0.48, "brightness": 0.94},
-	"dormant": {"color": Color(0.22, 0.31, 0.40, 1.0), "strength": 0.72, "brightness": 0.58}
+	"harvested": {"color": Color(1.0, 0.82, 0.42, 1.0), "strength": 0.18, "brightness": 1.04},
+	"dormant": {"color": Color(0.31, 0.43, 0.54, 1.0), "strength": 0.48, "brightness": 0.82}
 }
 const DEFAULT_PLOT_SIZES := {
 	"paper": Vector2(96, 108),
@@ -81,19 +90,33 @@ const PLOT_ANCHORS := {
 	"dormant-9": Vector2(0.719, 0.735)
 }
 const PLOT_SIZE_SCALES := {
-	"active-1": 0.75,
-	"active-2": 0.75,
-	"active-3": 0.75,
-	"active-4": 0.75,
-	"active-5": 0.75,
-	"active-6": 0.75,
-	"active-7": 0.75,
-	"active-8": 0.75,
+	"active-1": 0.76,
+	"active-2": 0.76,
+	"active-3": 0.76,
+	"active-4": 0.84,
+	"active-5": 0.84,
+	"active-6": 0.84,
+	"active-7": 0.92,
+	"active-8": 0.92,
 	"active-9": 1.0,
-	"harvested-1": 0.75,
-	"harvested-2": 0.75,
-	"dormant-1": 0.75,
-	"dormant-2": 0.75
+	"harvested-1": 0.72,
+	"harvested-2": 0.72,
+	"harvested-3": 0.72,
+	"harvested-4": 0.82,
+	"harvested-5": 0.82,
+	"harvested-6": 0.82,
+	"harvested-7": 0.90,
+	"harvested-8": 0.90,
+	"harvested-9": 0.96,
+	"dormant-1": 0.82,
+	"dormant-2": 0.82,
+	"dormant-3": 0.82,
+	"dormant-4": 0.92,
+	"dormant-5": 0.92,
+	"dormant-6": 0.92,
+	"dormant-7": 1.0,
+	"dormant-8": 1.0,
+	"dormant-9": 1.0
 }
 const DECOR_ANCHORS := {
 	"active": {
@@ -160,6 +183,12 @@ const NEXT_ACTION_LABELS := {
 }
 const CARE_GROWTH := {"sun": 3, "water": 4, "fertilizer": 5}
 const CARE_LABELS := {"sun": "阳光", "water": "水", "fertilizer": "肥料"}
+const QUICK_RECORD_SLOT_COUNT := 3
+const QUICK_RECORD_DEFAULTS := {
+	"paper": ["更新文稿", "进行讨论", "阅读文献"],
+	"course": ["备课", "上课", "批改作业"],
+	"default": ["记录进展", "进行讨论", "整理笔记"]
+}
 const CARE_ICON_SPRITES := {
 	"sun": "res://assets/sprites/ui/care-sun-gpt-v1.png",
 	"water": "res://assets/sprites/ui/care-water-gpt-v1.png",
@@ -247,8 +276,9 @@ var selected_decor_id := ""
 var texture_cache: Dictionary = {}
 var sprite_filter_shader: Shader
 var animated_plot_buttons: Array[Button] = []
-var animated_decor_buttons: Array[Button] = []
 var animated_ambient_nodes: Array[Control] = []
+var animated_stage_textures: Array[TextureRect] = []
+var plant_feedback_by_id: Dictionary = {}
 var animation_time := 0.0
 var debug_mode := false
 var debug_selected: Dictionary = {}
@@ -256,10 +286,15 @@ var debug_dragging := false
 var debug_drag_button: Control
 var debug_decor_slots: Array = []
 var debug_hotspots: Dictionary = {}
+var music_player: AudioStreamPlayer
+var music_tween: Tween
+var current_music_stream := ""
 
 var root_box: VBoxContainer
+var title_logo: TextureRect
 var title_label: Label
 var meta_label: Label
+var coins_icon: TextureRect
 var coins_label: Label
 var map_canvas: Control
 var map_texture: TextureRect
@@ -278,11 +313,17 @@ var detail_note: Label
 var detail_actions: GridContainer
 var record_panel: PanelContainer
 var record_note_input: LineEdit
+var record_quick_buttons: Array = []
+var record_quick_label_inputs: Array = []
+var record_quick_save_button: Button
+var record_history_panel: PanelContainer
+var record_history_text: Label
 var plant_panel: PanelContainer
 var plant_title_label: Label
 var plant_paper_button: Button
 var plant_course_button: Button
 var log_button: Button
+var history_button: Button
 var teach_button: Button
 var advance_button: Button
 var record_water_button: Button
@@ -301,15 +342,77 @@ var debug_export_button: Button
 
 
 func _ready() -> void:
+	randomize()
 	_load_or_seed_data()
 	selected_zone_id = garden_data.get("selected_zone", "active")
 	_init_debug_layout()
 	_build_ui()
+	_build_audio()
 	call_deferred("_render_all")
+
+
+func _build_audio() -> void:
+	music_player = AudioStreamPlayer.new()
+	music_player.volume_db = MUTED_VOLUME_DB
+	add_child(music_player)
+
+	_update_zone_audio(true)
+
+
+func _load_audio_stream(path: String) -> AudioStream:
+	var stream: AudioStream
+	if path.ends_with(".wav"):
+		stream = AudioStreamWAV.load_from_file(path)
+	else:
+		stream = load(path)
+	if stream is AudioStreamMP3:
+		stream.loop = true
+	elif stream is AudioStreamWAV:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	return stream
+
+
+func _update_zone_audio(instant := false) -> void:
+	var music_path := DORMANT_BGM_STREAM if selected_zone_id == "dormant" else MAIN_BGM_STREAM
+	var music_volume := DORMANT_BGM_VOLUME_DB if selected_zone_id == "dormant" else BGM_VOLUME_DB
+	_set_music_stream(music_path, music_volume, instant)
+
+
+func _set_music_stream(path: String, target_volume: float, instant := false) -> void:
+	if music_player == null:
+		return
+	if music_tween != null:
+		music_tween.kill()
+	if current_music_stream == path:
+		if instant:
+			music_player.volume_db = target_volume
+		else:
+			music_tween = create_tween()
+			music_tween.tween_property(music_player, "volume_db", target_volume, 0.55)
+		return
+	if instant:
+		_start_music_stream(path, target_volume)
+		return
+	music_tween = create_tween()
+	music_tween.tween_property(music_player, "volume_db", MUTED_VOLUME_DB, 0.35)
+	music_tween.tween_callback(Callable(self, "_start_music_stream").bind(path, target_volume))
+	music_tween.tween_property(music_player, "volume_db", target_volume, 0.85)
+
+
+func _start_music_stream(path: String, target_volume: float) -> void:
+	var stream := _load_audio_stream(path)
+	if stream == null:
+		current_music_stream = ""
+		return
+	music_player.stream = stream
+	music_player.volume_db = target_volume
+	music_player.play()
+	current_music_stream = path
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED and is_inside_tree():
+		_apply_root_safe_area_offsets()
 		call_deferred("_render_map")
 
 
@@ -322,33 +425,62 @@ func _process(delta: float) -> void:
 			continue
 		var phase := float(button.get_meta("phase", 0.0))
 		var amount := float(button.get_meta("amount", 0.026))
+		var speed := float(button.get_meta("speed", 0.34))
 		var base_position: Vector2 = button.get_meta("base_position", button.position)
-		var sway := sin((animation_time + phase) * TAU * 0.34)
+		var sway := sin((animation_time + phase) * TAU * speed)
 		button.position = base_position + Vector2(sway * 2.0, 0.0)
 		button.rotation = sway * amount
-	for button in animated_decor_buttons:
-		if not is_instance_valid(button):
+	var live_stage_textures: Array[TextureRect] = []
+	for icon in animated_stage_textures:
+		if not is_instance_valid(icon):
 			continue
-		var phase := float(button.get_meta("phase", 0.0))
-		var base_position: Vector2 = button.get_meta("base_position", button.position)
-		var bob := sin((animation_time + phase) * TAU * 0.18)
-		var tilt := cos((animation_time + phase) * TAU * 0.12)
-		button.position = base_position + Vector2(0.0, bob * 1.6)
-		button.rotation = tilt * 0.012
+		live_stage_textures.append(icon)
+		var frames: Array = icon.get_meta("stage_animation_frames", [])
+		if frames.is_empty():
+			continue
+		var fps := float(icon.get_meta("stage_animation_fps", 5.55))
+		var frame_index := int(floor(animation_time * fps)) % frames.size()
+		if int(icon.get_meta("stage_animation_frame", -1)) == frame_index:
+			continue
+		icon.texture = _load_texture(str(frames[frame_index]))
+		icon.set_meta("stage_animation_frame", frame_index)
+	animated_stage_textures = live_stage_textures
 	for node in animated_ambient_nodes:
 		if not is_instance_valid(node):
 			continue
 		var phase := float(node.get_meta("phase", 0.0))
 		var base_position: Vector2 = node.get_meta("base_position", node.position)
-		var drift := sin((animation_time + phase) * TAU * 0.22)
-		var flutter := cos((animation_time + phase) * TAU * 0.48)
+		var speed := float(node.get_meta("speed", 1.0))
 		var travel := float(node.get_meta("travel", 1.0))
 		var scale_amount := float(node.get_meta("scale_amount", 0.0))
-		node.position = base_position + Vector2(drift * 8.0 * travel, flutter * 4.0 * travel)
-		node.rotation = drift * 0.18
-		if scale_amount > 0.0:
-			var fx_scale := 1.0 + flutter * scale_amount
+		var motion := str(node.get_meta("motion", "drift"))
+		var loop_t := fposmod(animation_time * speed + phase, 1.0)
+		var drift := sin((animation_time * speed + phase) * TAU * 0.22)
+		var flutter := cos((animation_time * speed + phase) * TAU * 0.48)
+		if motion == "fall":
+			var fall_wave := sin((animation_time * 0.45 + phase) * TAU)
+			node.position = base_position + Vector2(fall_wave * 7.0 * travel, loop_t * 34.0 * travel)
+			node.rotation = fall_wave * 0.26
+			var color := node.modulate
+			color.a = 0.25 + (1.0 - loop_t) * 0.65
+			node.modulate = color
+		elif motion == "flyby":
+			node.position = base_position + Vector2((loop_t - 0.5) * 84.0 * travel, sin(loop_t * TAU) * 10.0 * travel)
+			node.rotation = sin(loop_t * TAU) * 0.35
+		elif motion == "sparkle":
+			var pulse := 0.5 + sin((animation_time * speed + phase) * TAU) * 0.5
+			var fx_scale := 0.78 + pulse * scale_amount
+			node.position = base_position + Vector2(drift * 3.0 * travel, flutter * 2.0 * travel)
 			node.scale = Vector2(fx_scale, fx_scale)
+			var color := node.modulate
+			color.a = 0.35 + pulse * 0.55
+			node.modulate = color
+		else:
+			node.position = base_position + Vector2(drift * 8.0 * travel, flutter * 4.0 * travel)
+			node.rotation = drift * 0.18
+			if scale_amount > 0.0:
+				var fx_scale := 1.0 + flutter * scale_amount
+				node.scale = Vector2(fx_scale, fx_scale)
 
 
 func _input(event: InputEvent) -> void:
@@ -420,6 +552,10 @@ func _upgrade_saved_maps() -> void:
 					plot["growth"] = _default_growth_for_stage(plot)
 				if not plot.has("care_today"):
 					plot["care_today"] = {"sun": 0, "water": 0, "fertilizer": 0}
+				if not plot.has("quick_record_labels"):
+					plot["quick_record_labels"] = _default_quick_record_labels(str(plot.get("kind", "")))
+				if not plot.has("record_history"):
+					plot["record_history"] = []
 				if str(plot.get("kind", "")) == "course" and not plot.has("sessions"):
 					plot["sessions"] = 0
 			plots[plot_index] = plot
@@ -462,11 +598,8 @@ func _build_ui() -> void:
 	_add_background()
 	root_box = VBoxContainer.new()
 	root_box.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root_box.add_theme_constant_override("separation", 8)
-	root_box.offset_left = 10
-	root_box.offset_top = 10
-	root_box.offset_right = -10
-	root_box.offset_bottom = -10
+	root_box.add_theme_constant_override("separation", 6)
+	_apply_root_safe_area_offsets()
 	add_child(root_box)
 
 	_build_header()
@@ -476,42 +609,127 @@ func _build_ui() -> void:
 	_build_debug_panel()
 
 
+func _apply_root_safe_area_offsets() -> void:
+	if root_box == null:
+		return
+	var margins := _root_safe_area_margins()
+	root_box.offset_left = margins.x
+	root_box.offset_top = margins.y
+	root_box.offset_right = -margins.z
+	root_box.offset_bottom = -margins.w
+
+
+func _root_safe_area_margins() -> Vector4:
+	var margins := Vector4(ROOT_MARGIN_PX, ROOT_MARGIN_PX, ROOT_MARGIN_PX, ROOT_MARGIN_PX)
+	var window_size := Vector2(DisplayServer.window_get_size())
+	var viewport_size := get_viewport_rect().size
+	if window_size.x <= 0.0 or window_size.y <= 0.0 or viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return margins
+
+	var safe_area := DisplayServer.get_display_safe_area()
+	if safe_area.size.x <= 0 or safe_area.size.y <= 0:
+		return margins
+
+	var window_position := Vector2(DisplayServer.window_get_position())
+	var safe_position := Vector2(safe_area.position) - window_position
+	var safe_size := Vector2(safe_area.size)
+	var safe_area_scale := Vector2(viewport_size.x / window_size.x, viewport_size.y / window_size.y)
+	var left := clampf(safe_position.x, 0.0, window_size.x)
+	var top := clampf(safe_position.y, 0.0, window_size.y)
+	var right := clampf(window_size.x - (safe_position.x + safe_size.x), 0.0, window_size.x)
+	var bottom := clampf(window_size.y - (safe_position.y + safe_size.y), 0.0, window_size.y)
+
+	margins.x = maxf(ROOT_MARGIN_PX, ROOT_MARGIN_PX + left * safe_area_scale.x)
+	margins.y = maxf(ROOT_MARGIN_PX, ROOT_MARGIN_PX + top * safe_area_scale.y)
+	margins.z = maxf(ROOT_MARGIN_PX, ROOT_MARGIN_PX + right * safe_area_scale.x)
+	margins.w = maxf(ROOT_MARGIN_PX, ROOT_MARGIN_PX + bottom * safe_area_scale.y)
+	return margins
+
+
 func _add_background() -> void:
+	var texture := _load_texture(APP_BACKGROUND_SPRITE)
+	if texture != null:
+		var textured_background := TextureRect.new()
+		textured_background.texture = texture
+		textured_background.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		textured_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		textured_background.stretch_mode = TextureRect.STRETCH_SCALE
+		textured_background.set_anchors_preset(Control.PRESET_FULL_RECT)
+		add_child(textured_background)
+		return
+
 	var background := ColorRect.new()
-	background.color = Color("#d8e8b9")
+	background.color = Color("#8a552b")
 	background.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
 
 func _build_header() -> void:
+	var header_panel := PanelContainer.new()
+	header_panel.custom_minimum_size = Vector2(0, 62)
+	header_panel.add_theme_stylebox_override("panel", _hud_panel_style())
+	root_box.add_child(header_panel)
+
 	var header := HBoxContainer.new()
-	header.custom_minimum_size = Vector2(0, 48)
-	header.add_theme_constant_override("separation", 8)
-	root_box.add_child(header)
+	header.add_theme_constant_override("separation", 10)
+	header_panel.add_child(header)
 
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_box.add_theme_constant_override("separation", 0)
 	header.add_child(title_box)
 
+	title_logo = TextureRect.new()
+	title_logo.texture = _load_texture(TITLE_LOGO_SPRITE)
+	title_logo.custom_minimum_size = Vector2(170, 46)
+	title_logo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_logo.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	title_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	title_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	title_box.add_child(title_logo)
+
 	title_label = Label.new()
+	title_label.visible = false
 	title_label.add_theme_font_size_override("font_size", 20)
 	title_label.add_theme_color_override("font_color", Color("#203820"))
 	title_box.add_child(title_label)
 
 	meta_label = Label.new()
+	meta_label.visible = false
 	meta_label.add_theme_font_size_override("font_size", 11)
 	meta_label.add_theme_color_override("font_color", Color("#4f6545"))
 	meta_label.clip_text = true
 	title_box.add_child(meta_label)
 
+	var coins_panel := PanelContainer.new()
+	coins_panel.custom_minimum_size = Vector2(98, 38)
+	coins_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	coins_panel.add_theme_stylebox_override("panel", _hud_pill_style())
+	header.add_child(coins_panel)
+
+	var coins_box := HBoxContainer.new()
+	coins_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	coins_box.add_theme_constant_override("separation", 4)
+	coins_panel.add_child(coins_box)
+
+	coins_icon = TextureRect.new()
+	coins_icon.texture = _load_texture(COIN_ICON_SPRITE)
+	coins_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	coins_icon.custom_minimum_size = Vector2(24, 24)
+	coins_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	coins_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	coins_box.add_child(coins_icon)
+
 	coins_label = Label.new()
-	coins_label.custom_minimum_size = Vector2(82, 0)
-	coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	coins_label.custom_minimum_size = Vector2(58, 0)
+	coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	coins_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	coins_label.add_theme_font_size_override("font_size", 14)
-	coins_label.add_theme_color_override("font_color", Color("#5b3f18"))
-	header.add_child(coins_label)
+	coins_label.add_theme_font_size_override("font_size", 13)
+	coins_label.add_theme_color_override("font_color", Color("#fff0ba"))
+	coins_label.add_theme_color_override("font_shadow_color", Color("#3e2615"))
+	coins_label.add_theme_constant_override("shadow_offset_x", 1)
+	coins_label.add_theme_constant_override("shadow_offset_y", 1)
+	coins_box.add_child(coins_label)
 
 
 func _build_map() -> void:
@@ -534,11 +752,20 @@ func _build_map() -> void:
 	map_canvas.add_child(overlay_layer)
 
 	hint_label = Label.new()
-	hint_label.custom_minimum_size = Vector2(0, 20)
+	hint_label.custom_minimum_size = Vector2(0, 26)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint_label.add_theme_font_size_override("font_size", 11)
-	hint_label.add_theme_color_override("font_color", Color("#365034"))
-	root_box.add_child(hint_label)
+	hint_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hint_label.add_theme_font_size_override("font_size", 12)
+	hint_label.add_theme_color_override("font_color", Color("#fff7d6"))
+	hint_label.add_theme_color_override("font_shadow_color", Color("#2d2a1f"))
+	hint_label.add_theme_constant_override("shadow_offset_x", 1)
+	hint_label.add_theme_constant_override("shadow_offset_y", 1)
+
+	var hint_panel := PanelContainer.new()
+	hint_panel.custom_minimum_size = Vector2(0, 30)
+	hint_panel.add_theme_stylebox_override("panel", _hint_panel_style())
+	hint_panel.add_child(hint_label)
+	root_box.add_child(hint_panel)
 
 
 func _build_detail_panel() -> void:
@@ -574,7 +801,8 @@ func _build_detail_panel() -> void:
 
 	detail_icon = TextureRect.new()
 	detail_icon.custom_minimum_size = Vector2(0, 132)
-	detail_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	detail_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	detail_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	detail_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	box.add_child(detail_icon)
 
@@ -626,6 +854,7 @@ func _build_detail_panel() -> void:
 	box.add_child(detail_actions)
 
 	log_button = _detail_action_button("记录", _on_log_pressed)
+	history_button = _detail_action_button("查看记录", _on_history_pressed)
 	teach_button = _detail_action_button("快速浇水", _on_teach_pressed)
 	advance_button = _detail_action_button("推进阶段", _on_advance_pressed)
 	sleep_button = _detail_action_button("移入睡眠园", _on_sleep_pressed)
@@ -633,22 +862,24 @@ func _build_detail_panel() -> void:
 	remove_button = _detail_action_button("移除", _on_remove_pressed)
 
 	_build_record_panel()
+	_build_record_history_panel()
 	_build_plant_panel()
 	_detail_panel_action_visibility()
 
 
 func _build_decor_bar() -> void:
 	var decor_panel := PanelContainer.new()
-	decor_panel.custom_minimum_size = Vector2(0, 82)
+	decor_panel.custom_minimum_size = Vector2(0, 88)
+	decor_panel.add_theme_stylebox_override("panel", _tray_panel_style())
 	root_box.add_child(decor_panel)
 
 	var scroller := ScrollContainer.new()
-	scroller.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroller.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	scroller.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	decor_panel.add_child(scroller)
 
 	decor_bar = HBoxContainer.new()
-	decor_bar.add_theme_constant_override("separation", 6)
+	decor_bar.add_theme_constant_override("separation", 7)
 	scroller.add_child(decor_bar)
 
 
@@ -751,6 +982,102 @@ func _panel_style(fill_color: Color, border_color: Color) -> StyleBoxFlat:
 	return style
 
 
+func _hud_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.40, 0.24, 0.13, 0.72)
+	style.border_color = Color(0.22, 0.13, 0.08, 0.88)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 8
+	style.content_margin_top = 6
+	style.content_margin_right = 8
+	style.content_margin_bottom = 6
+	return style
+
+
+func _hud_pill_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.28, 0.17, 0.09, 0.72)
+	style.border_color = Color(0.76, 0.55, 0.25, 0.86)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 7
+	style.corner_radius_top_right = 7
+	style.corner_radius_bottom_left = 7
+	style.corner_radius_bottom_right = 7
+	style.content_margin_left = 6
+	style.content_margin_top = 3
+	style.content_margin_right = 6
+	style.content_margin_bottom = 3
+	return style
+
+
+func _hint_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.18, 0.15, 0.10, 0.58)
+	style.border_color = Color(0.96, 0.78, 0.42, 0.30)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.corner_radius_top_left = 7
+	style.corner_radius_top_right = 7
+	style.corner_radius_bottom_left = 7
+	style.corner_radius_bottom_right = 7
+	style.content_margin_left = 8
+	style.content_margin_top = 2
+	style.content_margin_right = 8
+	style.content_margin_bottom = 2
+	return style
+
+
+func _tray_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.31, 0.19, 0.11, 0.76)
+	style.border_color = Color(0.17, 0.10, 0.06, 0.92)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 7
+	style.content_margin_top = 7
+	style.content_margin_right = 7
+	style.content_margin_bottom = 7
+	return style
+
+
+func _contact_shadow_style(alpha := 0.34) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.09, 0.05, alpha)
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	return style
+
+
+func _tray_button_style(fill_color: Color, border_color: Color, border_width := 2) -> StyleBoxFlat:
+	var style := _button_style(fill_color)
+	style.border_color = border_color
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
+	return style
+
+
 func _button_style(fill_color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = fill_color
@@ -844,7 +1171,7 @@ func _build_record_panel() -> void:
 	record_panel.anchor_right = 1.0
 	record_panel.anchor_bottom = 1.0
 	record_panel.offset_left = 24
-	record_panel.offset_top = -308
+	record_panel.offset_top = -404
 	record_panel.offset_right = -24
 	record_panel.offset_bottom = -98
 	record_panel.visible = false
@@ -880,9 +1207,32 @@ func _build_record_panel() -> void:
 	quick_grid.add_theme_constant_override("h_separation", 5)
 	box.add_child(quick_grid)
 
-	record_water_button = _record_button("浇水", _record_quick_water_pressed, quick_grid, CARE_ICON_SPRITES["water"])
-	record_sun_button = _record_button("晒太阳", _record_quick_sun_pressed, quick_grid, CARE_ICON_SPRITES["sun"])
-	record_fertilizer_button = _record_button("施肥", _record_quick_fertilizer_pressed, quick_grid, CARE_ICON_SPRITES["fertilizer"])
+	record_quick_buttons = []
+	for index in range(QUICK_RECORD_SLOT_COUNT):
+		record_quick_buttons.append(_record_button("", _record_quick_action_pressed.bind(index), quick_grid, CARE_ICON_SPRITES["record"]))
+
+	var edit_grid := GridContainer.new()
+	edit_grid.columns = 3
+	edit_grid.add_theme_constant_override("h_separation", 5)
+	box.add_child(edit_grid)
+
+	record_quick_label_inputs = []
+	for index in range(QUICK_RECORD_SLOT_COUNT):
+		var input := LineEdit.new()
+		input.placeholder_text = "按钮%d" % (index + 1)
+		input.custom_minimum_size = Vector2(0, 28)
+		input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		input.add_theme_font_size_override("font_size", 10)
+		record_quick_label_inputs.append(input)
+		edit_grid.add_child(input)
+
+	record_quick_save_button = Button.new()
+	record_quick_save_button.text = "保存快捷文字"
+	record_quick_save_button.custom_minimum_size = Vector2(0, 30)
+	record_quick_save_button.add_theme_font_size_override("font_size", 11)
+	record_quick_save_button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
+	record_quick_save_button.pressed.connect(_save_quick_record_labels_from_inputs)
+	box.add_child(record_quick_save_button)
 
 	record_note_input = LineEdit.new()
 	record_note_input.placeholder_text = "输入一条轻量记录..."
@@ -895,6 +1245,52 @@ func _build_record_panel() -> void:
 	record_note_button.add_theme_stylebox_override("normal", _button_style(Color("#cf8d45")))
 	record_note_button.pressed.connect(_record_note_pressed)
 	box.add_child(record_note_button)
+
+
+func _build_record_history_panel() -> void:
+	record_history_panel = PanelContainer.new()
+	record_history_panel.anchor_left = 0.0
+	record_history_panel.anchor_top = 1.0
+	record_history_panel.anchor_right = 1.0
+	record_history_panel.anchor_bottom = 1.0
+	record_history_panel.offset_left = 24
+	record_history_panel.offset_top = -332
+	record_history_panel.offset_right = -24
+	record_history_panel.offset_bottom = -98
+	record_history_panel.visible = false
+	record_history_panel.z_as_relative = false
+	record_history_panel.z_index = 1610
+	record_history_panel.add_theme_stylebox_override("panel", _panel_style(Color("#f7e7c7"), Color("#5c4128")))
+	add_child(record_history_panel)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	record_history_panel.add_child(box)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	box.add_child(row)
+
+	var title := Label.new()
+	title.text = "项目记录"
+	title.add_theme_font_size_override("font_size", 14)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(title)
+
+	var close_button := Button.new()
+	close_button.text = "x"
+	close_button.custom_minimum_size = Vector2(32, 28)
+	close_button.add_theme_font_size_override("font_size", 12)
+	close_button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
+	close_button.pressed.connect(_hide_record_history_panel)
+	row.add_child(close_button)
+
+	record_history_text = Label.new()
+	record_history_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	record_history_text.add_theme_font_size_override("font_size", 11)
+	record_history_text.add_theme_color_override("font_color", Color("#334231"))
+	record_history_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(record_history_text)
 
 
 func _build_plant_panel() -> void:
@@ -949,23 +1345,57 @@ func _build_plant_panel() -> void:
 
 func _record_button(text: String, callable: Callable, parent: Control, icon_path := "") -> Button:
 	var button := Button.new()
-	button.text = text
 	button.custom_minimum_size = Vector2(0, 36)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.add_theme_font_size_override("font_size", 11)
 	button.add_theme_stylebox_override("normal", _button_style(Color("#7b9b58")))
 	if not str(icon_path).is_empty():
-		button.icon = _load_texture(str(icon_path))
-		button.expand_icon = true
-		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		var content := HBoxContainer.new()
+		content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		content.set_anchors_preset(Control.PRESET_FULL_RECT)
+		content.offset_left = 8
+		content.offset_right = -8
+		content.alignment = BoxContainer.ALIGNMENT_CENTER
+		content.add_theme_constant_override("separation", 4)
+		button.add_child(content)
+
+		var icon := TextureRect.new()
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.texture = _load_texture(str(icon_path))
+		icon.custom_minimum_size = Vector2(18, 18)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		content.add_child(icon)
+
+		var label := Label.new()
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.text = text
+		label.add_theme_font_size_override("font_size", 11)
+		label.add_theme_color_override("font_color", Color("#ffffff"))
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		content.add_child(label)
+		button.set_meta("text_label", label)
+	else:
+		button.text = text
 	button.pressed.connect(callable)
 	parent.add_child(button)
 	return button
 
 
+func _set_record_button_text(button: Button, text: String) -> void:
+	if button.has_meta("text_label"):
+		var label := button.get_meta("text_label") as Label
+		if label != null:
+			label.text = text
+			return
+	button.text = text
+
+
 func _detail_panel_action_visibility(show_record := true, show_advance := true, show_wake := false, show_remove := false) -> void:
 	if log_button != null:
 		log_button.visible = show_record
+	if history_button != null:
+		history_button.visible = show_record
 	if teach_button != null:
 		teach_button.visible = false
 	if advance_button != null:
@@ -989,7 +1419,7 @@ func _update_header() -> void:
 	var zone := _current_zone()
 	title_label.text = zone.get("title", "Garden")
 	meta_label.text = zone.get("subtitle", "")
-	coins_label.text = "%d 枚" % int(garden_data.get("coins", 0))
+	coins_label.text = "金币 %d" % int(garden_data.get("coins", 0))
 
 
 func _render_map() -> void:
@@ -999,7 +1429,6 @@ func _render_map() -> void:
 	for child in overlay_layer.get_children():
 		child.queue_free()
 	animated_plot_buttons.clear()
-	animated_decor_buttons.clear()
 	animated_ambient_nodes.clear()
 
 	var zone := _current_zone()
@@ -1040,18 +1469,30 @@ func _render_hotspots(map_rect: Rect2) -> void:
 			button.pressed.connect(_switch_zone.bind(target))
 		overlay_layer.add_child(button)
 
-		var hotspot_label := Label.new()
-		hotspot_label.text = hotspot.get("label", "")
-		hotspot_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hotspot_label.add_theme_font_size_override("font_size", 10)
-		hotspot_label.add_theme_color_override("font_color", Color("#31432c"))
-		hotspot_label.add_theme_color_override("font_shadow_color", Color("#f5efd2"))
-		hotspot_label.add_theme_constant_override("shadow_offset_x", 1)
-		hotspot_label.add_theme_constant_override("shadow_offset_y", 1)
-		hotspot_label.size = Vector2(70, 18)
-		hotspot_label.position = button.position + Vector2((button_size.x - hotspot_label.size.x) * 0.5, button_size.y - 8)
-		overlay_layer.add_child(hotspot_label)
+		_render_hotspot_sign(button.position, button_size, hotspot.get("label", ""))
 		hotspot_index += 1
+
+
+func _render_hotspot_sign(button_position: Vector2, button_size: Vector2, label_text: String) -> void:
+	var sign_panel := PanelContainer.new()
+	sign_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sign_panel.size = Vector2(82, 24)
+	sign_panel.position = button_position + Vector2((button_size.x - sign_panel.size.x) * 0.5, button_size.y - 17)
+	sign_panel.add_theme_stylebox_override("panel", _tray_button_style(Color("#c6904f"), Color("#5c351b"), 2))
+	sign_panel.z_index = 1200
+	overlay_layer.add_child(sign_panel)
+
+	var hotspot_label := Label.new()
+	hotspot_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hotspot_label.text = label_text
+	hotspot_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hotspot_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hotspot_label.add_theme_font_size_override("font_size", 12)
+	hotspot_label.add_theme_color_override("font_color", Color("#fff0be"))
+	hotspot_label.add_theme_color_override("font_shadow_color", Color("#432612"))
+	hotspot_label.add_theme_constant_override("shadow_offset_x", 1)
+	hotspot_label.add_theme_constant_override("shadow_offset_y", 1)
+	sign_panel.add_child(hotspot_label)
 
 
 func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
@@ -1066,6 +1507,7 @@ func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
 	for plot in plots:
 		var button := Button.new()
 		var kind := str(plot.get("kind", ""))
+		var plot_id := str(plot.get("id", ""))
 		var button_size := _plot_button_size(plot)
 
 		button.flat = true
@@ -1078,8 +1520,9 @@ func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
 		button.text = ""
 		button.tooltip_text = "%s\n%s" % [_display_title(plot), _status_label(str(plot.get("status", "")))]
 		var sprite_filter := _zone_sprite_filter() if kind != "empty" else {}
+		_add_contact_shadow(button, button_size, 0.44 if kind == "empty" else 0.58, 0.20 if kind == "empty" else 0.34)
 		_add_button_texture(button, plot.get("sprite", ""), sprite_filter)
-		var item := {"type": "plot", "zone": selected_zone_id, "id": str(plot.get("id", ""))}
+		var item := {"type": "plot", "zone": selected_zone_id, "id": plot_id}
 		if debug_mode:
 			_make_debug_target(button, item)
 		else:
@@ -1100,8 +1543,7 @@ func _render_decorations(map_rect: Rect2, zone: Dictionary) -> void:
 			decor_index += 1
 			continue
 		var button := Button.new()
-		var decor_scale := float(placed.get("size_scale", 1.0))
-		var button_size := DEFAULT_DECOR_SIZE * decor_scale
+		var button_size := _decor_button_size(placed)
 		button.flat = true
 		button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		button.custom_minimum_size = button_size
@@ -1110,6 +1552,7 @@ func _render_decorations(map_rect: Rect2, zone: Dictionary) -> void:
 		button.z_index = _depth_z_index(placed)
 		button.text = ""
 		button.tooltip_text = "收回%s" % decor.get("title", "装饰")
+		_add_contact_shadow(button, button_size, 0.62, 0.30)
 		_add_button_texture(button, decor.get("sprite", ""), _zone_sprite_filter())
 		var item := {"type": "decoration", "zone": selected_zone_id, "index": decor_index, "id": str(placed.get("id", ""))}
 		if debug_mode:
@@ -1117,8 +1560,6 @@ func _render_decorations(map_rect: Rect2, zone: Dictionary) -> void:
 		else:
 			button.pressed.connect(_remove_decoration.bind(placed))
 		overlay_layer.add_child(button)
-		if not debug_mode:
-			_animate_decor_button(button, placed)
 		if debug_mode:
 			_add_debug_tag(button, "%s-%d" % [placed.get("id", "decor"), decor_index])
 		decor_index += 1
@@ -1134,13 +1575,16 @@ func _render_decor_slots(map_rect: Rect2) -> void:
 		button.flat = true
 		button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		button.text = "S%d" % (index + 1) if debug_mode else ""
-		button.custom_minimum_size = Vector2(44, 44)
-		button.size = Vector2(44, 44)
-		button.position = _map_point(map_rect, slot) - Vector2(22, 34)
+		button.custom_minimum_size = Vector2(52, 52)
+		button.size = Vector2(52, 52)
+		button.position = _map_point(map_rect, slot) - Vector2(26, 40)
+		button.z_index = 1350
+		button.add_theme_stylebox_override("normal", _tray_button_style(Color(0.39, 0.71, 0.42, 0.24), Color("#fff0a5"), 2))
+		button.add_theme_stylebox_override("hover", _tray_button_style(Color(0.55, 0.86, 0.49, 0.34), Color("#fff7bd"), 3))
 		button.tooltip_text = "放置选中的装饰"
 		if not debug_mode:
 			_add_button_texture(button, FX_SPRITES["placement"])
-			button.modulate = Color(1.0, 1.0, 1.0, 0.86)
+			button.modulate = Color(1.0, 1.0, 1.0, 0.94)
 			button.set_meta("base_position", button.position)
 			button.set_meta("phase", float(index) * 0.17)
 			button.set_meta("travel", 0.25)
@@ -1159,9 +1603,12 @@ func _render_detail() -> void:
 	detail_panel.visible = not plot.is_empty()
 	if plot.is_empty():
 		_hide_record_panel()
+		_hide_record_history_panel()
 		return
 
-	detail_icon.texture = _load_texture(plot.get("portrait_sprite", plot.get("sprite", "")))
+	var detail_sprite_path := str(plot.get("portrait_sprite", plot.get("sprite", "")))
+	detail_icon.texture = _load_texture(detail_sprite_path)
+	_apply_stage_animation(detail_icon, detail_sprite_path)
 	detail_title.text = _display_title(plot)
 	var kind := str(plot.get("kind", "kind"))
 	var stage := str(plot.get("stage", ""))
@@ -1180,45 +1627,92 @@ func _render_detail() -> void:
 
 
 func _animate_plot_button(button: Button, plot: Dictionary) -> void:
+	var feedback := _plant_feedback(plot)
 	button.pivot_offset = Vector2(button.size.x * 0.5, button.size.y * 0.82)
 	var stage := str(plot.get("stage", ""))
-	var amount := 0.035 if stage in ["tree", "flower", "bloom", "fruit"] else 0.018
+	var amount := float(feedback.get("amount", 0.035 if stage in ["tree", "flower", "bloom", "fruit"] else 0.018))
 	button.set_meta("amount", amount)
-	button.set_meta("phase", float(abs(str(plot.get("id", "")).hash()) % 100) / 100.0)
+	button.set_meta("phase", float(feedback.get("phase", 0.0)))
+	button.set_meta("speed", float(feedback.get("speed", 0.34)))
 	button.set_meta("base_position", button.position)
 	animated_plot_buttons.append(button)
 
 
-func _animate_decor_button(button: Button, placed: Dictionary) -> void:
-	button.pivot_offset = Vector2(button.size.x * 0.5, button.size.y * 0.82)
-	button.set_meta("phase", float(abs(str(placed.get("id", "")).hash()) % 100) / 100.0)
-	button.set_meta("base_position", button.position)
-	animated_decor_buttons.append(button)
+func _plant_feedback(plot: Dictionary) -> Dictionary:
+	var plot_id := str(plot.get("id", ""))
+	if plot_id.is_empty():
+		plot_id = str(plot.get("sprite", ""))
+	if plant_feedback_by_id.has(plot_id):
+		return plant_feedback_by_id[plot_id]
+
+	var stage := str(plot.get("stage", ""))
+	var mature := stage in ["tree", "flower", "bloom", "fruit"]
+	var effects := ["sway", "leaf", "flyby", "sparkle"] if mature else ["sway", "sparkle"]
+	var effect := str(effects[randi() % effects.size()])
+	var feedback := {
+		"effect": effect,
+		"phase": randf(),
+		"amount": randf_range(0.018, 0.04) if mature else randf_range(0.012, 0.02),
+		"speed": randf_range(0.24, 0.43),
+		"fx_speed": randf_range(0.55, 0.95),
+		"travel": randf_range(0.55, 0.95)
+	}
+	plant_feedback_by_id[plot_id] = feedback
+	return feedback
+
+
+func _plot_feedback_fx_path(plot: Dictionary, effect: String) -> String:
+	if effect == "leaf":
+		return FX_SPRITES["harvested"]
+	if effect == "flyby":
+		return FX_SPRITES["course"]
+	if effect == "sparkle":
+		return FX_SPRITES["lantern"] if selected_zone_id == "dormant" else FX_SPRITES["paper"]
+	var kind := str(plot.get("kind", ""))
+	return FX_SPRITES["paper"] if kind == "paper" else FX_SPRITES["course"]
+
+
+func _plot_feedback_offsets(effect: String, button_size: Vector2) -> Array:
+	if effect == "leaf":
+		return [
+			Vector2(-button_size.x * 0.24, -button_size.y * 0.78),
+			Vector2(button_size.x * 0.04, -button_size.y * 0.86),
+			Vector2(button_size.x * 0.25, -button_size.y * 0.72)
+		]
+	if effect == "flyby":
+		return [Vector2(-button_size.x * 0.42, -button_size.y * 0.76)]
+	return [
+		Vector2(-button_size.x * 0.20, -button_size.y * 0.78),
+		Vector2(button_size.x * 0.24, -button_size.y * 0.66)
+	]
 
 
 func _render_plot_ambient(map_rect: Rect2, plot: Dictionary, button_size: Vector2) -> void:
+	if str(plot.get("id", "")) != selected_plot_id:
+		return
 	var stage := str(plot.get("stage", ""))
 	if not (stage in ["tree", "flower", "bloom", "fruit"]):
 		return
+	var feedback := _plant_feedback(plot)
+	var effect := str(feedback.get("effect", "sway"))
+	if effect == "sway":
+		return
 	var origin := _map_point(map_rect, Vector2(plot.get("x", 0.5), plot.get("y", 0.5)))
-	var kind := str(plot.get("kind", ""))
-	var fx_path := FX_SPRITES["paper"] if kind == "paper" else FX_SPRITES["course"]
-	if selected_zone_id == "dormant":
-		fx_path = FX_SPRITES["dormant"]
-	elif selected_zone_id == "harvested":
-		fx_path = FX_SPRITES["harvested"]
-	var offsets := [Vector2(-button_size.x * 0.20, -button_size.y * 0.78), Vector2(button_size.x * 0.24, -button_size.y * 0.66)]
+	var fx_path := _plot_feedback_fx_path(plot, effect)
+	var offsets := _plot_feedback_offsets(effect, button_size)
 	for index in offsets.size():
-		var mote := _make_fx_sprite(fx_path, Vector2(24, 24))
+		var target_size := Vector2(20, 20) if effect == "flyby" else Vector2(18, 18)
+		var mote := _make_fx_sprite(fx_path, target_size)
 		mote.position = origin + offsets[index] - (mote.size * 0.5)
 		mote.z_index = _depth_z_index(plot) + 1
 		mote.set_meta("base_position", mote.position)
-		mote.set_meta("phase", float((abs(str(plot.get("id", "")).hash()) + index * 37) % 100) / 100.0)
-		mote.set_meta("travel", 0.55)
-		mote.set_meta("scale_amount", 0.08)
+		mote.set_meta("phase", fposmod(float(feedback.get("phase", 0.0)) + float(index) * 0.31, 1.0))
+		mote.set_meta("speed", float(feedback.get("fx_speed", 0.85)) + float(index) * 0.12)
+		mote.set_meta("travel", float(feedback.get("travel", 0.65)))
+		mote.set_meta("scale_amount", 0.42 if effect == "sparkle" else 0.08)
+		mote.set_meta("motion", "fall" if effect == "leaf" else effect)
 		overlay_layer.add_child(mote)
 		animated_ambient_nodes.append(mote)
-
 
 func _render_decor_bar() -> void:
 	for child in decor_bar.get_children():
@@ -1226,17 +1720,21 @@ func _render_decor_bar() -> void:
 
 	for decor in garden_data.get("decoration_catalog", []):
 		var owned := _owned_count(decor.get("id", ""))
+		var is_selected := str(decor.get("id", "")) == selected_decor_id
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(54, 64)
-		button.size = Vector2(54, 64)
+		button.custom_minimum_size = Vector2(60, 68)
+		button.size = Vector2(60, 68)
 		button.clip_text = true
 		button.text = ""
 		button.disabled = owned <= 0
 		button.tooltip_text = "选择%s" % decor.get("title", "装饰")
-		var fill := Color("#f0d9a8") if str(decor.get("id", "")) == selected_decor_id else Color("#d8bd82")
-		button.add_theme_stylebox_override("normal", _button_style(fill))
-		button.add_theme_stylebox_override("disabled", _button_style(Color("#9c9275")))
-		button.modulate = Color(1, 1, 1, 1) if owned > 0 else Color(0.74, 0.70, 0.62, 0.72)
+		var fill := Color("#f2d486") if is_selected else Color("#c79858")
+		var border := Color("#fff0a5") if is_selected else Color("#5c351b")
+		button.add_theme_stylebox_override("normal", _tray_button_style(fill, border, 3 if is_selected else 2))
+		button.add_theme_stylebox_override("hover", _tray_button_style(Color("#e6bd70"), Color("#fff4b6"), 3))
+		button.add_theme_stylebox_override("pressed", _tray_button_style(Color("#b87739"), Color("#fff4b6"), 3))
+		button.add_theme_stylebox_override("disabled", _tray_button_style(Color("#6e6650"), Color("#413827"), 2))
+		button.modulate = Color(1, 1, 1, 1) if owned > 0 else Color(0.58, 0.56, 0.50, 0.78)
 		_add_button_texture(button, decor.get("sprite", ""))
 		var count_label := Label.new()
 		count_label.text = "x%d" % owned
@@ -1248,7 +1746,7 @@ func _render_decor_bar() -> void:
 		count_label.add_theme_constant_override("shadow_offset_x", 1)
 		count_label.add_theme_constant_override("shadow_offset_y", 1)
 		count_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-		count_label.offset_top = -16
+		count_label.offset_top = -18
 		count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(count_label)
 		button.pressed.connect(_select_decoration.bind(decor.get("id", "")))
@@ -1260,9 +1758,9 @@ func _update_hint() -> void:
 		hint_label.text = "DEBUG: drag items. [ / ] resize. \\ export. F2 exit."
 	elif not selected_decor_id.is_empty():
 		var decor := _decor_by_id(selected_decor_id)
-		hint_label.text = "把%s放到发光的园地位置" % decor.get("title", "装饰")
+		hint_label.text = "把%s放到发光位置" % decor.get("title", "装饰")
 	else:
-		hint_label.text = "轻点植物、装饰或远处的小屋"
+		hint_label.text = "轻点植物、装饰或小屋"
 
 
 func _init_debug_layout() -> void:
@@ -1530,7 +2028,9 @@ func _switch_zone(zone_id: String) -> void:
 	selected_zone_id = zone_id
 	selected_decor_id = ""
 	selected_plot_id = ""
+	_update_zone_audio()
 	_hide_record_panel()
+	_hide_record_history_panel()
 	_hide_plant_panel()
 	_save_data()
 	_render_all()
@@ -1540,6 +2040,7 @@ func _select_plot(plot_id: String) -> void:
 	selected_plot_id = plot_id
 	selected_decor_id = ""
 	_hide_record_panel()
+	_hide_record_history_panel()
 	var zone_index := _current_zone_index()
 	if zone_index < 0:
 		return
@@ -1565,12 +2066,17 @@ func _close_detail() -> void:
 	if detail_panel != null:
 		detail_panel.visible = false
 	_hide_record_panel()
+	_hide_record_history_panel()
 	_hide_plant_panel()
 	call_deferred("_render_map")
 
 
 func _on_log_pressed() -> void:
 	_show_record_panel()
+
+
+func _on_history_pressed() -> void:
+	_show_record_history_panel()
 
 
 func _on_teach_pressed() -> void:
@@ -1581,7 +2087,9 @@ func _show_record_panel() -> void:
 	if record_panel == null:
 		return
 	_hide_plant_panel()
+	_hide_record_history_panel()
 	record_panel.visible = not selected_plot_id.is_empty()
+	_sync_record_quick_controls()
 	if record_note_input != null:
 		record_note_input.text = ""
 
@@ -1591,12 +2099,29 @@ func _hide_record_panel() -> void:
 		record_panel.visible = false
 
 
+func _show_record_history_panel() -> void:
+	if record_history_panel == null:
+		return
+	_hide_plant_panel()
+	_hide_record_panel()
+	var plot := _selected_plot()
+	record_history_panel.visible = not plot.is_empty()
+	if record_history_text != null:
+		record_history_text.text = _record_history_summary(plot)
+
+
+func _hide_record_history_panel() -> void:
+	if record_history_panel != null:
+		record_history_panel.visible = false
+
+
 func _show_plant_panel() -> void:
 	if plant_panel == null:
 		return
 	if detail_panel != null:
 		detail_panel.visible = false
 	_hide_record_panel()
+	_hide_record_history_panel()
 	var plot := _selected_plot()
 	plant_title_label.text = "在%s种植" % _display_title(plot)
 	plant_panel.visible = not selected_plot_id.is_empty()
@@ -1628,6 +2153,8 @@ func _plant_empty_plot(kind: String) -> void:
 		plot["visits"] = 0
 		plot["logs"] = 0
 		plot["care_today"] = {"sun": 0, "water": 0, "fertilizer": 0}
+		plot["quick_record_labels"] = _default_quick_record_labels(kind)
+		plot["record_history"] = []
 		if kind == "course":
 			plot["sessions"] = 0
 		var file_base := "paper-ginkgo-seed" if kind == "paper" else "course-daisy-sowing"
@@ -1641,23 +2168,169 @@ func _plant_empty_plot(kind: String) -> void:
 	_render_all()
 
 
+func _default_quick_record_labels(kind: String) -> Array:
+	if QUICK_RECORD_DEFAULTS.has(kind):
+		return QUICK_RECORD_DEFAULTS[kind].duplicate()
+	return QUICK_RECORD_DEFAULTS["default"].duplicate()
+
+
+func _quick_record_labels(plot: Dictionary) -> Array:
+	var defaults := _default_quick_record_labels(str(plot.get("kind", "")))
+	var labels: Array = plot.get("quick_record_labels", [])
+	var normalized: Array = []
+	for index in range(QUICK_RECORD_SLOT_COUNT):
+		var label := ""
+		if index < labels.size():
+			label = str(labels[index]).strip_edges()
+		if label.is_empty():
+			label = str(defaults[index])
+		normalized.append(label)
+	return normalized
+
+
+func _quick_labels_from_inputs(plot: Dictionary) -> Array:
+	var labels := _quick_record_labels(plot)
+	for index in range(mini(record_quick_label_inputs.size(), QUICK_RECORD_SLOT_COUNT)):
+		var input := record_quick_label_inputs[index] as LineEdit
+		var label := input.text.strip_edges()
+		if not label.is_empty():
+			labels[index] = label
+	return labels
+
+
+func _sync_record_quick_controls() -> void:
+	var plot := _selected_plot()
+	if plot.is_empty():
+		return
+	var labels := _quick_record_labels(plot)
+	for index in range(QUICK_RECORD_SLOT_COUNT):
+		if index < record_quick_buttons.size():
+			var button := record_quick_buttons[index] as Button
+			_set_record_button_text(button, str(labels[index]))
+		if index < record_quick_label_inputs.size():
+			var input := record_quick_label_inputs[index] as LineEdit
+			input.text = str(labels[index])
+
+
+func _save_quick_record_labels_from_inputs() -> void:
+	var plot := _selected_plot()
+	if plot.is_empty():
+		return
+	var labels := _quick_labels_from_inputs(plot)
+	_set_selected_plot_quick_labels(labels)
+	_sync_record_quick_controls()
+	_save_data()
+
+
+func _set_selected_plot_quick_labels(labels: Array) -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") == selected_plot_id and str(plots[index].get("kind", "")) != "empty":
+			plots[index]["quick_record_labels"] = labels.duplicate()
+			garden_data["zones"][zone_index]["plots"] = plots
+			return
+
+
+func _append_plot_record_history(plot: Dictionary, text: String, record_type: String) -> void:
+	var history: Array = plot.get("record_history", [])
+	history.append({
+		"text": text,
+		"type": record_type,
+		"created_at": Time.get_datetime_string_from_system(true)
+	})
+	if history.size() > 50:
+		history = history.slice(history.size() - 50)
+	plot["record_history"] = history
+
+
+func _record_history_summary(plot: Dictionary) -> String:
+	if plot.is_empty():
+		return ""
+	var history: Array = plot.get("record_history", [])
+	if history.is_empty():
+		var log_count := int(plot.get("logs", 0))
+		if log_count > 0:
+			return "已有%d条记录；旧数据没有保存明细。" % log_count
+		return "暂无记录。"
+
+	var lines: Array = []
+	var shown := mini(history.size(), 8)
+	for offset in range(shown):
+		var item: Variant = history[history.size() - 1 - offset]
+		if typeof(item) == TYPE_DICTIONARY:
+			var record := item as Dictionary
+			var stamp := str(record.get("created_at", ""))
+			if stamp.length() > 16:
+				stamp = stamp.substr(0, 16)
+			var text := str(record.get("text", ""))
+			if stamp.is_empty():
+				lines.append(text)
+			else:
+				lines.append("%s  %s" % [stamp, text])
+		else:
+			lines.append(str(item))
+	var summary := ""
+	for line in lines:
+		if not summary.is_empty():
+			summary += "\n"
+		summary += str(line)
+	return summary
+
+
 func _record_quick_water_pressed() -> void:
-	_record_care("water", "Watered")
+	_record_quick_action_pressed(0)
 
 
 func _record_quick_sun_pressed() -> void:
-	_record_care("sun", "Recorded")
+	_record_quick_action_pressed(1)
 
 
 func _record_quick_fertilizer_pressed() -> void:
-	_record_care("fertilizer", "Fertilized")
+	_record_quick_action_pressed(2)
+
+
+func _record_quick_action_pressed(slot_index: int) -> void:
+	var plot := _selected_plot()
+	if plot.is_empty():
+		return
+	var labels := _quick_labels_from_inputs(plot)
+	_set_selected_plot_quick_labels(labels)
+	_record_action(str(labels[slot_index]), slot_index)
 
 
 func _record_note_pressed() -> void:
 	if record_note_input == null or record_note_input.text.strip_edges().is_empty():
-		_record_care("sun", "Recorded")
+		_record_quick_action_pressed(0)
 		return
 	_record_note(record_note_input.text.strip_edges())
+
+
+func _record_action(action_text: String, slot_index: int) -> void:
+	var zone_index := _current_zone_index()
+	if zone_index < 0 or selected_plot_id.is_empty():
+		return
+
+	var plots: Array = garden_data["zones"][zone_index].get("plots", [])
+	for index in plots.size():
+		if plots[index].get("id", "") == selected_plot_id:
+			if str(plots[index].get("kind", "")) == "empty":
+				return
+			plots[index]["logs"] = int(plots[index].get("logs", 0)) + 1
+			plots[index]["status"] = action_text
+			plots[index]["growth"] = int(plots[index].get("growth", 0)) + 4
+			if str(plots[index].get("kind", "")) == "course" and slot_index == 1:
+				plots[index]["sessions"] = int(plots[index].get("sessions", 0)) + 1
+			_append_plot_record_history(plots[index], action_text, "quick")
+			garden_data["zones"][zone_index]["plots"] = plots
+			break
+	_save_data()
+	_hide_record_panel()
+	_hide_record_history_panel()
+	_render_detail()
+	call_deferred("_render_map")
 
 
 func _record_care(care_type: String, status_text: String) -> void:
@@ -1682,6 +2355,7 @@ func _record_care(care_type: String, status_text: String) -> void:
 			break
 	_save_data()
 	_hide_record_panel()
+	_hide_record_history_panel()
 	_render_detail()
 	call_deferred("_render_map")
 
@@ -1697,12 +2371,14 @@ func _record_note(note_text: String) -> void:
 			if str(plots[index].get("kind", "")) == "empty":
 				return
 			plots[index]["logs"] = int(plots[index].get("logs", 0)) + 1
-			plots[index]["status"] = "Note saved"
+			plots[index]["status"] = "Recorded"
 			plots[index]["note"] = note_text
+			_append_plot_record_history(plots[index], note_text, "note")
 			garden_data["zones"][zone_index]["plots"] = plots
 			break
 	_save_data()
 	_hide_record_panel()
+	_hide_record_history_panel()
 	_render_detail()
 	call_deferred("_render_map")
 
@@ -1760,6 +2436,7 @@ func _on_remove_pressed() -> void:
 	garden_data["zones"][zone_index]["plots"] = plots
 	selected_plot_id = ""
 	_hide_record_panel()
+	_hide_record_history_panel()
 	_hide_plant_panel()
 	_save_data()
 	_render_all()
@@ -1769,6 +2446,7 @@ func _select_decoration(decor_id: String) -> void:
 	selected_plot_id = ""
 	selected_decor_id = decor_id
 	_hide_record_panel()
+	_hide_record_history_panel()
 	_hide_plant_panel()
 	_render_detail()
 	call_deferred("_render_map")
@@ -1878,12 +2556,14 @@ func _update_detail_actions(plot: Dictionary) -> void:
 	var is_active := selected_zone_id == "active"
 	var is_dormant := selected_zone_id == "dormant"
 	log_button.text = "记录"
+	history_button.text = "查看记录"
 	teach_button.text = "快捷%s" % CARE_LABELS.get("water", "水")
 	advance_button.text = _next_action_label(plot)
 	sleep_button.text = "移入睡眠园"
 	wake_button.text = "唤醒"
 	remove_button.text = "移除"
 	log_button.disabled = is_empty or not is_active
+	history_button.disabled = is_empty
 	teach_button.disabled = is_empty or kind != "course" or not is_active
 	advance_button.disabled = is_empty or not is_active or _next_stage(plot).is_empty()
 	sleep_button.disabled = is_empty or not is_active
@@ -1892,6 +2572,7 @@ func _update_detail_actions(plot: Dictionary) -> void:
 	_detail_panel_action_visibility(is_active and not is_empty, is_active and not is_empty, is_dormant and not is_empty, not is_empty and not is_active)
 	if is_empty:
 		log_button.text = "稍后种植"
+		history_button.text = "暂无记录"
 		teach_button.text = "选择类型"
 		advance_button.text = "暂无阶段"
 		sleep_button.text = "预留"
@@ -2058,7 +2739,26 @@ func _plot_button_size(plot: Dictionary) -> Vector2:
 	var stage := str(plot.get("stage", ""))
 	var stage_key := "%s:%s" % [kind, stage]
 	var base: Vector2 = STAGE_PLOT_SIZES.get(stage_key, DEFAULT_PLOT_SIZES.get(kind, DEFAULT_PLOT_SIZES["course"]))
-	return base * float(plot.get("size_scale", 1.0))
+	return base * float(plot.get("size_scale", 1.0)) * _foreground_depth_scale(float(plot.get("y", 0.5)))
+
+
+func _decor_button_size(placed: Dictionary) -> Vector2:
+	var decor_scale := float(placed.get("size_scale", 1.0))
+	return DEFAULT_DECOR_SIZE * decor_scale * _foreground_depth_scale(float(placed.get("y", 0.5)))
+
+
+func _foreground_depth_scale(y_ratio: float) -> float:
+	var t := clampf((y_ratio - 0.42) / 0.36, 0.0, 1.0)
+	return lerpf(0.94, 1.08, t)
+
+
+func _add_contact_shadow(button: Button, object_size: Vector2, width_ratio := 0.58, alpha := 0.34) -> void:
+	var shadow := PanelContainer.new()
+	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shadow.size = Vector2(object_size.x * width_ratio, maxf(6.0, object_size.y * 0.075))
+	shadow.position = Vector2((object_size.x - shadow.size.x) * 0.5, object_size.y * 0.78)
+	shadow.add_theme_stylebox_override("panel", _contact_shadow_style(alpha))
+	button.add_child(shadow)
 
 
 func _depth_z_index(item: Dictionary) -> int:
@@ -2134,6 +2834,44 @@ func _add_button_texture(button: Button, path: String, sprite_filter := {}) -> v
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	button.add_child(icon)
+	_apply_stage_animation(icon, path)
+
+
+func _apply_stage_animation(icon: TextureRect, path: String) -> void:
+	var frames := _stage_animation_frames(path)
+	if frames.is_empty():
+		if icon.has_meta("stage_animation_frames"):
+			icon.remove_meta("stage_animation_frames")
+		if icon.has_meta("stage_animation_frame"):
+			icon.remove_meta("stage_animation_frame")
+		return
+	icon.set_meta("stage_animation_frames", frames)
+	icon.set_meta("stage_animation_fps", 5.55)
+	icon.set_meta("stage_animation_frame", -1)
+	icon.texture = _load_texture(str(frames[0]))
+	if not animated_stage_textures.has(icon):
+		animated_stage_textures.append(icon)
+
+
+func _stage_animation_frames(path: String) -> Array:
+	var base := _plant_sprite_base(path)
+	if not base.begins_with("paper-"):
+		return []
+	var stage := ""
+	for candidate in ["tree", "flower", "fruit"]:
+		if base.ends_with("-%s" % candidate):
+			stage = candidate
+			break
+	if stage.is_empty():
+		return []
+	var anim_dir := "res://assets/sprites/stage-animations/paper-trees/%s" % base
+	var frames: Array = []
+	for index in range(6):
+		var frame_path := "%s/frame-%02d.png" % [anim_dir, index]
+		if not FileAccess.file_exists(frame_path):
+			return []
+		frames.append(frame_path)
+	return frames
 
 
 func _make_fx_sprite(path: String, target_size: Vector2) -> TextureRect:
@@ -2141,11 +2879,12 @@ func _make_fx_sprite(path: String, target_size: Vector2) -> TextureRect:
 	icon.texture = _load_texture(path)
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.clip_contents = true
 	icon.custom_minimum_size = target_size
 	icon.size = target_size
 	icon.pivot_offset = target_size * 0.5
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.stretch_mode = TextureRect.STRETCH_SCALE
 	return icon
 
 

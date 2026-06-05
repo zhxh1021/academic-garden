@@ -1,0 +1,5 @@
+motion=crown-only micro sway
+fixed_layers=trunk, branches, roots, grass base
+canopy_offsets_px=[0, 1, 1, 0, -1, 0]
+frame_size=256
+source=paper-cherry-falling-petals-v2-sheet.png frame 1
