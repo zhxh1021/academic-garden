@@ -98,7 +98,7 @@ def main():
 
     main_text = MAIN_SCRIPT.read_text(encoding="utf-8")
     required_runtime_snippets = [
-        "const LAYOUT_VERSION := 22",
+        "const LAYOUT_VERSION := 23",
         "_web_stage_sprite_path",
         "_web_stage_file_path",
         "res://assets/sprites/web-normalized-stages/%s.png",

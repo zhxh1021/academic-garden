@@ -1,5 +1,115 @@
 # Pending Changes
 
+## 2026-06-08 - Android preview workflow and runtime visual alignment
+
+### Summary
+
+- Added a one-click Android preview entrypoint at `godot-prototype/preview_android.cmd`.
+- Added `godot-prototype/scripts/preview_android.ps1` to start the project AVD, optionally export/sign the Android debug APK, install it, launch it, and capture screenshot/logcat artifacts under `godot-prototype/exports/android-qa-preview-*`.
+- The preview script clears the emulator app data by default so APK previews use the currently bundled seed/layout instead of stale Android `user://garden_state.json`; pass `-KeepData` to preserve emulator data.
+- Bumped the Godot layout version to 23 so existing saves migrate to the current plot anchors, sizes, and sprites.
+- Changed empty plot runtime/seed sprites from the transparent square plot to `plot-soil-gpt-v3.png` so open land no longer looks like a translucent bar.
+- Enlarged mature plant display frames and reduced the separate contact shadow, which makes APK plant rendering closer to the Godot desktop run and reduces the "half-cut" visual.
+- Added a runtime layout diagnostic line, `AcademicGardenRuntimeLayout=...`, to Godot output/logcat with viewport, window, safe area, root offsets, map canvas, and map rect data.
+- Extended debug layout export metadata with the same runtime layout snapshot.
+
+### Files Changed
+
+- `godot-prototype/preview_android.cmd`
+- `godot-prototype/scripts/preview_android.ps1`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Ran `python scripts/verify_godot_garden_assets.py`; layout 23, missing assets 0, paper tree animation errors 0.
+- Ran `git diff --check`; only existing CRLF normalization warnings were reported.
+- Ran Godot MCP `run_project` on `res://scenes/main.tscn`; project started cleanly and printed `AcademicGardenRuntimeLayout` with no debug errors.
+- Ran `godot-prototype/scripts/preview_android.ps1 -SkipExport`; it started `academic_garden_api35`, cleared emulator app data, installed the existing APK, launched the app, and captured `godot-prototype/exports/android-qa-preview-latest.png` plus logcat.
+
+### Notes
+
+- The shell environment could not locate a `Godot*.exe`; the Android script therefore could not export a new APK during this pass. Use `godot-prototype/preview_android.cmd -GodotExe "path\to\Godot.exe"` or put Godot on `PATH`/`GODOT_EXE` to make the same script export the fresh APK before installing.
+- The `-SkipExport` screenshot verifies the preview workflow, but it reflects the pre-existing APK rather than the visual code changes in this slice.
+- Existing unrelated local changes, including generated APK artifacts and unrelated deleted root `.cmd` files, were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-06 - Rebuild Android APK for portrait compatibility
+
+### Summary
+
+- Rebuilt the Godot Android prototype APK after phone testing showed the previous build opened as a blank landscape screen.
+- Locked the Godot mobile project orientation to portrait and switched the Android/mobile rendering method to `gl_compatibility`.
+- Fixed Android-exported runtime asset loading by using Godot's `ResourceLoader` for imported textures and audio instead of raw file reads that fail inside exported packs.
+- Added x86_64 Android native libraries alongside arm64 so the local Android emulator can run the APK without ARM translation.
+- Added `.gdignore` to the export output directory so generated APKs, screenshots, and log files are not imported as Godot resources.
+- Re-exported the APK through Godot's Android exporter and signed the generated unsigned APK with the local debug keystore.
+- Confirmed the rebuilt APK manifest now reports portrait orientation and Godot rendering metadata `gl_compatibility`.
+
+### Files Changed
+
+- `godot-prototype/project.godot`
+- `godot-prototype/export_presets.cfg`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/exports/.gdignore`
+- `godot-prototype/exports/academic-garden-prototype-debug.apk` (generated local test artifact)
+- `godot-prototype/exports/academic-garden-prototype-godot-unsigned.apk` (generated local intermediate artifact)
+- `.gitignore`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran Godot CLI `--import` after the Android/mobile project setting changes.
+- Exported `godot-prototype/exports/academic-garden-prototype-godot-unsigned.apk` with Godot's Android exporter.
+- Signed `godot-prototype/exports/academic-garden-prototype-debug.apk` using the local debug keystore.
+- Ran `apksigner verify --verbose`; the APK verifies with v2 and v3 signatures.
+- Ran `aapt dump xmltree`; `android:screenOrientation` is `0x1` and `org.godotengine.rendering.method` is `gl_compatibility`.
+- Ran `aapt dump badging`; the APK reports package `org.academicgarden.prototype`, label `Academic Garden`, portrait screen support, and native code for `arm64-v8a` and `x86_64`.
+- Confirmed the APK contains `assets/project.binary`, `assets/scenes/main.tscn.remap`, `assets/data/garden_seed.json`, `lib/arm64-v8a/libgodot_android.so`, and `lib/x86_64/libgodot_android.so`.
+- Launched `res://scenes/main.tscn` through Godot MCP; debug output reported no errors.
+- Installed Android Emulator and an Android 35 Google APIs x86_64 system image under the local runtime, created the `academic_garden_api35` AVD, and verified the APK on that emulator.
+- Verified the first emulator attempts using SwiftShader were not suitable proof: Vulkan produced `QueuePresentKHR failed`, while GLES SwiftShader hit `GL_MAX_FRAGMENT_UNIFORM_VECTORS`.
+- Restarted the emulator with host GPU rendering, installed the signed APK, launched `org.academicgarden.prototype`, and captured `android-qa-screenshot-hostgpu-gl.png`; the app opened to the garden screen in portrait.
+- Captured `android-qa-logcat-hostgpu-gl.txt`; it shows `lib/x86_64/libgodot_android.so`, `usesVulkan(): false`, `renderer: gl_compatibility`, `OpenGL ES 3.1` on NVIDIA host GPU, and `OnGodotMainLoopStarted` with no resource-loading, shader-link, or crash errors.
+- Ran a basic interaction smoke test by tapping a garden plant; `android-qa-screenshot-interaction.png` shows the plant detail panel, and `android-qa-logcat-interaction.txt` had no crash, script, resource, or shader errors.
+
+### Notes
+
+- Existing unrelated local work in `godot-prototype/scripts/main.gd` and `godot-prototype/scripts/verify_detail_ui.ps1` was left untouched.
+- Android QA screenshots and logcats are generated under `godot-prototype/exports/android-qa-*` and ignored by Git.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-06 - Godot local save import/export
+
+### Summary
+
+- Added a Godot mobile backup entry in the portrait HUD for local save import/export.
+- Kept automatic saves on `user://garden_state.json`, and added a versioned export payload with app id, schema version, exported timestamp, layout version, garden data, and checksum.
+- Added JSON import validation, support for both wrapped export files and raw legacy garden data, and an automatic pre-import backup at `user://garden_state.before-import.json`.
+- Added a backup panel with export/import file dialogs, status feedback, and short mobile operation instructions explaining where exported files are saved and how to restore them.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; static checks passed.
+- Launched `res://scenes/main.tscn` through Godot MCP; debug output reported no errors.
+- Reviewed the targeted diff for `godot-prototype/scripts/main.gd` and `godot-prototype/scripts/verify_detail_ui.ps1`.
+
+### Notes
+
+- No server, deprecated root web runtime, or visual assets were changed.
+- Existing unrelated local work was left untouched.
+
 ## 2026-06-05 - Godot homepage mobile UI consolidation pass
 
 ### Summary
@@ -80,6 +190,41 @@
 ### Notes
 
 - Existing unrelated local work was left untouched.
+
+## 2026-06-06 - Build Android Prototype APK Test Package
+
+### Summary
+
+- Added a Godot Android debug export preset for the portrait prototype.
+- Configured the Godot project icon with the existing Academic Garden logo.
+- Enabled Android ETC2/ASTC texture import, which Godot's Android exporter requires before it will produce a valid APK.
+- Replaced the earlier manual template APK with a proper Godot Android export: Godot now builds the APK structure and project assets, then the unsigned APK is signed separately with a local debug keystore to avoid a Windows file-lock issue in Godot's internal signing step.
+- Added ignore rules so generated APK/PCK/signature artifacts under `godot-prototype/exports/` are not accidentally committed.
+
+### Files Changed
+
+- `.gitignore`
+- `godot-prototype/project.godot`
+- `godot-prototype/export_presets.cfg`
+- `godot-prototype/exports/.gitkeep`
+- `godot-prototype/exports/academic-garden-prototype-debug.apk` (generated local test artifact)
+- `godot-prototype/exports/academic-garden-prototype-godot-unsigned.apk` (generated local intermediate artifact)
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran Godot MCP `run_project` on `res://scenes/main.tscn`; startup output was clean.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran Godot CLI `--import` after enabling Android ETC2/ASTC texture import.
+- Exported `godot-prototype/exports/academic-garden-prototype-godot-unsigned.apk` with Godot's Android exporter.
+- Signed `godot-prototype/exports/academic-garden-prototype-debug.apk` using the local debug keystore on a no-space temporary path.
+- Ran `apksigner verify --verbose` successfully; the APK verifies with v2 and v3 signatures.
+- Ran `aapt dump badging`; the APK now reports package `org.academicgarden.prototype`, version `0.1.0`, and label `Academic Garden`.
+
+### Notes
+
+- Existing unrelated local work was left untouched, including prior changes in `godot-prototype/scripts/main.gd` and `godot-prototype/scripts/verify_detail_ui.ps1`.
+- The earlier manual template APK could install but failed at launch with `unable to setup Godot engine`; it has been replaced at the same output path by the proper Godot-exported APK.
 - The deprecated root web runtime was not modified.
 
 ## 2026-06-05 - ImageGen camphor flower and fruit replacement

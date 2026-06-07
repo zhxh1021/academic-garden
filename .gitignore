@@ -17,3 +17,11 @@ build/
 /2.0美术重构/
 godot-prototype/.godot/
 godot-prototype/layout_debug_export.json
+godot-prototype/exports/*.apk
+godot-prototype/exports/*.pck
+godot-prototype/exports/*.idsig
+godot-prototype/exports/android-qa-*
+godot-prototype/.android-avd/
+godot-prototype/.android-user/
+godot-prototype/android-avd/
+godot-prototype/android-user/

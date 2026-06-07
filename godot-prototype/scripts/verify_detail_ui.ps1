@@ -41,7 +41,7 @@ $requiredSnippets = @(
   "DisplayServer.get_display_safe_area",
   "detail_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE",
   "detail_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER",
-  "LAYOUT_VERSION := 22",
+  "LAYOUT_VERSION := 23",
   "_hud_panel_style",
   "_hint_panel_style",
   "SCROLL_MODE_SHOW_NEVER",
@@ -54,6 +54,15 @@ $requiredSnippets = @(
   '"leaf"',
   '"flyby"',
   '"sparkle"',
+  "SAVE_SCHEMA_VERSION",
+  "IMPORT_BACKUP_PATH",
+  "_make_export_payload",
+  "_extract_import_data",
+  "_save_checksum",
+  "backup_button",
+  "_backup_help_text",
+  "FileDialog.FILE_MODE_SAVE_FILE",
+  "FileDialog.FILE_MODE_OPEN_FILE",
   "在%s种植"
 )
 

@@ -1,16 +1,19 @@
 extends Control
 
 const SAVE_PATH := "user://garden_state.json"
+const IMPORT_BACKUP_PATH := "user://garden_state.before-import.json"
+const SAVE_SCHEMA_VERSION := 1
+const EXPORT_FILE_NAME := "academic-garden-save.json"
 const SEED_PATH := "res://data/garden_seed.json"
 const DEBUG_EXPORT_PATH := "user://layout_debug_export.json"
 const DEBUG_EXPORT_PROJECT_PATH := "res://layout_debug_export.json"
-const LAYOUT_VERSION := 22
+const LAYOUT_VERSION := 23
 const MAP_DISPLAY_ASPECT := 780.0 / 1240.0
 const ROOT_MARGIN_PX := 10.0
 const APP_BACKGROUND_SPRITE := "res://assets/sprites/ui/app-wood-bg-v1.png"
 const TITLE_LOGO_SPRITE := "res://assets/sprites/ui/academic-garden-logo-gpt-v1.png"
 const COIN_ICON_SPRITE := "res://assets/sprites/coin-v1.png"
-const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/empty-plot-square-gpt-v1.png"
+const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/plot-soil-gpt-v3.png"
 const MAIN_BGM_STREAM := "res://assets/audio/garden_bgm_main_loop.wav"
 const DORMANT_BGM_STREAM := "res://assets/audio/garden_bgm_dormant_loop.wav"
 const BGM_VOLUME_DB := -15.0
@@ -29,19 +32,19 @@ const ZONE_SPRITE_FILTERS := {
 const DEFAULT_PLOT_SIZES := {
 	"paper": Vector2(96, 108),
 	"course": Vector2(88, 98),
-	"empty": Vector2(72, 72)
+	"empty": Vector2(96, 74)
 }
 const STAGE_PLOT_SIZES := {
 	"paper:seed": Vector2(52, 56),
 	"paper:sapling": Vector2(68, 88),
-	"paper:tree": Vector2(116, 138),
-	"paper:flower": Vector2(116, 138),
-	"paper:fruit": Vector2(116, 138),
+	"paper:tree": Vector2(132, 158),
+	"paper:flower": Vector2(132, 158),
+	"paper:fruit": Vector2(132, 158),
 	"course:sowing": Vector2(50, 56),
 	"course:growing": Vector2(82, 102),
-	"course:bloom": Vector2(92, 112),
-	"course:fruit": Vector2(92, 112),
-	"course:seed_saved": Vector2(92, 112)
+	"course:bloom": Vector2(106, 128),
+	"course:fruit": Vector2(106, 128),
+	"course:seed_saved": Vector2(106, 128)
 }
 const DEFAULT_DECOR_SIZE := Vector2(78, 78)
 const FX_SPRITES := {
@@ -322,6 +325,11 @@ var plant_panel: PanelContainer
 var plant_title_label: Label
 var plant_paper_button: Button
 var plant_course_button: Button
+var backup_button: Button
+var backup_panel: PanelContainer
+var backup_status_label: Label
+var export_dialog: FileDialog
+var import_dialog: FileDialog
 var log_button: Button
 var history_button: Button
 var teach_button: Button
@@ -339,6 +347,7 @@ var debug_title_label: Label
 var debug_info_label: Label
 var debug_export_label: Label
 var debug_export_button: Button
+var runtime_layout_logged := false
 
 
 func _ready() -> void:
@@ -360,11 +369,10 @@ func _build_audio() -> void:
 
 
 func _load_audio_stream(path: String) -> AudioStream:
-	var stream: AudioStream
-	if path.ends_with(".wav"):
-		stream = AudioStreamWAV.load_from_file(path)
-	else:
-		stream = load(path)
+	var resource_path := path
+	if not resource_path.begins_with("res://") and not resource_path.begins_with("user://"):
+		resource_path = "res://" + resource_path.trim_prefix("/")
+	var stream := ResourceLoader.load(resource_path) as AudioStream
 	if stream is AudioStreamMP3:
 		stream.loop = true
 	elif stream is AudioStreamWAV:
@@ -587,11 +595,145 @@ func _read_json(path: String) -> Dictionary:
 
 
 func _save_data() -> void:
-	garden_data["selected_zone"] = selected_zone_id
-	garden_data["layout_version"] = LAYOUT_VERSION
+	_sync_save_metadata()
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(garden_data, "\t"))
+
+
+func _sync_save_metadata() -> void:
+	garden_data["selected_zone"] = selected_zone_id
+	garden_data["layout_version"] = LAYOUT_VERSION
+
+
+func _write_json(path: String, data: Dictionary) -> bool:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(JSON.stringify(data, "\t"))
+	return true
+
+
+func _make_export_payload() -> Dictionary:
+	_sync_save_metadata()
+	var export_data := garden_data.duplicate(true)
+	return {
+		"app": "academic-garden",
+		"schema_version": SAVE_SCHEMA_VERSION,
+		"exported_at": Time.get_datetime_string_from_system(true),
+		"layout_version": LAYOUT_VERSION,
+		"data": export_data,
+		"checksum": _save_checksum(export_data)
+	}
+
+
+func _save_checksum(data: Dictionary) -> String:
+	return JSON.stringify(data).sha256_text()
+
+
+func _default_backup_dir() -> String:
+	var documents := OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+	if not documents.is_empty():
+		return documents
+	return ProjectSettings.globalize_path("user://")
+
+
+func _show_backup_panel() -> void:
+	if backup_panel == null:
+		return
+	_hide_record_panel()
+	_hide_record_history_panel()
+	_hide_plant_panel()
+	_set_backup_status("自动存档位置：%s" % SAVE_PATH)
+	backup_panel.visible = true
+
+
+func _hide_backup_panel() -> void:
+	if backup_panel != null:
+		backup_panel.visible = false
+
+
+func _set_backup_status(text: String) -> void:
+	if backup_status_label != null:
+		backup_status_label.text = text
+
+
+func _open_export_dialog() -> void:
+	if export_dialog == null:
+		return
+	export_dialog.current_dir = _default_backup_dir()
+	export_dialog.current_file = EXPORT_FILE_NAME
+	export_dialog.popup_centered_ratio(0.92)
+
+
+func _open_import_dialog() -> void:
+	if import_dialog == null:
+		return
+	import_dialog.current_dir = _default_backup_dir()
+	import_dialog.current_file = ""
+	import_dialog.popup_centered_ratio(0.92)
+
+
+func _export_save_to_path(path: String) -> void:
+	var payload := _make_export_payload()
+	if _write_json(path, payload):
+		_set_backup_status("已导出：%s" % path)
+	else:
+		_set_backup_status("导出失败：无法写入 %s" % path)
+
+
+func _import_save_from_path(path: String) -> void:
+	var payload := _read_json(path)
+	var import_result := _extract_import_data(payload)
+	if not bool(import_result.get("ok", false)):
+		_set_backup_status("导入失败：%s" % import_result.get("message", "文件格式不正确"))
+		return
+
+	if not _write_json(IMPORT_BACKUP_PATH, _make_export_payload()):
+		_set_backup_status("导入失败：无法备份当前存档")
+		return
+
+	garden_data = (import_result["data"] as Dictionary).duplicate(true)
+	selected_zone_id = str(garden_data.get("selected_zone", "active"))
+	if _zone_index_by_id(selected_zone_id) < 0:
+		selected_zone_id = "active"
+	selected_plot_id = ""
+	selected_decor_id = ""
+	_hide_record_panel()
+	_hide_record_history_panel()
+	_hide_plant_panel()
+	_upgrade_saved_maps()
+	_save_data()
+	_update_zone_audio()
+	_render_all()
+	_set_backup_status("已导入：%s。原存档备份在 %s" % [path, IMPORT_BACKUP_PATH])
+
+
+func _extract_import_data(payload: Dictionary) -> Dictionary:
+	if payload.is_empty():
+		return {"ok": false, "message": "无法读取 JSON"}
+
+	var imported_data: Dictionary = {}
+	if payload.has("data"):
+		if str(payload.get("app", "")) != "academic-garden":
+			return {"ok": false, "message": "不是学术花园存档"}
+		if int(payload.get("schema_version", 0)) > SAVE_SCHEMA_VERSION:
+			return {"ok": false, "message": "存档版本过新"}
+		if typeof(payload.get("data")) != TYPE_DICTIONARY:
+			return {"ok": false, "message": "缺少花园数据"}
+		imported_data = payload["data"]
+		if payload.has("checksum") and str(payload.get("checksum", "")) != _save_checksum(imported_data):
+			return {"ok": false, "message": "校验失败，文件可能已损坏"}
+	else:
+		imported_data = payload
+
+	if not _is_valid_save_data(imported_data):
+		return {"ok": false, "message": "缺少必要字段"}
+	return {"ok": true, "data": imported_data}
+
+
+func _is_valid_save_data(data: Dictionary) -> bool:
+	return data.has("zones") and typeof(data.get("zones")) == TYPE_ARRAY and data.has("decoration_catalog")
 
 
 func _build_ui() -> void:
@@ -606,6 +748,7 @@ func _build_ui() -> void:
 	_build_map()
 	_build_detail_panel()
 	_build_decor_bar()
+	_build_backup_panel()
 	_build_debug_panel()
 
 
@@ -730,6 +873,17 @@ func _build_header() -> void:
 	coins_label.add_theme_constant_override("shadow_offset_x", 1)
 	coins_label.add_theme_constant_override("shadow_offset_y", 1)
 	coins_box.add_child(coins_label)
+
+	backup_button = Button.new()
+	backup_button.text = "备份"
+	backup_button.custom_minimum_size = Vector2(52, 38)
+	backup_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	backup_button.add_theme_font_size_override("font_size", 12)
+	backup_button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
+	backup_button.add_theme_stylebox_override("hover", _button_style(Color("#e8c87d")))
+	backup_button.add_theme_stylebox_override("pressed", _button_style(Color("#b98245")))
+	backup_button.pressed.connect(_show_backup_panel)
+	header.add_child(backup_button)
 
 
 func _build_map() -> void:
@@ -881,6 +1035,106 @@ func _build_decor_bar() -> void:
 	decor_bar = HBoxContainer.new()
 	decor_bar.add_theme_constant_override("separation", 7)
 	scroller.add_child(decor_bar)
+
+
+func _build_backup_panel() -> void:
+	backup_panel = PanelContainer.new()
+	backup_panel.anchor_left = 0.0
+	backup_panel.anchor_top = 1.0
+	backup_panel.anchor_right = 1.0
+	backup_panel.anchor_bottom = 1.0
+	backup_panel.offset_left = 24
+	backup_panel.offset_top = -356
+	backup_panel.offset_right = -24
+	backup_panel.offset_bottom = -96
+	backup_panel.visible = false
+	backup_panel.z_as_relative = false
+	backup_panel.z_index = 1700
+	backup_panel.add_theme_stylebox_override("panel", _panel_style(Color("#f7e7c7"), Color("#5c4128")))
+	add_child(backup_panel)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	backup_panel.add_child(box)
+
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 8)
+	box.add_child(header_row)
+
+	var title := Label.new()
+	title.text = "存档备份"
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color("#263522"))
+	header_row.add_child(title)
+
+	var close_button := _corner_close_button(_hide_backup_panel)
+	header_row.add_child(close_button)
+
+	var hint := Label.new()
+	hint.text = "导出当前花园数据，或导入备份恢复。导入前会先保存当前本地存档。"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.add_theme_font_size_override("font_size", 11)
+	hint.add_theme_color_override("font_color", Color("#5a4a35"))
+	box.add_child(hint)
+
+	var help := Label.new()
+	help.text = _backup_help_text()
+	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	help.add_theme_font_size_override("font_size", 11)
+	help.add_theme_color_override("font_color", Color("#334231"))
+	box.add_child(help)
+
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 8)
+	box.add_child(actions)
+
+	var export_button := _backup_action_button("导出", _open_export_dialog)
+	actions.add_child(export_button)
+
+	var import_button := _backup_action_button("导入", _open_import_dialog)
+	actions.add_child(import_button)
+
+	backup_status_label = Label.new()
+	backup_status_label.text = "自动存档位置：%s" % SAVE_PATH
+	backup_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	backup_status_label.add_theme_font_size_override("font_size", 10)
+	backup_status_label.add_theme_color_override("font_color", Color("#6b4a1f"))
+	box.add_child(backup_status_label)
+
+	export_dialog = FileDialog.new()
+	export_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	export_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	export_dialog.filters = PackedStringArray(["*.json ; JSON"])
+	export_dialog.current_file = EXPORT_FILE_NAME
+	export_dialog.title = "导出学术花园存档"
+	export_dialog.file_selected.connect(_export_save_to_path)
+	add_child(export_dialog)
+
+	import_dialog = FileDialog.new()
+	import_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	import_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	import_dialog.filters = PackedStringArray(["*.json ; JSON"])
+	import_dialog.title = "导入学术花园存档"
+	import_dialog.file_selected.connect(_import_save_from_path)
+	add_child(import_dialog)
+
+
+func _backup_action_button(text: String, callable: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0, 34)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.add_theme_font_size_override("font_size", 13)
+	button.add_theme_stylebox_override("normal", _button_style(Color("#7b9b58")))
+	button.add_theme_stylebox_override("hover", _button_style(Color("#8db066")))
+	button.add_theme_stylebox_override("pressed", _button_style(Color("#5f7f42")))
+	button.pressed.connect(callable)
+	return button
+
+
+func _backup_help_text() -> String:
+	return "导出：选择手机里的一个文件夹保存备份，文件通常会出现在“文件/下载/文档”或你选的网盘目录。\n导入：点导入，找到 academic-garden-save.json，确认后花园会恢复到备份状态。\n换手机：先把备份文件发到新手机，再在新手机里导入。"
 
 
 func _build_debug_panel() -> void:
@@ -1444,6 +1698,7 @@ func _render_map() -> void:
 	_render_decorations(map_rect, zone)
 	_render_decor_slots(map_rect)
 	_update_hint()
+	_log_runtime_layout_once(map_rect)
 
 
 func _render_hotspots(map_rect: Rect2) -> void:
@@ -1514,13 +1769,15 @@ func _render_plots(map_rect: Rect2, zone: Dictionary) -> void:
 		button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		button.custom_minimum_size = button_size
 		button.size = button_size
+		button.clip_contents = false
 		button.position = _map_point(map_rect, Vector2(plot.get("x", 0.5), plot.get("y", 0.5))) - Vector2(button_size.x * 0.5, button_size.y * 0.82)
 		button.z_index = _depth_z_index(plot)
 		button.clip_text = true
 		button.text = ""
 		button.tooltip_text = "%s\n%s" % [_display_title(plot), _status_label(str(plot.get("status", "")))]
 		var sprite_filter := _zone_sprite_filter() if kind != "empty" else {}
-		_add_contact_shadow(button, button_size, 0.44 if kind == "empty" else 0.58, 0.20 if kind == "empty" else 0.34)
+		if kind != "empty":
+			_add_contact_shadow(button, button_size, 0.46, 0.16)
 		_add_button_texture(button, plot.get("sprite", ""), sprite_filter)
 		var item := {"type": "plot", "zone": selected_zone_id, "id": plot_id}
 		if debug_mode:
@@ -1917,6 +2174,7 @@ func _reset_all_plot_sizes() -> void:
 func _export_debug_layout() -> void:
 	var export := {
 		"selected_zone": selected_zone_id,
+		"runtime": _runtime_layout_snapshot(_map_rect(map_canvas.size) if map_canvas != null else Rect2()),
 		"plots": [],
 		"decorations": [],
 		"decor_slots": [],
@@ -1960,6 +2218,20 @@ func _export_debug_layout() -> void:
 func _debug_export_to_jsonable(value: Variant) -> Variant:
 	if typeof(value) == TYPE_VECTOR2:
 		return {"x": value.x, "y": value.y}
+	if typeof(value) == TYPE_VECTOR2I:
+		return {"x": value.x, "y": value.y}
+	if typeof(value) == TYPE_VECTOR4:
+		return {"x": value.x, "y": value.y, "z": value.z, "w": value.w}
+	if typeof(value) == TYPE_RECT2:
+		return {
+			"position": _debug_export_to_jsonable(value.position),
+			"size": _debug_export_to_jsonable(value.size)
+		}
+	if typeof(value) == TYPE_RECT2I:
+		return {
+			"position": _debug_export_to_jsonable(value.position),
+			"size": _debug_export_to_jsonable(value.size)
+		}
 	if typeof(value) == TYPE_ARRAY:
 		var result: Array = []
 		for item in value:
@@ -2808,19 +3080,49 @@ func _map_point(map_rect: Rect2, ratio: Vector2) -> Vector2:
 	return map_rect.position + Vector2(map_rect.size.x * ratio.x, map_rect.size.y * ratio.y)
 
 
+func _runtime_layout_snapshot(map_rect := Rect2()) -> Dictionary:
+	var safe_area := DisplayServer.get_display_safe_area()
+	return {
+		"layout_version": LAYOUT_VERSION,
+		"platform_android": OS.has_feature("android"),
+		"viewport_size": get_viewport_rect().size,
+		"window_size": DisplayServer.window_get_size(),
+		"safe_area": safe_area,
+		"root_offsets": Vector4(root_box.offset_left, root_box.offset_top, root_box.offset_right, root_box.offset_bottom) if root_box != null else Vector4.ZERO,
+		"map_canvas_size": map_canvas.size if map_canvas != null else Vector2.ZERO,
+		"map_rect": map_rect,
+		"save_path": ProjectSettings.globalize_path(SAVE_PATH)
+	}
+
+
+func _log_runtime_layout_once(map_rect: Rect2) -> void:
+	if runtime_layout_logged:
+		return
+	runtime_layout_logged = true
+	print("AcademicGardenRuntimeLayout=", JSON.stringify(_debug_export_to_jsonable(_runtime_layout_snapshot(map_rect))))
+
+
 func _load_texture(path: String) -> Texture2D:
 	if path.is_empty():
 		return null
-	if texture_cache.has(path):
-		return texture_cache[path]
+	var resource_path := path
+	if not resource_path.begins_with("res://") and not resource_path.begins_with("user://"):
+		resource_path = "res://" + resource_path.trim_prefix("/")
+	if texture_cache.has(resource_path):
+		return texture_cache[resource_path]
+
+	var loaded := ResourceLoader.load(resource_path)
+	if loaded is Texture2D:
+		texture_cache[resource_path] = loaded
+		return loaded
 
 	var image := Image.new()
-	var error := image.load(ProjectSettings.globalize_path(path))
+	var error := image.load(resource_path)
 	if error != OK:
 		return null
 
 	var texture := ImageTexture.create_from_image(image)
-	texture_cache[path] = texture
+	texture_cache[resource_path] = texture
 	return texture
 
 
