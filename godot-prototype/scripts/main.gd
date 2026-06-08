@@ -14,11 +14,13 @@ const APP_BACKGROUND_SPRITE := "res://assets/sprites/ui/app-wood-bg-v1.png"
 const TITLE_LOGO_SPRITE := "res://assets/sprites/ui/academic-garden-logo-gpt-v1.png"
 const COIN_ICON_SPRITE := "res://assets/sprites/coin-v1.png"
 const EMPTY_PLOT_SIGN_SPRITE := "res://assets/sprites/sprout/ground/plot-soil-gpt-v3.png"
+const DR_MEOW_SPRITE := "res://assets/sprites/ui/dr-meow-guide-gpt-v1.png"
 const MAIN_BGM_STREAM := "res://assets/audio/garden_bgm_main_loop.wav"
 const DORMANT_BGM_STREAM := "res://assets/audio/garden_bgm_dormant_loop.wav"
 const BGM_VOLUME_DB := -15.0
 const DORMANT_BGM_VOLUME_DB := -17.0
 const MUTED_VOLUME_DB := -80.0
+const ONBOARDING_Z_INDEX := 1900
 const ZONE_MAP_PATHS := {
 	"active": "res://assets/sprites/sprout/maps/sprout-map-active-gpt-v4-noplot-tallfield.png",
 	"harvested": "res://assets/sprites/sprout/maps/sprout-map-harvested-gpt-v6-structural.png",
@@ -192,6 +194,43 @@ const QUICK_RECORD_DEFAULTS := {
 	"course": ["备课", "上课", "批改作业"],
 	"default": ["记录进展", "进行讨论", "整理笔记"]
 }
+const ONBOARDING_STEPS := [
+	{
+		"target": "guide_button",
+		"title": "喵博士报到",
+		"body": "我是 Dr.Meow，负责带你逛第一圈。学术花园把论文、课程和想法种成植物：轻点、记录、推进，它们就会从种子长成成果。"
+	},
+	{
+		"target": "map",
+		"title": "先看地图",
+		"body": "这里是当前园地。植物代表正在推进的学术事项，装饰代表你已经拥有的布置素材；轻点植物可以查看详情。"
+	},
+	{
+		"target": "hotspot",
+		"title": "三个界面的定位",
+		"body": "生长园放正在做的事，收获园放已完成或可复用的成果，沉睡园放暂停但不想忘记的项目。点地图上方木牌就能切换。"
+	},
+	{
+		"target": "plot",
+		"title": "每棵植物是一条记录线",
+		"body": "论文树适合论文、文献簇和方法线索；课程花适合课程、练习和教学循环。空地可以种新的论文树或课程花。"
+	},
+	{
+		"target": "detail",
+		"title": "详情卡怎么看",
+		"body": "详情卡会显示类型、阶段、状态、成长值和今日照料。用“推进阶段”记录重要里程碑，用“记录”写下今天发生了什么。"
+	},
+	{
+		"target": "record",
+		"title": "怎样记录",
+		"body": "记录面板有三个可自定义快捷按钮，也可以输入一条轻量笔记。保存后会进入该植物的记录历史，并同步进本地存档。"
+	},
+	{
+		"target": "decor",
+		"title": "装饰、备份和重看",
+		"body": "底部托盘可以选择装饰并放到发光位置。右上角备份用于导出/导入存档；以后点“新手引导”，我会再讲一遍。"
+	}
+]
 const CARE_ICON_SPRITES := {
 	"sun": "res://assets/sprites/ui/care-sun-gpt-v1.png",
 	"water": "res://assets/sprites/ui/care-water-gpt-v1.png",
@@ -325,6 +364,7 @@ var plant_panel: PanelContainer
 var plant_title_label: Label
 var plant_paper_button: Button
 var plant_course_button: Button
+var guide_button: Button
 var backup_button: Button
 var backup_panel: PanelContainer
 var backup_status_label: Label
@@ -348,6 +388,19 @@ var debug_info_label: Label
 var debug_export_label: Label
 var debug_export_button: Button
 var runtime_layout_logged := false
+var onboarding_overlay: Control
+var onboarding_highlight: PanelContainer
+var onboarding_arrow: Label
+var onboarding_card: PanelContainer
+var onboarding_avatar: TextureRect
+var onboarding_title_label: Label
+var onboarding_body_label: Label
+var onboarding_step_label: Label
+var onboarding_progress_bar: ProgressBar
+var onboarding_prev_button: Button
+var onboarding_next_button: Button
+var onboarding_step_index := 0
+var onboarding_mark_seen_on_close := true
 
 
 func _ready() -> void:
@@ -358,6 +411,7 @@ func _ready() -> void:
 	_build_ui()
 	_build_audio()
 	call_deferred("_render_all")
+	call_deferred("_maybe_show_first_onboarding")
 
 
 func _build_audio() -> void:
@@ -422,6 +476,8 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED and is_inside_tree():
 		_apply_root_safe_area_offsets()
 		call_deferred("_render_map")
+		if onboarding_overlay != null and onboarding_overlay.visible:
+			call_deferred("_update_onboarding_layout")
 
 
 func _process(delta: float) -> void:
@@ -492,6 +548,12 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if onboarding_overlay != null and onboarding_overlay.visible:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			_finish_onboarding()
+			get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F2:
 			_toggle_debug_mode()
@@ -537,6 +599,8 @@ func _upgrade_saved_maps() -> void:
 	var saved_layout_version := int(garden_data.get("layout_version", 0))
 	var should_migrate_plot_positions := saved_layout_version < LAYOUT_VERSION
 	var should_migrate_decor_positions := saved_layout_version < LAYOUT_VERSION
+	if not garden_data.has("onboarding_seen"):
+		garden_data["onboarding_seen"] = false
 	for index in garden_data.get("zones", []).size():
 		var zone: Dictionary = garden_data["zones"][index]
 		var zone_id := str(zone.get("id", "active"))
@@ -750,6 +814,7 @@ func _build_ui() -> void:
 	_build_decor_bar()
 	_build_backup_panel()
 	_build_debug_panel()
+	_build_onboarding_overlay()
 
 
 func _apply_root_safe_area_offsets() -> void:
@@ -809,12 +874,12 @@ func _add_background() -> void:
 
 func _build_header() -> void:
 	var header_panel := PanelContainer.new()
-	header_panel.custom_minimum_size = Vector2(0, 62)
+	header_panel.custom_minimum_size = Vector2(0, 68)
 	header_panel.add_theme_stylebox_override("panel", _hud_panel_style())
 	root_box.add_child(header_panel)
 
 	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 10)
+	header.add_theme_constant_override("separation", 6)
 	header_panel.add_child(header)
 
 	var title_box := VBoxContainer.new()
@@ -824,7 +889,7 @@ func _build_header() -> void:
 
 	title_logo = TextureRect.new()
 	title_logo.texture = _load_texture(TITLE_LOGO_SPRITE)
-	title_logo.custom_minimum_size = Vector2(170, 46)
+	title_logo.custom_minimum_size = Vector2(126, 46)
 	title_logo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_logo.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	title_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -845,7 +910,7 @@ func _build_header() -> void:
 	title_box.add_child(meta_label)
 
 	var coins_panel := PanelContainer.new()
-	coins_panel.custom_minimum_size = Vector2(98, 38)
+	coins_panel.custom_minimum_size = Vector2(82, 44)
 	coins_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	coins_panel.add_theme_stylebox_override("panel", _hud_pill_style())
 	header.add_child(coins_panel)
@@ -864,7 +929,7 @@ func _build_header() -> void:
 	coins_box.add_child(coins_icon)
 
 	coins_label = Label.new()
-	coins_label.custom_minimum_size = Vector2(58, 0)
+	coins_label.custom_minimum_size = Vector2(42, 0)
 	coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	coins_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	coins_label.add_theme_font_size_override("font_size", 13)
@@ -874,9 +939,20 @@ func _build_header() -> void:
 	coins_label.add_theme_constant_override("shadow_offset_y", 1)
 	coins_box.add_child(coins_label)
 
+	guide_button = Button.new()
+	guide_button.text = "新手引导"
+	guide_button.custom_minimum_size = Vector2(74, 44)
+	guide_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	guide_button.add_theme_font_size_override("font_size", 12)
+	guide_button.add_theme_stylebox_override("normal", _button_style(Color("#b9cf74")))
+	guide_button.add_theme_stylebox_override("hover", _button_style(Color("#cfe388")))
+	guide_button.add_theme_stylebox_override("pressed", _button_style(Color("#91aa54")))
+	guide_button.pressed.connect(_show_onboarding.bind(true))
+	header.add_child(guide_button)
+
 	backup_button = Button.new()
 	backup_button.text = "备份"
-	backup_button.custom_minimum_size = Vector2(52, 38)
+	backup_button.custom_minimum_size = Vector2(48, 44)
 	backup_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	backup_button.add_theme_font_size_override("font_size", 12)
 	backup_button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
@@ -1204,6 +1280,130 @@ func _build_debug_panel() -> void:
 	box.add_child(debug_export_button)
 
 
+func _build_onboarding_overlay() -> void:
+	onboarding_overlay = Control.new()
+	onboarding_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	onboarding_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	onboarding_overlay.visible = false
+	onboarding_overlay.z_as_relative = false
+	onboarding_overlay.z_index = ONBOARDING_Z_INDEX
+	add_child(onboarding_overlay)
+
+	var dim := ColorRect.new()
+	dim.color = Color(0.05, 0.06, 0.04, 0.68)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	onboarding_overlay.add_child(dim)
+
+	onboarding_highlight = PanelContainer.new()
+	onboarding_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	onboarding_highlight.add_theme_stylebox_override("panel", _onboarding_highlight_style())
+	onboarding_overlay.add_child(onboarding_highlight)
+
+	onboarding_arrow = Label.new()
+	onboarding_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	onboarding_arrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	onboarding_arrow.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	onboarding_arrow.add_theme_font_size_override("font_size", 28)
+	onboarding_arrow.add_theme_color_override("font_color", Color("#fff0a5"))
+	onboarding_arrow.add_theme_color_override("font_shadow_color", Color("#3a2415"))
+	onboarding_arrow.add_theme_constant_override("shadow_offset_x", 1)
+	onboarding_arrow.add_theme_constant_override("shadow_offset_y", 2)
+	onboarding_overlay.add_child(onboarding_arrow)
+
+	onboarding_card = PanelContainer.new()
+	onboarding_card.mouse_filter = Control.MOUSE_FILTER_STOP
+	onboarding_card.add_theme_stylebox_override("panel", _onboarding_card_style())
+	onboarding_overlay.add_child(onboarding_card)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	onboarding_card.add_child(box)
+
+	onboarding_progress_bar = ProgressBar.new()
+	onboarding_progress_bar.custom_minimum_size = Vector2(0, 8)
+	onboarding_progress_bar.max_value = ONBOARDING_STEPS.size()
+	onboarding_progress_bar.min_value = 0
+	onboarding_progress_bar.show_percentage = false
+	onboarding_progress_bar.add_theme_stylebox_override("background", _onboarding_progress_style(Color("#dcc18a")))
+	onboarding_progress_bar.add_theme_stylebox_override("fill", _onboarding_progress_style(Color("#7b9b58")))
+	box.add_child(onboarding_progress_bar)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+
+	var avatar_frame := PanelContainer.new()
+	avatar_frame.custom_minimum_size = Vector2(98, 118)
+	avatar_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	avatar_frame.add_theme_stylebox_override("panel", _tray_button_style(Color("#f1d58f"), Color("#5c4128"), 2))
+	row.add_child(avatar_frame)
+
+	onboarding_avatar = TextureRect.new()
+	onboarding_avatar.texture = _load_texture(DR_MEOW_SPRITE)
+	onboarding_avatar.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	onboarding_avatar.custom_minimum_size = Vector2(94, 112)
+	onboarding_avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	onboarding_avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	avatar_frame.add_child(onboarding_avatar)
+
+	var text_box := VBoxContainer.new()
+	text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_box.add_theme_constant_override("separation", 5)
+	row.add_child(text_box)
+
+	var mentor_label := Label.new()
+	mentor_label.text = "喵博士 Dr.Meow"
+	mentor_label.add_theme_font_size_override("font_size", 11)
+	mentor_label.add_theme_color_override("font_color", Color("#6b4a1f"))
+	text_box.add_child(mentor_label)
+
+	onboarding_title_label = Label.new()
+	onboarding_title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	onboarding_title_label.add_theme_font_size_override("font_size", 16)
+	onboarding_title_label.add_theme_color_override("font_color", Color("#263522"))
+	text_box.add_child(onboarding_title_label)
+
+	onboarding_body_label = Label.new()
+	onboarding_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	onboarding_body_label.add_theme_font_size_override("font_size", 13)
+	onboarding_body_label.add_theme_color_override("font_color", Color("#4d3a24"))
+	text_box.add_child(onboarding_body_label)
+
+	var nav := HBoxContainer.new()
+	nav.add_theme_constant_override("separation", 8)
+	box.add_child(nav)
+
+	onboarding_step_label = Label.new()
+	onboarding_step_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	onboarding_step_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	onboarding_step_label.add_theme_font_size_override("font_size", 11)
+	onboarding_step_label.add_theme_color_override("font_color", Color("#6b4a1f"))
+	nav.add_child(onboarding_step_label)
+
+	var skip_button := _onboarding_button("跳过", _finish_onboarding)
+	nav.add_child(skip_button)
+
+	onboarding_prev_button = _onboarding_button("上一步", _on_onboarding_prev_pressed)
+	nav.add_child(onboarding_prev_button)
+
+	onboarding_next_button = _onboarding_button("下一步", _on_onboarding_next_pressed)
+	nav.add_child(onboarding_next_button)
+
+
+func _onboarding_button(text: String, callable: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(64, 44)
+	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_stylebox_override("normal", _button_style(Color("#d9b46b")))
+	button.add_theme_stylebox_override("hover", _button_style(Color("#e8c87d")))
+	button.add_theme_stylebox_override("pressed", _button_style(Color("#b98245")))
+	button.add_theme_stylebox_override("disabled", _button_style(Color("#9b927e")))
+	button.pressed.connect(callable)
+	return button
+
+
 func _detail_action_button(text: String, callable: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
@@ -1290,6 +1490,44 @@ func _hint_panel_style() -> StyleBoxFlat:
 	style.content_margin_top = 2
 	style.content_margin_right = 8
 	style.content_margin_bottom = 2
+	return style
+
+
+func _onboarding_highlight_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 0.91, 0.42, 0.12)
+	style.border_color = Color("#fff0a5")
+	style.border_width_left = 4
+	style.border_width_top = 4
+	style.border_width_right = 4
+	style.border_width_bottom = 4
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	return style
+
+
+func _onboarding_card_style() -> StyleBoxFlat:
+	var style := _panel_style(Color("#f8e8bf"), Color("#5c4128"))
+	style.border_width_left = 4
+	style.border_width_top = 4
+	style.border_width_right = 4
+	style.border_width_bottom = 4
+	style.content_margin_left = 12
+	style.content_margin_top = 12
+	style.content_margin_right = 12
+	style.content_margin_bottom = 12
+	return style
+
+
+func _onboarding_progress_style(fill_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill_color
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_left = 4
+	style.corner_radius_bottom_right = 4
 	return style
 
 
@@ -1667,6 +1905,206 @@ func _render_all() -> void:
 	_render_map()
 	_render_detail()
 	_render_decor_bar()
+
+
+func _maybe_show_first_onboarding() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if bool(garden_data.get("onboarding_seen", false)):
+		return
+	_show_onboarding(true)
+
+
+func _show_onboarding(mark_seen_on_close := true) -> void:
+	if onboarding_overlay == null:
+		return
+	onboarding_mark_seen_on_close = mark_seen_on_close
+	onboarding_step_index = 0
+	onboarding_overlay.visible = true
+	_sync_onboarding_step()
+
+
+func _finish_onboarding() -> void:
+	if onboarding_overlay != null:
+		onboarding_overlay.visible = false
+	_hide_record_panel()
+	_hide_record_history_panel()
+	if onboarding_mark_seen_on_close:
+		garden_data["onboarding_seen"] = true
+		_save_data()
+
+
+func _on_onboarding_prev_pressed() -> void:
+	onboarding_step_index = maxi(onboarding_step_index - 1, 0)
+	_sync_onboarding_step()
+
+
+func _on_onboarding_next_pressed() -> void:
+	if onboarding_step_index >= ONBOARDING_STEPS.size() - 1:
+		_finish_onboarding()
+		return
+	onboarding_step_index += 1
+	_sync_onboarding_step()
+
+
+func _sync_onboarding_step() -> void:
+	if onboarding_overlay == null or not onboarding_overlay.visible:
+		return
+	var step: Dictionary = ONBOARDING_STEPS[onboarding_step_index]
+	_prepare_onboarding_step(str(step.get("target", "")))
+	onboarding_title_label.text = str(step.get("title", ""))
+	onboarding_body_label.text = str(step.get("body", ""))
+	onboarding_step_label.text = "%d / %d" % [onboarding_step_index + 1, ONBOARDING_STEPS.size()]
+	if onboarding_progress_bar != null:
+		onboarding_progress_bar.value = onboarding_step_index + 1
+	onboarding_prev_button.disabled = onboarding_step_index <= 0
+	onboarding_next_button.text = "完成" if onboarding_step_index >= ONBOARDING_STEPS.size() - 1 else "下一步"
+	await get_tree().process_frame
+	_update_onboarding_layout()
+
+
+func _prepare_onboarding_step(target: String) -> void:
+	if target in ["detail", "record"]:
+		selected_decor_id = ""
+		_hide_backup_panel()
+		_hide_plant_panel()
+		_ensure_onboarding_plot_selected()
+		_render_detail()
+		if target == "record":
+			_show_record_panel()
+		else:
+			_hide_record_panel()
+		return
+
+	if target in ["guide_button", "map", "hotspot", "plot", "decor"]:
+		_hide_backup_panel()
+		_hide_record_panel()
+		_hide_record_history_panel()
+		_hide_plant_panel()
+		if target != "plot":
+			selected_plot_id = ""
+			_render_detail()
+
+
+func _ensure_onboarding_plot_selected() -> void:
+	var plot := _first_onboarding_plot()
+	if plot.is_empty():
+		return
+	selected_plot_id = str(plot.get("id", ""))
+
+
+func _first_onboarding_plot() -> Dictionary:
+	for plot in _current_zone().get("plots", []):
+		if str(plot.get("kind", "")) != "empty":
+			return plot
+	for plot in _current_zone().get("plots", []):
+		return plot
+	return {}
+
+
+func _update_onboarding_layout() -> void:
+	if onboarding_overlay == null or not onboarding_overlay.visible:
+		return
+
+	var step: Dictionary = ONBOARDING_STEPS[onboarding_step_index]
+	var target_rect := _onboarding_clamped_rect(_onboarding_target_rect(str(step.get("target", ""))), 10.0)
+	onboarding_highlight.position = target_rect.position
+	onboarding_highlight.size = target_rect.size
+
+	var screen_size := get_viewport_rect().size
+	var card_width := minf(screen_size.x - 32.0, 360.0)
+	var card_height := 260.0 if screen_size.y >= 700.0 else 238.0
+	onboarding_card.custom_minimum_size = Vector2(card_width, card_height)
+	onboarding_card.size = Vector2(card_width, card_height)
+
+	var card_x := clampf(target_rect.position.x + target_rect.size.x * 0.5 - card_width * 0.5, 16.0, maxf(16.0, screen_size.x - card_width - 16.0))
+	var below_y := target_rect.position.y + target_rect.size.y + 16.0
+	var above_y := target_rect.position.y - card_height - 16.0
+	var card_y := below_y
+	var card_is_above := false
+	if below_y + card_height > screen_size.y - 12.0:
+		card_y = maxf(12.0, above_y)
+		card_is_above = true
+	onboarding_card.position = Vector2(card_x, card_y)
+
+	onboarding_arrow.text = "▼" if card_is_above else "▲"
+	onboarding_arrow.size = Vector2(42, 32)
+	onboarding_arrow.position = Vector2(
+		clampf(target_rect.position.x + target_rect.size.x * 0.5 - 21.0, 8.0, maxf(8.0, screen_size.x - 50.0)),
+		card_y + card_height - 4.0 if card_is_above else card_y - 28.0
+	)
+
+
+func _onboarding_target_rect(target: String) -> Rect2:
+	if target == "guide_button":
+		return _control_global_rect(guide_button)
+	if target == "map":
+		return _control_global_rect(map_canvas)
+	if target == "hotspot":
+		return _onboarding_hotspot_rect()
+	if target == "plot":
+		return _onboarding_plot_rect()
+	if target == "detail":
+		return _control_global_rect(detail_panel)
+	if target == "record":
+		return _control_global_rect(record_panel)
+	if target == "decor":
+		var scroller: Control = null
+		if decor_bar != null:
+			scroller = decor_bar.get_parent() as Control
+		return _control_global_rect(scroller)
+	return _center_onboarding_rect()
+
+
+func _control_global_rect(control: Control) -> Rect2:
+	if control == null or not is_instance_valid(control) or not control.visible:
+		return _center_onboarding_rect()
+	var rect := control.get_global_rect()
+	if rect.size.x <= 1.0 or rect.size.y <= 1.0:
+		return _center_onboarding_rect()
+	return rect
+
+
+func _onboarding_hotspot_rect() -> Rect2:
+	if map_canvas == null:
+		return _center_onboarding_rect()
+	var hotspots := _hotspots_for_zone(selected_zone_id)
+	if hotspots.is_empty():
+		return _control_global_rect(map_canvas)
+	var hotspot: Dictionary = hotspots[0]
+	var button_size: Vector2 = hotspot.get("size", Vector2(110, 82))
+	var map_rect := _map_rect(map_canvas.size)
+	var local_pos := _map_point(map_rect, hotspot.get("pos", Vector2(0.5, 0.18))) - button_size * 0.5
+	return Rect2(map_canvas.get_global_rect().position + local_pos, button_size)
+
+
+func _onboarding_plot_rect() -> Rect2:
+	if map_canvas == null:
+		return _center_onboarding_rect()
+	var plot := _first_onboarding_plot()
+	if plot.is_empty():
+		return _control_global_rect(map_canvas)
+	var button_size := _plot_button_size(plot)
+	var map_rect := _map_rect(map_canvas.size)
+	var local_pos := _map_point(map_rect, Vector2(plot.get("x", 0.5), plot.get("y", 0.5))) - Vector2(button_size.x * 0.5, button_size.y * 0.82)
+	return Rect2(map_canvas.get_global_rect().position + local_pos, button_size)
+
+
+func _center_onboarding_rect() -> Rect2:
+	var screen_size := get_viewport_rect().size
+	return Rect2(screen_size * 0.5 - Vector2(56, 42), Vector2(112, 84))
+
+
+func _onboarding_clamped_rect(rect: Rect2, padding: float) -> Rect2:
+	var screen_size := get_viewport_rect().size
+	var target_size := Vector2(
+		clampf(rect.size.x + padding * 2.0, 36.0, maxf(36.0, screen_size.x - 24.0)),
+		clampf(rect.size.y + padding * 2.0, 30.0, maxf(30.0, screen_size.y - 24.0))
+	)
+	var target_position := rect.position - Vector2(padding, padding)
+	target_position.x = clampf(target_position.x, 12.0, maxf(12.0, screen_size.x - target_size.x - 12.0))
+	target_position.y = clampf(target_position.y, 12.0, maxf(12.0, screen_size.y - target_size.y - 12.0))
+	return Rect2(target_position, target_size)
 
 
 func _update_header() -> void:
@@ -3111,11 +3549,20 @@ func _load_texture(path: String) -> Texture2D:
 	if texture_cache.has(resource_path):
 		return texture_cache[resource_path]
 
+	if resource_path == DR_MEOW_SPRITE:
+		var direct_texture := _load_image_texture(resource_path)
+		if direct_texture != null:
+			return direct_texture
+
 	var loaded := ResourceLoader.load(resource_path)
 	if loaded is Texture2D:
 		texture_cache[resource_path] = loaded
 		return loaded
 
+	return _load_image_texture(resource_path)
+
+
+func _load_image_texture(resource_path: String) -> Texture2D:
 	var image := Image.new()
 	var error := image.load(resource_path)
 	if error != OK:

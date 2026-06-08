@@ -63,7 +63,14 @@ $requiredSnippets = @(
   "_backup_help_text",
   "FileDialog.FILE_MODE_SAVE_FILE",
   "FileDialog.FILE_MODE_OPEN_FILE",
-  "在%s种植"
+  "在%s种植",
+  "DR_MEOW_SPRITE",
+  "dr-meow-guide-gpt-v1.png",
+  "onboarding_avatar",
+  "onboarding_progress_bar",
+  "喵博士 Dr.Meow",
+  "custom_minimum_size = Vector2(64, 44)",
+  "ONBOARDING_Z_INDEX"
 )
 
 foreach ($snippet in $requiredSnippets) {
@@ -132,6 +139,15 @@ if ($harvestStrength -ge $dormantStrength -or $harvestBrightness -le $dormantBri
 
 if ($dormantBrightness -lt 0.75) {
   Write-Error "Dormant garden interactables must stay bright enough to read as tappable."
+}
+
+$drMeowSprite = Join-Path $PSScriptRoot "../assets/sprites/ui/dr-meow-guide-gpt-v1.png"
+if (-not (Test-Path $drMeowSprite)) {
+  Write-Error "Dr.Meow onboarding sprite is missing."
+}
+
+if ($main.Contains('avatar.text = "Dr.\nMeow"')) {
+  Write-Error "Onboarding must use the Dr.Meow sprite, not the old text-only avatar."
 }
 
 Write-Host "Detail UI static checks passed."

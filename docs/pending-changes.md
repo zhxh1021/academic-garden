@@ -1,5 +1,39 @@
 # Pending Changes
 
+## 2026-06-08 - Add Dr.Meow Godot onboarding guide
+
+### Summary
+
+- Added a first-run and replayable onboarding guide to the Godot portrait prototype.
+- Introduced the "新手引导" header button and a Dr.Meow dialog overlay with dimming, target highlights, arrows, step navigation, skip/finish controls, and contextual copy for the app's core loop.
+- The guide explains the three garden views, plant/project records, detail cards, quick notes, stage progression, decoration placement, and save backup entry point.
+- Added `onboarding_seen` to saved data so the guide auto-opens until completed, then can be replayed manually.
+- Refined the onboarding sheet using mobile UI/UX checks: stronger scrim, clearer card hierarchy, 44px+ tutorial buttons, a step progress bar, and a real Dr.Meow avatar frame.
+- Generated the Dr.Meow mascot as a doctoral-cap cat holding a gardening trowel, then chroma-key removed the background and cropped it into a 512x512 transparent runtime sprite.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `godot-prototype/assets/art/dr-meow-guide-gpt-v1-source.png`
+- `godot-prototype/assets/sprites/ui/dr-meow-guide-gpt-v1.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `rg -n "ONBOARDING_STEPS|onboarding_seen|Dr\\.Meow|_show_onboarding" godot-prototype/scripts/main.gd`; before implementation it returned no matches, after implementation it found the expected onboarding entry points.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran Godot 4.6.3 debug startup for `res://scenes/main.tscn`; final runtime output had no errors.
+- Ran a Pillow alpha/size check on the Dr.Meow runtime sprite; output is 512x512 with transparent corners and a centered subject bbox.
+
+### Notes
+
+- Asset prompt constraints: cozy pixel-art scholar cat gardener, black doctoral cap, tiny gardening trowel, moss-green gardening apron, crisp mobile-readable silhouette, flat #ff00ff chroma-key background.
+- The source sheet was kept under `assets/art/`; the app-ready transparent sprite is under `assets/sprites/ui/`.
+- Existing unrelated root `.cmd` deletion states were left untouched.
+
 ## 2026-06-08 - Android preview workflow and runtime visual alignment
 
 ### Summary
