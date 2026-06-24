@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://academic_garden_save_migration_check"]
+
+[ext_resource type="Script" path="res://scripts/save_migration_check.gd" id="1_save_check"]
+
+[node name="SaveMigrationCheck" type="Node"]
+script = ExtResource("1_save_check")

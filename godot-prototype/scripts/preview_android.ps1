@@ -2,7 +2,8 @@ param(
   [switch]$KeepData,
   [switch]$SkipExport,
   [switch]$NoScreenshot,
-  [string]$GodotExe = ""
+  [string]$GodotExe = "",
+  [string]$JavaHome = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,7 +11,12 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $RepoRoot = (Resolve-Path (Join-Path $ProjectRoot "..")).Path
 $SdkRoot = "D:\ag_runtime\android-sdk"
-$AvdHome = Join-Path $ProjectRoot "android-avd"
+$PreferredAvdHome = Join-Path $RepoRoot ".runtime\android-avd"
+$ProjectAvdHome = Join-Path $ProjectRoot "android-avd"
+$AvdHome = $PreferredAvdHome
+if (-not (Test-Path $AvdHome) -and (Test-Path $ProjectAvdHome)) {
+  $AvdHome = $ProjectAvdHome
+}
 $AvdName = "academic_garden_api35"
 $PackageName = "org.academicgarden.prototype"
 $ExportsDir = Join-Path $ProjectRoot "exports"
@@ -35,6 +41,9 @@ function Find-Godot {
   }
   if ($env:GODOT_EXE -and (Test-Path $env:GODOT_EXE)) {
     return (Resolve-Path $env:GODOT_EXE).Path
+  }
+  if ($env:GODOT_PATH -and (Test-Path $env:GODOT_PATH)) {
+    return (Resolve-Path $env:GODOT_PATH).Path
   }
 
   $fromPath = (Get-Command godot -ErrorAction SilentlyContinue)
@@ -61,6 +70,59 @@ function Find-Godot {
     }
   }
   return ""
+}
+
+function Find-JavaHome {
+  param([string]$Provided)
+
+  $candidates = @()
+  if ($Provided) {
+    $candidates += $Provided
+  }
+  if ($env:JAVA_HOME) {
+    $candidates += $env:JAVA_HOME
+  }
+
+  $runtimeJdkRoot = "D:\ag_runtime\jdk"
+  if (Test-Path $runtimeJdkRoot) {
+    $candidates += Get-ChildItem -Path $runtimeJdkRoot -Directory -ErrorAction SilentlyContinue |
+      Sort-Object Name -Descending |
+      ForEach-Object { $_.FullName }
+  }
+
+  foreach ($candidate in $candidates) {
+    if (-not $candidate) {
+      continue
+    }
+    $javaExe = Join-Path $candidate "bin\java.exe"
+    if (Test-Path $javaExe) {
+      return (Resolve-Path $candidate).Path
+    }
+  }
+
+  $fromPath = Get-Command java -ErrorAction SilentlyContinue
+  if ($fromPath -and (Test-Path $fromPath.Source)) {
+    $binDir = Split-Path $fromPath.Source -Parent
+    return (Resolve-Path (Join-Path $binDir "..")).Path
+  }
+
+  return ""
+}
+
+function Configure-JavaForAndroidTools {
+  param([string]$Provided)
+
+  $resolvedJavaHome = Find-JavaHome $Provided
+  if (-not $resolvedJavaHome) {
+    throw "Java was not found. Pass -JavaHome <jdk path> or set JAVA_HOME so apksigner can sign the APK."
+  }
+
+  $javaBin = Join-Path $resolvedJavaHome "bin"
+  $env:JAVA_HOME = $resolvedJavaHome
+  if (($env:Path -split ";") -notcontains $javaBin) {
+    $env:Path = "$javaBin;$env:Path"
+  }
+  Write-Host "Using Java: $resolvedJavaHome"
 }
 
 function Run-Step {
@@ -109,6 +171,7 @@ Run-Step "Start Android emulator" {
 }
 
 if (-not $SkipExport) {
+  Configure-JavaForAndroidTools $JavaHome
   $ResolvedGodot = Find-Godot $GodotExe
   if ($ResolvedGodot) {
     Run-Step "Export debug APK" {
@@ -135,10 +198,8 @@ if (-not $SkipExport) {
         throw "APK verification failed with exit code $LASTEXITCODE"
       }
     }
-  } elseif (Test-Path $ExistingApk) {
-    Write-Warning "Godot executable was not found. Using existing APK: $ExistingApk"
   } else {
-    throw "Godot executable was not found and no existing APK is available. Pass -GodotExe <path>."
+    throw "Godot executable was not found. Pass -GodotExe <path> or set GODOT_EXE/GODOT_PATH so the preview can export a fresh APK."
   }
 }
 

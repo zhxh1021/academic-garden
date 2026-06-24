@@ -1,5 +1,1550 @@
 # Pending Changes
 
+## 2026-06-24 - Prepare combined Godot update push
+
+### Summary
+
+- Reviewed the large combined worktree before pushing the current Godot mobile prototype update.
+- Confirmed the update includes Godot prototype optimization, verification harnesses, Android preview hardening, current runtime art changes, and deprecated web-runtime cleanup already recorded in earlier pending-change entries.
+- Re-ran the current verification gates immediately before staging and pushing.
+
+### Files Changed
+
+- `docs/pending-changes.md`
+- Combined changes already listed in the 2026-06-19 pending entries and `docs/combined-review-snapshot.md`.
+
+### Verification
+
+- Ran `git fetch origin`; local `main` was aligned with `origin/main` before committing.
+- Reviewed `git status --porcelain=v1` summary: 2169 status entries, including 1864 tracked deletions, 206 tracked modifications, and 99 untracked entries.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\preview_android.ps1 -GodotExe 'D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe'`.
+- Reviewed `godot-prototype/exports/android-qa-preview-latest.png` and latest logcat; Android launched the app and reported `platform_android=true`, viewport `390x866`, window `1080x2400`, and safe-area top inset `136`.
+- Ran `git diff --check`; only normal CRLF warnings appeared.
+
+### Notes
+
+- `gh` is not installed in this environment, so no GitHub CLI or PR flow was attempted.
+- This entry records the final combined push preparation, not a separate gameplay or asset change.
+
+## 2026-06-19 - Harden Android preview Java setup
+
+### Summary
+
+- Added local JDK discovery to the Godot Android preview script so `apksigner.bat` can sign APKs even when `JAVA_HOME` is not globally configured.
+- Kept the new Java setup scoped to the preview script process and allowed an explicit `-JavaHome` override.
+- Re-ran the full Android preview/export flow and updated `godot-prototype/PLAN.md` with the emulator proof.
+
+### Files Changed
+
+- `godot-prototype/scripts/preview_android.ps1`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+- Generated/updated preview artifacts under `godot-prototype/exports/`, including `academic-garden-prototype-debug.apk`, `android-qa-preview-latest.png`, and `android-qa-preview-latest-logcat.txt`.
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\preview_android.ps1 -GodotExe 'D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe'`.
+- The script exported a fresh debug APK, signed and verified it, installed it on the local Android emulator, launched `org.academicgarden.prototype`, and captured a screenshot plus logcat.
+- Reviewed `godot-prototype/exports/android-qa-preview-latest.png`; the Android first screen is visible with the portrait garden layout, safe-area-adjusted header, and bottom warehouse controls in frame.
+- Reviewed latest logcat; Godot reached `OnGodotMainLoopStarted` and printed `platform_android=true`, viewport `390x866`, window `1080x2400`, and safe-area top inset `136`.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+- Ran `git diff --check` for touched text files; only normal CRLF warnings appeared.
+
+### Notes
+
+- No gameplay, visual asset, seed data, or export preset behavior was intentionally changed in this slice.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Add combined review snapshot
+
+### Summary
+
+- Added a combined review snapshot for the current large local worktree before any final staging, commit, push, or pull request.
+- Recorded the current `git status --porcelain=v1` shape, largest change buckets, Godogen optimization files, known concurrent work to keep separate, verification evidence, and final review checklist.
+- Updated `godot-prototype/PLAN.md` to reference the snapshot as part of combined review preparation.
+
+### Files Changed
+
+- `docs/combined-review-snapshot.md`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `git status --porcelain=v1` and grouped entries by status/path category.
+- Reviewed 2026-06-19 entries in `docs/pending-changes.md`.
+- Ran `git diff --check` for the touched text files; only normal CRLF warnings appeared.
+
+### Notes
+
+- No code or visual assets were changed in this slice.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Add taller mobile viewport proof
+
+### Summary
+
+- Updated the mobile layout capture scene to save direct named viewport PNGs for each required UI state.
+- Updated the mobile layout verification wrapper to prefer direct named captures over Godot movie-maker frames and to validate both `390x844` and taller `430x932` portrait outputs by default.
+- Fixed a capture timing race so screenshots are not saved before the first requested view is selected.
+- Updated `godot-prototype/PLAN.md` to replace the old movie-maker limitation note with the new direct viewport proof status.
+
+### Files Changed
+
+- `godot-prototype/scripts/mobile_layout_capture.gd`
+- `godot-prototype/scripts/verify_mobile_layout.ps1`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+- `godot-prototype/screenshots/mobile-layout/390x844/`
+- `godot-prototype/screenshots/mobile-layout/430x932/`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+
+### Notes
+
+- No visual assets were generated, moved, deleted, or restored.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Extract layout sizing constants
+
+### Summary
+
+- Added a layout rules script for harvested page size, map aspect ratio, root margin, plot size tables, decor base size, map plant scale, ground anchor ratio, and decor size scale values.
+- Updated `main.gd` to keep existing layout constant names as compatibility aliases while delegating sizing values to `layout_rules.gd`.
+- Updated the detail UI and asset verification scripts so static layout guard snippets can live in the extracted layout rules script.
+- Left map position anchors, decoration anchors, slots, and zone hotspots in `main.gd` because they remain coupled to rendering and save layout migration behavior.
+- Updated `godot-prototype/PLAN.md` to record the fourth completed `main.gd` decomposition slice.
+
+### Files Changed
+
+- `godot-prototype/scripts/layout_rules.gd`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+
+### Notes
+
+- No visual assets were generated, moved, deleted, or restored.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Extract save import/export contract rules
+
+### Summary
+
+- Added a pure save rules script for export payload construction, save checksums, import payload validation, schema ceiling checks, and required save-data shape checks.
+- Updated `main.gd` to keep the existing `_make_export_payload`, `_extract_import_data`, `_save_checksum`, and `_is_valid_save_data` wrapper names while delegating save contract logic to `save_rules.gd`.
+- Preserved file IO, FileDialog behavior, import backup writing, save migration, UI status updates, and render flow in `main.gd`.
+- Updated `godot-prototype/PLAN.md` to record the third completed `main.gd` decomposition slice.
+
+### Files Changed
+
+- `godot-prototype/scripts/save_rules.gd`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+
+### Notes
+
+- No visual assets were generated, moved, deleted, or restored.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Extract plant lifecycle and sprite path rules
+
+### Summary
+
+- Added a pure plant rules script for lifecycle order, legacy course stage-key migration, next/final stage checks, default stage growth, plant variety base parsing, normalized stage sprite path construction, and sprite base cleanup.
+- Updated `main.gd` to keep existing lifecycle/resource helper names as compatibility wrappers while delegating the extracted logic to `plant_rules.gd`.
+- Updated the asset and detail UI verification scripts so static guard snippets can live in the extracted rules script without weakening their existing checks.
+- Updated `godot-prototype/PLAN.md` to record the second completed `main.gd` decomposition slice.
+
+### Files Changed
+
+- `godot-prototype/scripts/plant_rules.gd`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+
+### Notes
+
+- No visual assets were generated, moved, deleted, or restored.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Add Godot asset contract manifest
+
+### Summary
+
+- Added a Godogen-resumable asset contract manifest for the Godot prototype.
+- Classified runtime sprites, source/review art, direct-edit exceptions, deprecated web-runtime assets, and required verification for future asset work.
+- Updated `godot-prototype/PLAN.md` to mark the asset contract slice as documented while leaving the large current deletion set for final combined review.
+
+### Files Changed
+
+- `godot-prototype/ASSETS.md`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Reviewed `docs/art-progress.md` and `docs/art-asset-rules.md`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+
+### Notes
+
+- No assets were generated, moved, deleted, or restored in this slice.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Extract pure economy rules from main.gd
+
+### Summary
+
+- Added a small pure economy rules script for growth, daily coin, and variety unlock price calculations.
+- Updated `main.gd` to keep its existing economy function names as compatibility wrappers while delegating the formulas and economy constants to the new script.
+- Preserved existing UI/test call sites, including detail panel estimated coins, daily settlement, milestone checks, and seed shop unlock prices.
+- Updated `godot-prototype/PLAN.md` to record the first completed `main.gd` decomposition slice.
+
+### Files Changed
+
+- `godot-prototype/scripts/economy_rules.gd`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+
+### Notes
+
+- No new visual assets were generated.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Add economy balance regression guard
+
+### Summary
+
+- Added a Godot economy balance check scene and PowerShell wrapper that call the live economy functions through the real main scene.
+- The new guard verifies daily care-to-growth examples, deterministic daily coin formula examples, negative-growth floor, per-plant cap, active/harvested/dormant settlement rules, care reset behavior, milestone growth without direct coin rewards, seed unlock prices, and representative light/normal/heavy/historical income bands.
+- Corrected the internal economy documentation example for `growth=100` at final stage from `19` to `20`, matching the implemented logarithmic formula and the new guard.
+- Updated `godot-prototype/PLAN.md` to list the new verification command and current evidence.
+
+### Files Changed
+
+- `godot-prototype/scripts/economy_balance_check.gd`
+- `godot-prototype/scripts/verify_economy_balance.ps1`
+- `godot-prototype/scenes/economy_balance_check.tscn`
+- `godot-prototype/PLAN.md`
+- `docs/economy-system.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_economy_balance.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+- Ran `git diff --check` for the touched text files; only normal CRLF warnings appeared.
+
+### Notes
+
+- No new visual assets were generated.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Add save migration regression guard
+
+### Summary
+
+- Added a Godot save migration check scene and PowerShell wrapper that run fixture saves through the real `res://scenes/main.tscn` load path.
+- The new guard verifies legacy layout migration, old course stage-key migration, planted-variety unlock preservation, owned-decoration backfill, empty plot cleanup, default care/history/session fields, current-layout position preservation, selected-zone fallback, export checksum validation, raw import acceptance, and future-schema rejection.
+- Fixed legacy course sprite/base migration so old course sprite filenames ending in `sowing`, `growing`, `fruit`, or `seed_saved` resolve to the correct current variety base after stage normalization, instead of generating missing paths such as `course-lotus-sowing-seed.png`.
+- Updated `godot-prototype/PLAN.md` to list the new verification command and current evidence.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/save_migration_check.gd`
+- `godot-prototype/scripts/verify_save_migration.ps1`
+- `godot-prototype/scenes/save_migration_check.tscn`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_save_migration.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+- Ran `git diff --check` for the touched text files; only normal CRLF warnings appeared.
+
+### Notes
+
+- No new visual assets were generated.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-19 - Add Godot mobile layout capture guard
+
+### Summary
+
+- Added a repeatable Godot movie-frame capture harness for the mobile portrait baseline at `390x844`.
+- The capture flow drives the main scene through active, harvested, dormant, detail, record drawer, seed shop, decoration shop, backup panel, onboarding, and remove-confirmation states.
+- Added a PowerShell wrapper that finds Godot, isolates `user://` under `.runtime`, writes named screenshots under `godot-prototype/screenshots/mobile-layout/390x844/`, and validates PNG dimensions and non-blank color variety.
+- Fixed the remove-confirmation dialog's body label minimum width so its smart wrapping no longer inflates the dialog to an off-screen height in mobile portrait captures.
+- Updated `godot-prototype/PLAN.md` to list the new verification command and record the Godot 4.6.3 movie-maker limitation: a taller `430x932` runtime viewport can be reached, but movie PNG output remains fixed to the project viewport override.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/mobile_layout_capture.gd`
+- `godot-prototype/scripts/verify_mobile_layout.ps1`
+- `godot-prototype/scenes/mobile_layout_capture.tscn`
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+- `godot-prototype/screenshots/mobile-layout/390x844/`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_mobile_layout.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+- Ran `git diff --check` for the touched text files; only normal CRLF warnings appeared.
+- Visually inspected the generated active-map, detail, record drawer, onboarding, and remove-confirmation screenshots.
+
+### Notes
+
+- No new art assets were generated.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+- The generated screenshot directory is a verification artifact for this slice; it is not an app runtime dependency.
+
+## 2026-06-19 - Draft Godogen optimization audit plan
+
+### Summary
+
+- Used the newly installed Godogen workflow to review the current Godot mobile prototype direction, existing verification gates, major architectural risks, and concurrent worktree state.
+- Added a resumable optimization plan at `godot-prototype/PLAN.md` covering mobile visual proof, `main.gd` decomposition, save migration guards, economy balance checks, and art asset contract cleanup.
+
+### Files Changed
+
+- `godot-prototype/PLAN.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`.
+- Ran `git diff --check` for the touched planning and key verification files; only normal CRLF warnings appeared.
+
+### Notes
+
+- No runtime code or visual assets were modified.
+- Existing unrelated local work, large asset deletion/cleanup state, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-18 - Move seed unlocks to seed shop and add care feedback
+
+### Summary
+
+- Split the bottom tray shop flow into separate `装饰` and `种子` modes while keeping `仓库` for owned decorations.
+- Moved seed-variety unlocking out of the planting panel; planting now only selects already-unlocked varieties, and locked varieties point users to the seed shop.
+- Made today's water/sun/fertilizer cells visible in plant details.
+- Changed record actions to grant deterministic care values: quick slots map to water, sun, and fertilizer; note records add the currently lowest care type.
+- Added care-specific feedback animations over the selected plant: falling water drops, a warm sunburst, and bouncing fertilizer soil particles, with the compact `+1` badge kept as the numeric confirmation.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `git diff --check -- godot-prototype\scripts\main.gd docs\pending-changes.md`; only normal CRLF warnings appeared.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd` with writable temporary app data; it exited 0.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3` with writable temporary app data; it exited 0 and printed layout version 30.
+- Re-ran the asset check, detail UI check, Godot script check, and Godot 3-second headless startup after adding care-specific drawn animations.
+
+### Notes
+
+- No new visual assets were generated; the feedback reuses existing care icons.
+- Existing unrelated local work, asset changes, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-12 - Prepare Godot mobile runtime for Android/iOS QA
+
+### Summary
+
+- Enabled the Android export preset's launcher activity visibility so directly shared APKs show up as a normal launchable app for testers.
+- Added runtime layout logging for `platform`, `platform_ios`, `platform_mobile`, and the resolved `user://` directory so Android and future iOS safe-area/storage behavior can be compared from device logs.
+- Added a static UI guard for the new cross-platform runtime log fields.
+
+### Files Changed
+
+- `godot-prototype/export_presets.cfg`
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran JSON validation for `godot-prototype/data/garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `git diff --check` for the touched Godot config/script/check files; only normal CRLF warnings appeared.
+- Ran Godot headless script check with `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe`.
+- Ran Godot headless startup; it logged the new runtime platform fields. A local old Windows save produced one missing normalized-stage warning unrelated to this change.
+- Ran `godot-prototype\scripts\preview_android.ps1` with `JAVA_HOME=D:\ag_runtime\jdk\jdk-17.0.19+10`; it exported, signed, installed, launched, and captured a fresh Android screenshot.
+- Verified `adb shell cmd package resolve-activity --brief org.academicgarden.prototype` resolves `com.godot.game.GodotAppLauncher`.
+- Reviewed the latest Android logcat: `platform` is `android`, `platform_mobile` is `true`, `platform_ios` is `false`, and the save path resolves under the Android app sandbox.
+- Visually inspected `godot-prototype/exports/android-qa-preview-latest.png`; the APK starts to the garden screen without black-screen or obvious layout breakage.
+
+### Notes
+
+- No new visual assets were generated.
+- Existing unrelated local work, asset changes, deprecated web runtime deletions, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-10 - Add seed shop variety unlocks
+
+### Summary
+
+- Added a seed shop unlock layer to the Godot planting panel: new saves start with two paper tree varieties and two course flower varieties unlocked, while locked varieties can be bought with coins.
+- Made course flower variety unlocks cost `150` coins each.
+- Made paper tree variety unlocks start at `240` coins and double with each non-initial paper tree variety already unlocked.
+- Preserved compatibility for existing saves by keeping already-planted varieties unlocked during migration.
+- Added ImageGen-generated seed shop and locked-seed UI icons and wired them into the planting panel.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/assets/art/seed-shop-lock-icons-gpt-v1-source.png`
+- `godot-prototype/assets/art/seed-shop-lock-icons-gpt-v1-source.png.import`
+- `godot-prototype/assets/sprites/ui/seed-shop-gpt-v1.png`
+- `godot-prototype/assets/sprites/ui/seed-shop-gpt-v1.png.import`
+- `godot-prototype/assets/sprites/ui/seed-locked-gpt-v1.png`
+- `godot-prototype/assets/sprites/ui/seed-locked-gpt-v1.png.import`
+- `docs/economy-system.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Generated the seed shop and locked-seed icon source with the built-in ImageGen tool.
+- Processed the generated chroma-key source into transparent runtime PNG icons and visually inspected both icons.
+- Ran Godot import to create `.import` metadata for the new PNG assets.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran JSON validation for `godot-prototype/data/garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py` with the bundled Codex Python runtime; it passed with `ui sprite errors 0`.
+- Ran a static seed-default check confirming the built-in seed starts with exactly `paper-ginkgo`, `paper-cherry`, `course-daisy`, and `course-rose` unlocked.
+- Ran `git diff --check` for the touched files; only normal CRLF warnings appeared.
+- Godot runtime checks were not rerun in this final pass because no local `Godot*.exe` executable was available on PATH or under the searched local folders.
+
+### Asset Prompt
+
+- Prompt constraints: cozy pixel-art UI icon sheet, two separate icons for seed shop and locked seed, flat `#00ff00` chroma-key background, Sprout Lands inspired warm wood/gold/leaf styling, no text, no labels, no characters, no watermark.
+
+### Notes
+
+- Existing unrelated local work and concurrent changes were left untouched.
+
+## 2026-06-10 - Tune Godot economy display and decoration prices
+
+### Summary
+
+- Replaced the detail panel's bounded growth progress bar with an unbounded text readout showing `成长值` and estimated daily coins.
+- Removed the global daily wallet cap from settlement while keeping the per-plant daily coin cap at `30`.
+- Raised decoration prices from the first daily-economy pass to a slightly higher 45-120 coin range, for a full current set cost of 765 coins.
+- Updated economy and product docs so growth is treated as an accumulated value rather than a 100% progress meter.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/economy-system.md`
+- `docs/product-mvp.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran JSON validation for `godot-prototype/data/garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran Godot headless script check for `res://scripts/main.gd`.
+- Ran Godot headless startup with layout version 30.
+- Ran a temporary-save settlement test after moving the last settlement date to yesterday and adding balanced care to one active plant; settlement granted `+241` coins and `+15` growth, confirming the global `120` wallet cap no longer applies.
+
+### Notes
+
+- No new visual assets were generated; this pass removed a misleading UI component rather than adding an icon.
+- Existing unrelated local work and concurrent changes were left untouched.
+
+## 2026-06-10 - Implement Godot daily economy settlement
+
+### Summary
+
+- Implemented daily economy settlement in the Godot prototype: active and harvested plants generate daily coins, dormant plants generate none, and harvested plants are protected from normal record/move/remove modification.
+- Changed records to grant daily care signals first; daily settlement converts water/sun/fertilizer into growth and then calculates coins from growth and stage using a logarithmic curve, stage multipliers, light randomness, per-plant cap, and daily wallet cap.
+- Removed direct milestone coin rewards so stage advancement grants growth and improves future daily yield instead of double-paying immediately.
+- Unified runtime course flower stage flow to the current `seed/seedling/bud/bloom/blossom` keys while keeping migration compatibility for older `sowing/growing/fruit/seed_saved` saves.
+- Repriced the current decoration catalog to a gentle 30-90 coin range based on simulation, with one full set costing 555 coins.
+- Updated economy, product, and lifecycle docs to reflect fixed harvested growth, harvested daily coins, dormant no-income behavior, and the new pricing model.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/economy-system.md`
+- `docs/product-mvp.md`
+- `docs/plant-lifecycle-rules.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Simulated the economy formula with representative light, normal, heavy, and collector player profiles before choosing the decoration prices.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran JSON validation for `godot-prototype/data/garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran Godot headless script check for `res://scripts/main.gd`.
+- Ran Godot headless startup with layout version 30.
+- Ran a temporary-save settlement test: after moving the last settlement date to yesterday and adding balanced care to one active plant, Godot granted `+120` capped coins, `+15` growth, recorded the settlement summary, and left the dormant garden out of settlement.
+- Ran `git diff --check` for the touched files; only normal CRLF warnings appeared.
+
+### Notes
+
+- No new visual assets were generated; the implementation reuses the existing generated coin and care icon assets.
+- Existing unrelated local work, asset changes, and deprecated web runtime changes were left untouched.
+
+## 2026-06-10 - Draft Godot economy system design
+
+### Summary
+
+- Added an internal economy system document for the Godot mobile prototype covering care values, growth, daily coin generation, stage multipliers, random variance, settlement caps, and coin sinks.
+- Evaluated the proposed design direction and recorded the main balance risks: passive money printing, stage multiplier dominance, record spam, random-care semantics, and direct milestone double payment.
+- Proposed moving milestone rewards toward growth plus future yield instead of direct immediate coins once daily settlement is implemented.
+- Corrected the economy stage table to use the current course flower keys `seed`, `seedling`, `bud`, `bloom`, and `blossom`.
+
+### Files Changed
+
+- `docs/economy-system.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Read the new design document after writing and checked it includes growth, coins, water/sun/fertilizer acquisition, coin spending, formulas, risks, and implementation order.
+- Cross-checked the current decoration catalog prices in `godot-prototype/data/garden_seed.json` while drafting the sink table.
+- Checked current lifecycle docs and seed data for the course flower stage-key rename before correcting the economy table.
+
+### Notes
+
+- Documentation-only change; no runtime Godot code or visual assets were modified.
+- Existing unrelated local work and concurrent changes were left untouched.
+
+## 2026-06-10 - Clean Godot wood bench transparent dark residue
+
+### Summary
+
+- Removed a small bottom-edge cluster of translucent dark residue pixels from the Godot wood bench decoration sprite.
+- Preserved the existing sprite canvas size, visible stump shape, and opaque grass/outline detail.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/sprout/decor/decor-wood-bench.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran a pixel alpha/RGBA audit on `decor-wood-bench.png`; the bottom-edge translucent dark residue count is now `0`.
+- Visually re-opened the cleaned PNG preview.
+
+### Notes
+
+- No new visual assets were generated.
+- Existing unrelated dirty work and concurrent local changes were left untouched.
+
+## 2026-06-09 - Fix Godot empty-plot planting affordance and variety picker
+
+### Summary
+
+- Limited empty-plot plus guides and direct planting entry to the active/growth garden, so harvested garden empty slots no longer imply that new plants can be planted there.
+- Kept non-active empty plots selectable as ordinary detail items instead of opening the planting panel.
+- Reworked the empty-plot planting panel so the first step uses larger plant-art category buttons for `论文树` and `课程花` instead of the small seed-bag icon.
+- Added a second-step variety picker for paper tree and course flower varieties; planting now records the selected variety's first-stage sprite and title.
+- Added static UI guards for plantable-zone gating and explicit variety selection.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd` with writable temporary `APPDATA`; it exited 0.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3` with writable temporary `APPDATA`; it exited 0 and printed the runtime layout without resource errors.
+
+### Notes
+
+- No new visual assets were generated; the category buttons reuse existing first-stage plant sprites.
+- Existing unrelated local work, deleted historical web runtime files, and other concurrent Godot/doc/asset changes were left untouched.
+
+## 2026-06-09 - Restore readable Godot HUD and decor labels
+
+### Summary
+
+- Replaced overly compressed one-character UI labels in the Godot prototype with readable short labels.
+- Changed the top HUD manual guide button from `?` to `引导` and the backup button from `存` to `备份`.
+- Changed the decoration tray mode buttons from `仓`/`店` to `仓库`/`商店`.
+- Increased the affected button minimum widths so the restored Chinese labels are not cramped.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Rechecked the script labels with `Select-String` and confirmed the visible labels are now `引导`, `备份`, `仓库`, and `商店`.
+- `godot`, `godot4`, and `godot4_console` were not available on PATH, so no local Godot runtime preview was run in this slice.
+
+### Notes
+
+- Existing unrelated local work and asset deletion/cleanup state was left untouched.
+
+## 2026-06-09 - Fix Godot plant sprite edge clipping
+
+### Summary
+
+- Audited the Godot runtime plant sprites referenced through `web-normalized-stages` for alpha content touching the PNG canvas edge and for visibly broken course-flower source slicing.
+- Found course flower runtime sprites with very small bottom/side margins and mature paper tree sprites/animation frames with edge contact, especially cherry flower, cherry fruit, ginkgo flower, and ginkgo fruit at the top edge.
+- Added transparent safety padding to the course flower runtime sprites and mature paper tree runtime sprites so each checked sprite has at least 8px transparent margin on every side.
+- Rechecked the Hydrangea bloom sprite after user review and found the earlier padding-only fix was insufficient: the runtime sprite was already a bad slice from the source sheet, with the full flower partly missing and an adjacent final-stage sparkle fragment included.
+- Re-sliced all 48 course flower runtime sprites from the complete `course-flower-lifecycle-gpt-v1-source.png` grid, removed chroma-key halos, and kept only the main flower component for non-final stages so adjacent-column sparkles cannot leak into normal bloom/bud/seedling sprites.
+- Rechecked Sunflower after user review and found its flower head crosses the mechanical row boundary in the source sheet, so equal-grid slicing still cut off the top petals.
+- Re-cropped the Sunflower bloom from an expanded source region around the last row/fourth column, kept the main connected flower component, and applied that complete crop to `bloom`, `blossom`, and `seed_saved`.
+- Checked for a Ginkgo source sheet comparable to the course flower lifecycle sheet; no current `godot-prototype/assets/art` tree/ginkgo sheet was present, so the runtime Ginkgo sprites and animation frames are the authoritative editable assets for now.
+- Repaired the Ginkgo base directly on `paper-ginkgo-tree.png`, adding a fuller grass/soil mound behind the existing tree while preserving the existing canvas size and an 8px transparent bottom safety margin.
+- Applied the same repaired Ginkgo base to `tree`, `flower`, and `fruit` static sprites and their animation frames so playback does not revert to the shorter base.
+- Applied the same padding to paper tree stage animation frames as their matching static source sprite so animation playback does not reintroduce clipped-looking frames or frame-size mismatches.
+- Extended `scripts/verify_godot_garden_assets.py` with alpha-margin checks for all course flower normalized sprites and mature paper tree static/animated sprites, plus course flower slice checks for magenta residue and unexpected extra components in non-final stages.
+- Refreshed Godot imports and regenerated the Godot web asset preview/contact images after the sprite changes.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*.png.import`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-tree.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*-fruit.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-*.png.import`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-*-tree/frame-*.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-*-flower/frame-*.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-*-fruit/frame-*.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-*/*.png.import`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran a pixel alpha-margin audit before the fix; it identified the tree and course flower edge-contact cases above.
+- Visually inspected `godot-prototype/assets/sprites/web-normalized-stages/course-hydrangea-bloom.png` after the corrected re-slice; the flower body, leaves, and soil are complete and the stray right-side sparkle fragment is gone.
+- Visually inspected `godot-prototype/assets/sprites/web-normalized-stages/course-sunflower-bloom.png` after the expanded source crop; the top petals are now present.
+- Visually inspected `godot-prototype/assets/sprites/web-normalized-stages/paper-ginkgo-tree.png`; the tree now has a fuller grass/soil base and still keeps a bottom transparent safety margin.
+- Ran `python scripts\verify_godot_garden_assets.py`; it passed with `stage safe-margin errors 0` and `course flower slice errors 0`.
+- Ran a full post-fix PNG scan over `godot-prototype/assets/sprites/web-normalized-stages`; remaining paper/course stage sprites with less than 8px alpha margin: `0`.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --import` to refresh imported textures.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype\scripts\main.gd`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`; it exited 0 and printed runtime layout without resource errors.
+- Ran `python scripts\preview_godot_web_assets.py` and inspected `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`; the visible map plants keep their full silhouettes without obvious top/bottom truncation.
+
+### Notes
+
+- No new art was generated; this pass added transparent canvas padding, corrected the course flower runtime slicing from the existing source sheet including an expanded crop for Sunflower, and repaired the Ginkgo base in-place because no comparable Ginkgo source sheet was present.
+- Existing unrelated dirty work, deleted historical web runtime files, and other concurrent Godot/doc changes were left untouched.
+
+## 2026-06-09 - Make Dr.Meow onboarding manual-only
+
+### Summary
+
+- Removed the first-launch automatic Dr.Meow onboarding trigger from the Godot mobile prototype.
+- Kept the compact `?` HUD button as the manual entry point for the tutorial.
+- Added a static guard so the first-launch auto-open hook does not return unnoticed.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --check-only --script res://scripts/main.gd`; this Godot console run crashed natively with signal 11 before reporting script diagnostics.
+- Ran `godot-prototype\scripts\preview_android.ps1` without `-SkipExport` and with `JAVA_HOME=D:\ag_runtime\jdk\jdk-17.0.19+10`; it exported, installed, launched, and captured a fresh Android preview.
+- Confirmed the new APK at `godot-prototype/exports/academic-garden-prototype-debug.apk` was written at `2026/6/9 18:17:28`, size `100,384,783` bytes.
+- Confirmed the fresh first-screen preview at `godot-prototype/exports/android-qa-preview-latest.png` was written at `2026/6/9 18:17:39` and no longer shows the onboarding overlay.
+- Used adb to tap the `?` button and captured `godot-prototype/exports/android-qa-preview-guide-button.png`; the Dr.Meow onboarding overlay opened manually as expected.
+- Checked logcat for `OnGodotMainLoopStarted` and `platform_android=true`; no Godot script errors were found in the filtered startup lines.
+
+### Notes
+
+- No visual assets were generated.
+- Existing unrelated dirty work and parallel changes were left untouched.
+
+## 2026-06-09 - First mobile Godot UI consolidation pass
+
+### Summary
+
+- Added compact UI size/tone constants and a shared button tone helper in the Godot main script.
+- Lightened the top HUD by shrinking the header, logo, coin pill, and converting the low-frequency onboarding/backup actions into compact `?` and `存` controls with tooltips.
+- Reworked the plant detail card toward a smaller mobile bottom-sheet summary: reduced its height, shrank the plant preview, and hid the care grid and note text from the default summary so more of the garden stays visible.
+- Standardized action button semantics: growth/record actions stay green, neutral controls use wood tones, sleep uses a quieter muted tone, and remove/confirm-remove use a danger tone.
+- Tightened the bottom decoration tray, shortened its mode controls, and changed the decoration scroller to `SCROLL_MODE_AUTO` so horizontal overflow is discoverable.
+- Improved onboarding readability by keeping the large Dr.Meow portrait for the first step and compacting it on later steps so Chinese body text gets more width.
+- Replaced the first onboarding step's mixed Latin/CJK comma after `Dr.Meow` with an ASCII comma after Android preview showed that glyph rendering as a missing-character box.
+- Updated the detail UI static verifier to check the new UI tone helper, visible tray scroll mode, compact onboarding button size, and avatar resizing hook.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype\scripts\main.gd` with writable temporary `APPDATA`; it exited 0.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3` with writable temporary `APPDATA`; it exited 0 and printed runtime layout.
+- Ran the Godot MCP project runner for `res://scenes/main.tscn`; it started and stopped successfully with a 390x844 viewport runtime layout.
+- Ran `godot-prototype\scripts\preview_android.ps1` with `JAVA_HOME=D:\ag_runtime\jdk\jdk-17.0.19+10`; it exported, signed, installed, launched, and captured `godot-prototype/exports/android-qa-preview-latest.png`.
+- Inspected the Android screenshot and confirmed the compact HUD, shorter bottom tray, visible horizontal scroll affordance, and fixed onboarding text rendering.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1`; only normal CRLF warnings appeared.
+
+### Notes
+
+- No new visual assets were generated.
+- Godot MCP final output still reports an existing warning about a variable named `seed` shadowing a built-in function at `res://scripts/main.gd:642`; no runtime errors were reported.
+- Android logcat includes normal emulator/system warnings such as missing network time and shared storage notices; Godot reached `OnGodotMainLoopStarted` and printed `platform_android=true` runtime layout.
+- Existing unrelated dirty work, generated assets, deprecated root web-runtime deletions, and other parallel Godot changes were left untouched.
+
+## 2026-06-08 - Fix Godot plant movement, flower display, and Chinese labels
+
+### Summary
+
+- Restored Chinese labels for lifecycle stages and next-stage actions so stage buttons no longer display `??`.
+- Restored Chinese names for decoration catalog items so decoration UI no longer shows question marks.
+- Moved the plant `移动` action out of the detail card and into the bottom function tray; the detail-card action now reads `暂时休眠` and sends active plants to the dormant garden.
+- Changed cross-garden plant moves to reset the original slot into an empty plot instead of removing the slot, preserving the clickable empty-land prompt.
+- Changed cross-garden moves to reuse an existing empty slot in the target garden before appending a new plot.
+- Added course flower legacy/new stage display sizes and switched map plant art to aspect-preserving rendering to avoid flower sprites looking clipped.
+- Fixed new course flowers planted into empty plots to start on the canonical `sowing` stage path.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype\scripts\main.gd`; it exited 0 with only the existing Windows editor config directory warnings.
+- Ran Godot headless project startup with a writable temporary `APPDATA`; it exited 0 and printed the runtime layout.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json godot-prototype/scripts/verify_detail_ui.ps1`; only normal CRLF warnings appeared.
+
+### Notes
+
+- A plain project startup without writable `APPDATA` still triggers a Godot native crash after user-data directory creation fails; rerunning with a writable temp `APPDATA` avoids it.
+- Existing unrelated local deletions, generated assets, APK/export changes, and deprecated root web-runtime changes were left untouched.
+
+## 2026-06-08 - Export fresh Godot Android test APK
+
+### Summary
+
+- Generated a fresh Android debug APK from the current Godot mobile prototype.
+- Used the cached Godot 4.6.3 Android export templates, local Android SDK/JDK, and local debug keystore.
+- Cleaned up the temporary Godot APPDATA directory used during export.
+
+### Files Changed
+
+- `godot-prototype/exports/academic-garden-prototype-preview-unsigned.apk`
+- `godot-prototype/exports/academic-garden-prototype-debug.apk`
+- `godot-prototype/exports/academic-garden-prototype-debug.apk.idsig`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran Godot 4.6.3 headless Android export with preset `Android Debug`.
+- Signed the APK with `academic-garden-debug.keystore`.
+- Ran `apksigner verify --verbose`; v2 and v3 signature verification passed with 1 signer.
+- Confirmed output APK timestamp `2026-06-08 21:37:46` and size `100,384,783` bytes.
+
+### Notes
+
+- Existing unrelated local and concurrent work was left untouched.
+
+## 2026-06-08 - Decoration shop, inventory, and smaller garden decor
+
+### Summary
+
+- Reworked the Godot bottom decoration tray into two modes: `仓库` for placing owned decorations and `商店` for buying decorations with coins.
+- Added coin purchase logic that deducts the catalog price, increments owned inventory, switches back to the warehouse, and selects the bought decoration for placement.
+- Added catalog synchronization on load so older saves keep owned counts but receive the current decoration names, prices, and sprite paths.
+- Reduced the default map decoration footprint and added per-decoration default scales so placed decor is less likely to cover plants or look pasted onto walls.
+- Replaced oversized or mismatched decor art with GPT-Image-2 generated pixel sprites: mossy stone path, stump seat, short sign, book-and-stone stack, flower-rock clump, low wooden platform, and reading mat.
+- Kept lamp, pond, and well as the stable existing water/light set; pond is scaled down in the default layout.
+- Restored runtime course flower stage routing to the current canonical keys `sowing/growing/bloom/fruit/seed_saved` and added compatibility for old `seed/seedling/bud/blossom` saves and sprite suffixes, because the Godot startup check exposed legacy save pollution.
+- Added canonical course stage sprite copies where only legacy-named files existed, then refreshed Godot imports.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/assets/art/decoration-sheet-gpt-v4-source.png`
+- `godot-prototype/assets/art/decor-reading-mat-gpt-v1-source.png`
+- `godot-prototype/assets/art/decoration-v4-contact.png`
+- `godot-prototype/assets/art/godot-web-assets-*-preview.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-stone-path.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-wood-bench.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-sign.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-workbench.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-flower-rock.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-wood-bridge.png`
+- `godot-prototype/assets/sprites/sprout/decor/decor-picnic-rug.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*-sowing.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*-growing.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*-seed_saved.png`
+
+### Verification
+
+- Used built-in image generation with GPT-Image-2 for the new decoration source sheet and reading mat source.
+- Removed chroma-key backgrounds locally, sliced and normalized runtime sprites to 96x96 transparent PNGs, and inspected `godot-prototype/assets/art/decoration-v4-contact.png`.
+- Ran `python scripts\preview_godot_web_assets.py` and inspected `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`; the new decor reads smaller, low to the ground, and avoids obvious plant occlusion.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --import`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --path godot-prototype --quit-after 3`; it exited 0 with only the expected runtime layout line.
+
+### Asset Prompt Notes
+
+- Decoration sheet prompt constraints: cozy mobile academic garden pixel-art decorations, six separate low/grass-friendly items in a 3x2 grid, flat `#00ff00` chroma-key background, no text, no labels, no characters, no watermark.
+- Reading mat prompt constraints: compact low reading mat with a closed book and cup, ground-hugging footprint, flat `#00ff00` chroma-key background, no text, no labels, no characters, no watermark.
+
+### Notes
+
+- Test prices are intentionally provisional and should be revisited with the broader economy/reward design.
+- Existing unrelated dirty work, including deprecated root web runtime deletions and other Godot asset/doc changes already present in the worktree, was left untouched.
+
+## 2026-06-08 - Rename course flower internal stage keys
+
+### Summary
+
+- Renamed course flower internal stage keys from the historical `sowing/growing/bloom/fruit/seed_saved` set to the semantic `seed/seedling/bud/bloom/blossom` set.
+- Kept paper tree keys unchanged because `seed/sapling/tree/flower/fruit` still match the paper-tree meanings.
+- Added a course-only migration map so old saves and imported data are normalized on load before sprite routing, growth defaults, and next-stage logic run.
+- Bumped the Godot layout version to `29` so saved data records this key migration.
+- Renamed the 30 course flower runtime sprite files and matching `.import` files to the new stage names.
+- Updated seeded demo data, lifecycle docs, preview helpers, and static asset guards to use the new keys.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*.png.import`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/plant-lifecycle-rules.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran a structured seed-data and sprite audit confirming course stages are only `seed`, `seedling`, `bud`, `bloom`, and `blossom`, with all 30 renamed runtime sprites present and nonblank.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype/scripts/main.gd`; it exited 0 after existing Windows editor config directory warnings.
+- Searched current Godot scripts, seed data, active lifecycle docs, helper scripts, and course runtime sprite names; old course keys remain only in the explicit migration table and compatibility note.
+
+### Notes
+
+- Old course stage keys now have no active runtime meaning except migration compatibility.
+- No visual content was regenerated in this pass; only the course flower asset filenames and references changed.
+- Existing unrelated local work and deprecated root web runtime files were left untouched.
+
+## 2026-06-08 - Rename lifecycle actions and redraw course flower stages
+
+### Summary
+
+- Updated Godot stage labels so course flowers display as `种子` → `幼苗` → `含苞` → `盛开` → `绽放`.
+- Updated the four next-stage action labels for paper trees: `确定选题`, `写出第一版草稿`, `投稿`, `成功发表`.
+- Updated the four next-stage action labels for course flowers: `备课`, `开始上课`, `结课`, `提交成绩`.
+- Generated a new GPT-Image-2 course flower lifecycle sheet and sliced it into 30 runtime sprites covering six course flower varieties across the five stages.
+- Replaced the old course flower runtime stage sprites under `web-normalized-stages`, including a new closed-bud visual for the `含苞` stage and sparkle-enhanced final `绽放` variants.
+- Updated lifecycle rule docs and the product MVP lifecycle table to preserve the new stage naming and action mapping.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-source.png`
+- `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-transparent.png`
+- `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-sliced-preview.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-*.png`
+- `docs/plant-lifecycle-rules.md`
+- `docs/product-mvp.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Used built-in `imagegen` with GPT-Image-2 to create a six-row, five-column pixel-art course flower lifecycle sheet on a flat chroma-key background.
+- Removed the chroma-key background locally, sliced 30 runtime PNGs, and visually inspected `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-sliced-preview.png`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype/scripts/main.gd`; it exited 0 after existing Windows editor config directory warnings.
+- Ran a PNG audit confirming all 30 course flower runtime sprites are nonblank, have transparent corners, and cover all six varieties with the five expected internal stage keys.
+
+### Asset Prompt Notes
+
+- Prompt constraints: cozy pixel-art RPG garden sprites, six course flower varieties inspired by daisy/hydrangea/lavender/lotus/rose/sunflower, five columns ordered seed/seedling/closed bud/full bloom/radiant blossom, flat `#ff00ff` chroma-key background, no text, no labels, no watermark.
+- The generated source sheet and transparent intermediate were kept under `godot-prototype/assets/art/`; app-ready cropped sprites were saved under `godot-prototype/assets/sprites/web-normalized-stages/`.
+
+### Notes
+
+- Internal stage keys were kept unchanged for save compatibility: course `sowing/growing/bloom/fruit/seed_saved` now display as `种子/幼苗/含苞/盛开/绽放`.
+- No deprecated root web runtime files were modified for this change.
+- Existing unrelated local work and parallel asset cleanup changes were left untouched.
+
+## 2026-06-08 - Remove detail-open plant FX clutter
+
+### Summary
+
+- Removed the selected-plant ambient FX that created random leaf, petal/flyby, and sparkle sprites when opening plant details.
+- Kept the base plant sway animation and the decoration placement ring intact.
+- Deleted the now-unreferenced runtime FX sprites and old cherry falling-petal frame folder.
+- Updated the detail UI static check so the removed detail-open FX paths do not return.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `godot-prototype/assets/sprites/sprout/fx/fx-course-petal.png`
+- `godot-prototype/assets/sprites/sprout/fx/fx-course-petal.png.import`
+- `godot-prototype/assets/sprites/sprout/fx/fx-dormant-moon.png`
+- `godot-prototype/assets/sprites/sprout/fx/fx-dormant-moon.png.import`
+- `godot-prototype/assets/sprites/sprout/fx/fx-harvest-leaf.png`
+- `godot-prototype/assets/sprites/sprout/fx/fx-harvest-leaf.png.import`
+- `godot-prototype/assets/sprites/sprout/fx/fx-lantern-twinkle.png`
+- `godot-prototype/assets/sprites/sprout/fx/fx-lantern-twinkle.png.import`
+- `godot-prototype/assets/sprites/sprout/fx/fx-paper-sparkle.png`
+- `godot-prototype/assets/sprites/sprout/fx/fx-paper-sparkle.png.import`
+- `godot-prototype/assets/sprites/sprout/fx/cherry-fall-v1/`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Confirmed `godot-prototype/assets/sprites/sprout/fx/` now only contains `fx-placement-ring.png` and its `.import` file.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Searched runtime scripts for the removed detail-open FX names and helper paths; no remaining runtime references were found.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype/scripts/main.gd`; it exited 0 after editor config directory warnings.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md godot-prototype/assets/sprites/sprout/fx`; only normal CRLF warnings appeared.
+
+### Notes
+
+- Existing unrelated local deletions, generated previews, seed-data edits, and script changes were left untouched.
+- Pre-existing deleted FX files outside this slice, such as `fx-seed-puff` and `fx-water-burst`, were left as they were.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-08 - Preserve plant lifecycle baseline rules
+
+### Summary
+
+- Added a dedicated lifecycle rules document for the Godot prototype's tree and flower stages.
+- Captured the current fixed five-stage flows for paper trees and course flowers.
+- Added a naming workbench table so the next pass can decide final display names without changing the underlying stage keys.
+
+### Files Changed
+
+- `docs/plant-lifecycle-rules.md`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Compared the documented stage flows against `STAGE_FLOW` in `godot-prototype/scripts/main.gd`.
+
+### Notes
+
+- No Godot scripts, save data, or visual assets were modified.
+- Existing unrelated local work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-08 - Make plant and decoration movement explicit
+
+### Summary
+
+- Replaced the hidden second-tap plant swap behavior with an explicit plant detail action: tap a plant, tap `移动`, then tap the target plot to move/swap it.
+- Changed placed decorations so tapping them opens a small action panel instead of immediately reclaiming/removing them.
+- Added decoration actions for `移动`, `收回`, and `取消`; moving a decoration now enters a slot-selection mode and reuses the existing glowing placement targets.
+- Updated hint text and mode cleanup so moving plants/decorations exits cleanly when switching pages, switching gardens, or closing panels.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype/scripts/main.gd`; it exited 0 after editor config directory warnings.
+- Searched `godot-prototype/scripts/main.gd` and confirmed `_swap_plots_in_current_zone`, the old second-tap hint, and direct `button.pressed.connect(_remove_decoration...)` are absent.
+
+### Notes
+
+- No visual assets were generated or modified.
+- Existing unrelated cleanup/deletion and parallel Godot tuning work was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-08 - Reduce plant map scale again
+
+### Summary
+
+- Reduced all non-empty Godot map plant sprites to 70% of the previous rendered size.
+- Changed total map plant scale from `0.70` to `0.49`, while preserving the fixed bottom-contact calculation from the prior pass.
+- Regenerated Godot map preview PNGs so the reduced scale can be inspected against all three garden maps.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran Python syntax parsing for `scripts/preview_godot_web_assets.py` and `scripts/verify_godot_garden_assets.py`.
+- Ran a size audit confirming the rendered plant boxes now use `0.49` total scale.
+- Ran `python scripts/preview_godot_web_assets.py`.
+- Visually inspected `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`.
+- Ran the real Android/Godot preview flow with `godot-prototype/scripts/preview_android.ps1` after setting `JAVA_HOME=D:\ag_runtime\jdk\jdk-17.0.19+10`.
+- Captured and visually inspected phone-ratio screenshots at `godot-prototype/exports/android-qa-preview-latest.png` and `godot-prototype/exports/android-qa-preview-map-clear.png`.
+
+### Notes
+
+- No plant source sprites were modified in this pass.
+- Existing parallel APK export, placement alignment, cherry-base repair, cleanup/quarantine, and deprecated web-runtime changes were left untouched.
+- Synthetic preview contact sheets are no longer treated as the final visual approval surface; Android/Godot screenshots are required for phone-ratio layout review.
+
+## 2026-06-08 - Scale plant sprites down and remove willow shadow bar
+
+### Summary
+
+- Scaled all non-empty Godot map plant sprites to 70% of their current stage display boxes.
+- Preserved the pre-scale plant bottom line so trees and flowers shrink upward from the same ground contact position instead of floating.
+- Removed the extra runtime plant contact shadow that showed up as a dark horizontal bar under the willow.
+- Updated the Godot preview helper and static guard to use/check the same `PLANT_MAP_SCALE` behavior.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran Python syntax parsing for `scripts/preview_godot_web_assets.py` and `scripts/verify_godot_garden_assets.py`.
+- Ran a size audit confirming rendered plant boxes are 70% of the current stage boxes.
+- Ran `python scripts/preview_godot_web_assets.py`.
+- Visually inspected `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`; plant scale is reduced and the willow shadow bar is gone.
+
+### Notes
+
+- No willow source sprite pixels were changed; the black bar came from the runtime shadow layer, not the PNG itself.
+- Existing parallel harvested pagination, placement alignment, plant sizing, cherry-base repair, cleanup/quarantine, APK export, and deprecated web-runtime changes were left untouched.
+
+## 2026-06-08 - Export fresh Godot Android test APK
+
+### Summary
+
+- Exported a fresh Android debug APK from the current Godot prototype after the latest local BGM/import changes.
+- Rebuilt the Godot import cache before export, including the main and dormant BGM imported audio samples.
+- Signed the exported APK with the local Academic Garden debug keystore.
+
+### Files Changed
+
+- `godot-prototype/exports/academic-garden-prototype-preview-unsigned.apk`
+- `godot-prototype/exports/academic-garden-prototype-debug.apk`
+- `godot-prototype/exports/academic-garden-prototype-debug.apk.idsig`
+- `godot-prototype/.godot/imported/`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran Godot 4.6.3 headless import and `--export-debug "Android Debug"`.
+- Ran `apksigner sign` with `D:\ag_runtime\academic-garden-debug.keystore`.
+- Ran `apksigner verify --verbose`; APK Signature Scheme v2 and v3 verified with one signer.
+
+### Notes
+
+- Output APK: `godot-prototype/exports/academic-garden-prototype-debug.apk`.
+- The signed APK timestamp is `2026-06-08 14:40:45` and size is `99,002,879` bytes.
+- Existing parallel source/art cleanup and unrelated local changes were left untouched.
+
+## 2026-06-08 - Make Godot BGM audible in preview
+
+### Summary
+
+- Investigated why the Godot preview seemed to have no music even though BGM assets were present.
+- Found the main loop source is quiet (`-27.9 dBFS` RMS) and was being played at `-15 dB`, making the runtime output easy to miss.
+- Raised the normal garden BGM target to `-6 dB` and the dormant garden BGM target to `-8 dB`.
+- Marked both Godot WAV imports as looping so the import metadata matches the runtime loop setup.
+- Added an audio import guard to the Godot asset verification script.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/assets/audio/garden_bgm_main_loop.wav.import`
+- `godot-prototype/assets/audio/garden_bgm_dormant_loop.wav.import`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `git diff --check` on the touched files; only expected Windows LF-to-CRLF warnings were reported.
+- Ran Godot MCP `run_project` for `res://scenes/main.tscn`; final runtime errors were empty.
+
+### Notes
+
+- No BGM source audio was regenerated.
+- Existing parallel asset cleanup, placement, sprite, and deprecated web-runtime changes were left untouched.
+
+## 2026-06-08 - Align Godot plant placement grid
+
+### Summary
+
+- Unified all Godot plant slot anchors to the active garden's first-tree grid.
+- Set every zone to the same three columns: `0.295`, `0.500`, and `0.720`.
+- Set every zone to the same three rows: `0.471`, `0.592`, and `0.728`.
+- Updated harvested overflow records so page 2 entries map back onto slots 1-3 instead of keeping old top-row coordinates.
+- Updated the preview helper to render only the first harvested page, matching runtime pagination and avoiding stacked preview plants.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran a custom grid audit confirming active, harvested, and dormant slots all use the same 3x3 coordinates, with harvested page 2 records wrapping onto slots 1-3.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `python scripts/preview_godot_web_assets.py`.
+- Visually inspected `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`.
+
+### Notes
+
+- No new art was generated; only map placement data, preview output, and runtime anchor constants changed.
+- Existing parallel harvested pagination, plant sizing, cherry-base repair, cleanup/quarantine, and deprecated web-runtime changes were left untouched.
+
+## 2026-06-08 - Repair cherry blossom soil base sprite
+
+### Summary
+
+- Fixed the cherry blossom flower-stage sprite whose bottom soil base was visibly cut flat in the source PNG.
+- Repaired the lower soil arc with a targeted pixel pass, preserving the original `256x278` canvas, tree position, and runtime anchor behavior.
+- Applied the same base repair to all six `paper-cherry-flower` animation frames so the map animation and static portrait stay consistent.
+- Regenerated Godot map preview PNGs from the repaired runtime assets.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-cherry-flower.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-cherry-flower/frame-00.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-cherry-flower/frame-01.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-cherry-flower/frame-02.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-cherry-flower/frame-03.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-cherry-flower/frame-04.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-cherry-flower/frame-05.png`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran a Pillow check confirming the repaired static sprite and all six animation frames keep matching dimensions and repaired lower bounds.
+- Ran `python scripts/preview_godot_web_assets.py`.
+- Visually inspected `godot-prototype/assets/sprites/web-normalized-stages/paper-cherry-flower.png` and `godot-prototype/assets/art/godot-web-assets-active-preview.png`.
+
+### Notes
+
+- No new generated art source was created; this was a local pixel repair from the existing sprite colors.
+- Existing parallel harvested pagination, plant sizing, cleanup/quarantine, and deprecated web-runtime changes were left untouched.
+
+## 2026-06-08 - Normalize Godot tree and flower map sizing
+
+### Summary
+
+- Kept paper tree stage sizes tiered by growth stage so seeds, saplings, and mature trees remain visually distinct.
+- Standardized mature paper trees at `148x184` and course mature flowers at `104x128`, making flowers about 70% of mature tree size.
+- Reduced course sowing and growing map boxes to keep flower lifecycle stages proportional and prevent flower varieties from diverging too much on the map.
+- Lowered the shared plant ground anchor to reveal the cherry tree's lower soil/base area more completely.
+- Updated the Godot map preview helper and asset guard to match the new stage-size rules.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `godot-prototype/assets/art/godot-web-assets-active-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-harvested-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-dormant-preview.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran a custom Python size audit confirming each non-empty plant stage now resolves to a single display size; mature flowers are `104x128` and mature trees are `148x184`.
+- Ran `python scripts/preview_godot_web_assets.py` and visually inspected `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json scripts/preview_godot_web_assets.py scripts/verify_godot_garden_assets.py docs/pending-changes.md`; only normal CRLF warnings appeared.
+
+### Notes
+
+- No new generated source art was created; preview PNGs were regenerated from existing runtime sprites.
+- Existing parallel work in harvested pagination, cleanup/quarantine changes, and deprecated root web runtime files was left untouched.
+- A plain Godot `--headless --path godot-prototype --quit` attempt crashed in the engine startup/shutdown path, matching the existing note above; static/resource checks and rendered previews passed.
+
+## 2026-06-08 - Add plant swapping and harvested pagination
+
+### Summary
+
+- Added click-to-swap plant movement in the Godot map: tap one planted item to select it, then tap another planted item in the same garden to exchange their positions.
+- Added harvested garden pagination with 9 visible result slots per page and previous/next buttons when more completed papers/courses exist.
+- Made harvested records beyond the first page render into the same 9 map positions without losing the underlying extra records.
+- Added sample completed harvested records so the default seed data exercises page 2.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json godot-prototype/scripts/verify_detail_ui.ps1 scripts/verify_godot_garden_assets.py docs/pending-changes.md`; only normal CRLF warnings appeared.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype/scripts/main.gd`; it exited 0 after editor config directory warnings.
+
+### Notes
+
+- No visual assets were generated or modified.
+- A plain Godot `--headless --path godot-prototype --quit` attempt crashed in the engine startup/shutdown path, so runtime visual approval still needs a later normal Godot/app launch.
+- Existing unrelated cleanup/deletion work in the wider worktree was left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-08 - Quarantine deprecated web and unused Godot assets
+
+### Summary
+
+- Quarantined deprecated root web runtime files and historical root art/audio packs under `unused-cleanup-2026-06-08/` so current work is focused on `godot-prototype/`.
+- Quarantined Godot source/review/contact art, source-art packs, generated import cache, previous APK/PCK/screens/logcat exports, old map versions, old fallback stage sprites, old Sprout rebuilt/portrait/ground sprites, unused top-level legacy sprites, unused demo audio, and unused pipeline/test scripts.
+- Kept the current Godot runtime asset set in place: `web-normalized-stages`, paper tree `stage-animations`, current three map sprites, decor sprites, active FX sprites, UI sprites, `coin-v1`, and the main/dormant BGM.
+- Updated `godot-prototype/scripts/preview_android.ps1` to prefer `.runtime/android-avd` but fall back to `godot-prototype/android-avd` if the local AVD cannot be moved.
+- Left `godot-prototype/android-avd` in place because Windows denied both moving the directory and writing a `.gdignore`, likely due to emulator ownership/permissions; this is local runtime state, not a current visual asset.
+
+### Files Changed
+
+- `.gitignore`
+- `godot-prototype/scripts/preview_android.ps1`
+- `docs/pending-changes.md`
+- `unused-cleanup-2026-06-08/`
+- Deprecated root web runtime files moved into the cleanup folder.
+- Unused Godot source/art/cache/export/sprite/script artifacts moved into the cleanup folder.
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Parsed `scripts/preview_godot_web_assets.py` and `scripts/verify_godot_garden_assets.py` with Python `ast.parse`.
+- Confirmed `godot-prototype/assets` is reduced from about 202 MB to about 47.7 MB while current resource checks still report missing 0.
+- Confirmed the cleanup folder currently holds about 1.15 GB of quarantined web/runtime/source/export artifacts.
+
+### Notes
+
+- No runtime visual assets were regenerated.
+- No current Godot map, normalized plant stage, paper-tree animation, decor, UI, or active BGM references were intentionally moved.
+- A fresh Godot import/export will recreate `godot-prototype/.godot` with only currently present project resources.
+- Existing unrelated deleted root `.cmd` files were left untouched.
+
+## 2026-06-08 - Fix exported APK plant stage resource selection
+
+### Summary
+
+- Fixed a Godot export/runtime mismatch where plant stage sprite selection used `FileAccess.file_exists()` on imported PNG resources.
+- In the editor, raw `.png` files exist, so plants selected `web-normalized-stages/*.png`; in exported APKs, raw PNGs are remapped to imported `.ctex` resources, so the same checks failed and fell back to `assets/sprites/stages/*.png`.
+- The fallback path explains why most APK plants appeared split, cropped, or misplaced, while `paper-camphor-fruit` still looked normal: its fallback stage sprite is effectively the same full-canvas sprite as the normalized one.
+- Replaced those checks with `ResourceLoader.exists()` so editor preview and exported APK resolve the same imported texture resources.
+- Applied the same resource-aware check to paper tree animation frame discovery.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Inspected the current APK contents and confirmed source PNGs such as `assets/sprites/web-normalized-stages/course-daisy-bloom.png` are absent while their `.png.import` and `.ctex` resources are present, matching the root cause.
+- Confirmed `paper-camphor-fruit` fallback dimensions match its normalized/full-canvas dimensions, unlike broken examples such as `paper-ginkgo-tree`, `paper-cherry-flower`, and `paper-willow-flower`.
+
+### Notes
+
+- No visual assets were generated or modified.
+- No Android signing/template changes were made; this slice targets preview/export visual consistency only.
+- Existing unrelated local changes were left untouched.
+
+## 2026-06-08 - Normalize Godot map plant sprite sizing
+
+### Summary
+
+- Fixed a remaining Godot map sprite distortion path by sizing non-empty plot buttons from each sprite's actual texture dimensions.
+- Copied the harvested garden's normal center-tree display setup into the rest of the map by using the camphor fruit texture/frame ratio as the shared map reference.
+- Bumped the layout to 25 and reset all non-empty plot `size_scale` values to `0.72`, removing the old row-by-row enlargement that made lower plants explode in size.
+- Updated the Python map preview helper and static asset guards to use/check the same reference texture scale.
+- Tightened the Android preview script so it fails when no Godot executable is available instead of silently reusing an old APK.
+- Shifted verification expectations toward Android emulator screenshots for visual truth; Godot desktop/Python previews are not treated as final WYSIWYG evidence.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/preview_android.ps1`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/preview_godot_web_assets.py`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Parsed `scripts/preview_godot_web_assets.py` and `scripts/verify_godot_garden_assets.py` with Python `ast.parse`.
+- Parsed `godot-prototype/scripts/preview_android.ps1` with PowerShell `ScriptBlock`.
+- Read the seed data and confirmed every non-empty plot now has `size_scale` 0.72 while empty plots keep their own scale.
+- Calculated the runtime display sizes from the actual sprite dimensions; mature harvested trees now cluster around the normal center tree size instead of using row-enlarged boxes.
+- Ran Godot MCP debug startup for `res://scenes/main.tscn`; it reported `layout_version` 25 and no final errors. This was used only as a runtime/script check, not visual approval.
+- Previously ran `godot-prototype/scripts/preview_android.ps1`; it installed/launched the emulator app and captured `godot-prototype/exports/android-qa-preview-latest.png`, but the old script reused an existing APK when no Godot executable was found. That screenshot is not accepted as proof of this change, and the script now fails in that situation.
+- Searched `D:\ag_runtime`, the project tree, AppData, common Program Files paths, and running process command lines for a usable Godot executable; none was found.
+
+### Notes
+
+- No new art assets were generated.
+- Existing unrelated root `.cmd` deletion states were left untouched.
+- The deprecated root web runtime was not modified.
+- A fresh Android APK export is still needed before final visual approval of this slice.
+
+## 2026-06-08 - Fix Godot map plant grounding and shadow bars
+
+### Summary
+
+- Fixed the active Godot map plant grounding path that still rendered plants with a centered texture box and a dark detached contact-shadow bar.
+- Added a shared `PLOT_GROUND_ANCHOR_Y` so plot placement, onboarding highlight, debug dragging, and plant sway pivot use the same baseline.
+- Rendered non-empty map plants with full-canvas `TextureRect.STRETCH_SCALE`, preserving normalized sprite baselines instead of recentering each asset.
+- Made plant contact shadows shorter, lighter, and closer to the root baseline.
+- Kept the adjacent empty-plot dashed guide and removal-confirmation work in place, and tightened the guide size so empty plots read as planting slots rather than large dirt rectangles.
+- Updated the Godot preview helper and static guards so the plant grounding behavior remains checkable.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `scripts/preview_godot_web_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Parsed `scripts/preview_godot_web_assets.py` and `scripts/verify_godot_garden_assets.py` with Python `ast.parse`.
+- Rendered the active zone preview in memory through `scripts/preview_godot_web_assets.py`; it produced a `780x1240` canvas.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json godot-prototype/scripts/verify_detail_ui.ps1 scripts/verify_godot_garden_assets.py scripts/preview_godot_web_assets.py`; only normal Windows line-ending warnings were reported.
+- Ran Godot 4.6.3 debug startup for `res://scenes/main.tscn`; final runtime output had no errors and reported `layout_version` 24.
+
+### Notes
+
+- The shell sandbox denied writing preview PNGs and `__pycache__` files, so preview verification used in-memory rendering rather than saving a new contact sheet.
+- Existing unrelated root `.cmd` deletion states were left untouched.
+- The deprecated root web runtime was not modified.
+
+## 2026-06-08 - Empty plot dashed guide and plant removal confirmation
+
+### Summary
+
+- Replaced empty plot runtime visuals with a transparent dashed click guide drawn by Godot, so empty land no longer shows the prominent soil sprite.
+- Cleared empty plot sprite paths in the Godot seed data so fresh saves and migrated saves do not reintroduce the soil tile.
+- Added a "移除" confirmation dialog for planted plots; confirming now resets the same plot back to an empty, reusable slot instead of deleting the plot entry.
+- Added static guards for the dashed empty guide, confirmation flow, and non-deleting remove behavior.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/data/garden_seed.json`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`; first red run failed on the missing empty-guide/remove-confirm snippets, final run passed.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `python scripts/verify_godot_garden_assets.py`; missing assets 0, paper tree animation errors 0, unstable mature paper paths 0.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/data/garden_seed.json godot-prototype/scripts/verify_detail_ui.ps1 scripts/verify_godot_garden_assets.py docs/pending-changes.md`; only normal Windows line-ending warnings were reported.
+- Ran Godot 4.6.3 debug startup for `res://scenes/main.tscn`; runtime output printed `AcademicGardenRuntimeLayout` and had no errors.
+- Attempted a Windows screenshot pass for visual inspection, but the Computer Use helper failed twice with `windows sandbox failed: spawn setup refresh`; stopped retrying and relied on static/resource/runtime checks.
+
+### Notes
+
+- No new visual assets were generated; the empty guide is runtime-drawn.
+- Existing unrelated local changes, including prior Godot edits and unrelated deleted root `.cmd` files, were left untouched.
+- The deprecated root web runtime was not modified.
+
 ## 2026-06-08 - Add Dr.Meow Godot onboarding guide
 
 ### Summary
@@ -220,6 +1765,57 @@
 - Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 docs/pending-changes.md`; only normal CRLF warnings appeared.
 - Confirmed `godot-prototype/scripts/main.gd` no longer contains `_hide_map_plot_behind_detail`.
 - Attempted to launch `res://scenes/main.tscn` twice through Godot MCP; the MCP reported the project started, then immediately reported no active Godot process before debug output was available.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+
+## 2026-06-08 - Clean Lotus Fruit Sprite Marker Dots
+
+### Summary
+
+- Removed six stray green square marker dots from the Godot lotus fruit-stage sprite.
+- Repaired only the affected small petal areas using the clean lotus bloom sprite as the local pixel reference.
+- Kept the original sprite canvas size, transparent padding, and baseline alignment unchanged.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/web-normalized-stages/course-lotus-fruit.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually checked the cleaned lotus fruit sprite.
+- Ran a targeted pixel check confirming the six former marker-dot regions no longer contain the green marker pixels.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+
+## 2026-06-08 - Restyle Godot Remove Confirmation
+
+### Summary
+
+- Replaced the default Godot remove confirmation dialog with a garden-styled custom overlay.
+- Matched the existing Sprout Lands-inspired UI language with a dimmed modal layer, warm paper panel, dark wood border, Dr.Meow art, and wood/green action buttons.
+- Preserved the existing remove behavior: tapping remove opens confirmation, cancel/X/Esc clears the pending action, and confirming resets the selected plot to an empty guide.
+- Fixed a minimal indentation parse error in `main.gd`'s plot upgrade branch that prevented Godot from parsing the script.
+- Kept concurrent harvested pagination work parseable by preserving its helper implementation, adding minimal type annotations in the plot-swap path, and syncing static check version guards to layout 27.
+
+### Files Changed
+
+- `godot-prototype/scripts/main.gd`
+- `godot-prototype/scripts/verify_detail_ui.ps1`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `powershell -ExecutionPolicy Bypass -File godot-prototype/scripts/verify_detail_ui.ps1`.
+- Ran `python scripts/verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype/data/garden_seed.json`.
+- Ran `D:\Program Files\Godot\Godot_v4.6.3-stable_win64_console.exe --headless --check-only --script godot-prototype/scripts/main.gd`.
+- Ran `git diff --check -- godot-prototype/scripts/main.gd godot-prototype/scripts/verify_detail_ui.ps1 scripts/verify_godot_garden_assets.py docs/pending-changes.md`; only normal CRLF warnings appeared.
 
 ### Notes
 
@@ -3154,6 +4750,37 @@
 
 - Existing unrelated local work was left untouched, including prior AGENTS/pending-changes edits and map/import-file changes already present in the worktree.
 
+## 2026-06-08 - Re-export Clean Godot Android APK
+
+### Summary
+
+- Rechecked the Godot-only project after the unused cleanup folder was moved out of the workspace.
+- Confirmed the APK/preview mismatch fix is still in place: plant stage sprites resolve through `ResourceLoader.exists()` and `web-normalized-stages`, with no fallback to the old cropped `assets/sprites/stages` path.
+- Generated a fresh signed Android debug APK from the cleaned Godot project.
+
+### Files Changed
+
+- `docs/pending-changes.md`
+
+### Verification
+
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `python -m json.tool godot-prototype\data\garden_seed.json`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
+- Ran Godot import and Android export with `Godot_v4.6.3-stable_win64_console.exe`.
+- Signed `godot-prototype/exports/academic-garden-prototype-debug.apk` with the local debug keystore.
+- Verified the signed APK with `apksigner verify --verbose`; v2 and v3 signatures passed.
+- Inspected APK contents: old `assets/sprites/stages/` entries 0, deprecated web runtime entries 0, local emulator/export clutter entries 0, imported normalized stage textures present.
+- Ran `res://scenes/main.tscn` through the Godot debug tool; final errors were empty.
+- Ran `godot-prototype/scripts/preview_android.ps1 -SkipExport`; it installed the signed APK on the local Android emulator, launched the app, captured `godot-prototype/exports/android-qa-preview-20260608-132824.png`, and wrote `godot-prototype/exports/android-qa-preview-20260608-132824-logcat.txt`.
+- Reviewed the Android screenshot; visible map plants use the expected full sprites/empty guide instead of split bottom fragments.
+- Reviewed the app/Godot logcat lines; Godot started on Android and printed `platform_android=true` runtime layout without normalized-stage or image-load warnings.
+
+### Notes
+
+- Existing unrelated cleanup/deletion work was left untouched.
+- `godot-prototype/exports/academic-garden-prototype-debug.apk` is the current signed APK.
+
 ## 2026-06-05 - Generate lightweight Godot BGM audition loop
 
 ### Summary
@@ -3222,6 +4849,75 @@
 - Ran a connected-component alpha check confirming the large bottom fragments were removed from willow flower and fruit assets.
 - Ran `python scripts/verify_godot_garden_assets.py`.
 - Ran `git diff --check`; only normal CRLF warnings appeared.
+
+### Notes
+
+- Existing unrelated local work was left untouched.
+
+## 2026-06-09 - Re-slice Sunflower and Ginkgo Stage Sprites
+
+### Summary
+
+- Re-sliced the sunflower blossom/bloom/final course sprites from the magenta lifecycle source sheet so the top petals are no longer cropped.
+- Restored the tree lifecycle source sheet for Godot art reference and re-sliced the ginkgo seed, sapling, tree, flower, and fruit sprites from its first column.
+- Cleaned magenta source-background residue from the ginkgo cuts, normalized mature ginkgo stages on a stable canvas with bottom safety margin, and rebuilt the matching ginkgo tree/flower/fruit animation frames.
+
+### Files Changed
+
+- `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-source.png`
+- `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-transparent.png`
+- `godot-prototype/assets/art/tree-stage-sheet-v2.png`
+- `godot-prototype/assets/art/course-flower-lifecycle-gpt-v1-sliced-preview.png`
+- `godot-prototype/assets/art/paper-ginkgo-resliced-review.png`
+- `godot-prototype/assets/art/sunflower-ginkgo-inspection.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-sunflower-bloom.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-sunflower-blossom.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-sunflower-seed_saved.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-ginkgo-seed.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-ginkgo-sapling.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-ginkgo-tree.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-ginkgo-flower.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/paper-ginkgo-fruit.png`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-ginkgo-tree/`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-ginkgo-flower/`
+- `godot-prototype/assets/sprites/stage-animations/paper-trees/paper-ginkgo-fruit/`
+- `scripts/verify_godot_garden_assets.py`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually checked `paper-ginkgo-resliced-review.png`, `sunflower-ginkgo-inspection.png`, and `godot-web-assets-zone-preview-contact.png`.
+- Ran `python scripts\preview_godot_web_assets.py`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `git diff --check` for the touched docs/check files; only existing CRLF warnings appeared.
+
+### Notes
+
+- The tree lifecycle source sheet had been deleted from the current worktree, so this slice restored the Godot art source from the existing `.runtime` worktree copy instead of generating new art.
+- Existing unrelated local work was left untouched.
+
+## 2026-06-10 - Clean Lavender Final Sprite Top Artifact
+
+### Summary
+
+- Re-sliced the lavender final course sprite from the lifecycle source sheet so the top no longer includes the bottom of another plant.
+- Applied the same cleaned sprite to `blossom` and `seed_saved`, removed edge-touching crop fragments, and lightly shifted lavender highlight pixels away from the magenta-key threshold used by asset verification.
+
+### Files Changed
+
+- `godot-prototype/assets/sprites/web-normalized-stages/course-lavender-blossom.png`
+- `godot-prototype/assets/sprites/web-normalized-stages/course-lavender-seed_saved.png`
+- `godot-prototype/assets/art/lavender-cleaned-review.png`
+- `godot-prototype/assets/art/godot-web-assets-zone-preview-contact.png`
+- `docs/pending-changes.md`
+
+### Verification
+
+- Visually checked `lavender-cleaned-review.png` and `godot-web-assets-zone-preview-contact.png`.
+- Ran `python scripts\verify_godot_garden_assets.py`.
+- Ran `python scripts\preview_godot_web_assets.py`.
+- Ran `powershell -NoProfile -ExecutionPolicy Bypass -File godot-prototype\scripts\verify_detail_ui.ps1`.
 
 ### Notes
 

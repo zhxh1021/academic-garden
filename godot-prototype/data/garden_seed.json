@@ -1,7 +1,17 @@
 {
   "selected_zone": "active",
-  "layout_version": 23,
+  "layout_version": 30,
   "coins": 80,
+  "unlocked_varieties": {
+    "paper": [
+      "paper-ginkgo",
+      "paper-cherry"
+    ],
+    "course": [
+      "course-daisy",
+      "course-rose"
+    ]
+  },
   "zones": [
     {
       "id": "active",
@@ -23,7 +33,7 @@
           "visits": 0,
           "logs": 2,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-ginkgo-tree.png",
-          "size_scale": 0.76,
+          "size_scale": 1.0,
           "growth": 36,
           "care_today": {
             "sun": 0,
@@ -44,7 +54,7 @@
           "visits": 0,
           "logs": 1,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-cherry-flower.png",
-          "size_scale": 0.76,
+          "size_scale": 1.0,
           "growth": 54,
           "care_today": {
             "sun": 0,
@@ -56,16 +66,16 @@
           "id": "active-3",
           "title": "Course Daisy",
           "kind": "course",
-          "stage": "bloom",
+          "stage": "bud",
           "status": "Practicing",
           "note": "A course flower used to test non-paper projects.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-daisy-bloom.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-daisy-bud.png",
           "x": 0.72,
           "y": 0.471,
           "visits": 0,
           "logs": 3,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-daisy-bloom.png",
-          "size_scale": 0.76,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-daisy-bud.png",
+          "size_scale": 1.0,
           "growth": 36,
           "care_today": {
             "sun": 0,
@@ -87,7 +97,7 @@
           "visits": 0,
           "logs": 0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-maple-sapling.png",
-          "size_scale": 0.84,
+          "size_scale": 1.0,
           "growth": 18,
           "care_today": {
             "sun": 0,
@@ -99,16 +109,16 @@
           "id": "active-5",
           "title": "Course Rose",
           "kind": "course",
-          "stage": "growing",
+          "stage": "seedling",
           "status": "Reviewing",
           "note": "Practice set is half finished.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-rose-growing.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-rose-seedling.png",
           "x": 0.5,
           "y": 0.592,
           "visits": 0,
           "logs": 1,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-rose-growing.png",
-          "size_scale": 0.84,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-rose-seedling.png",
+          "size_scale": 1.0,
           "growth": 18,
           "care_today": {
             "sun": 0,
@@ -130,7 +140,7 @@
           "visits": 0,
           "logs": 0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-pine-seed.png",
-          "size_scale": 0.84,
+          "size_scale": 1.0,
           "growth": 0,
           "care_today": {
             "sun": 0,
@@ -142,16 +152,16 @@
           "id": "active-7",
           "title": "Course Lotus",
           "kind": "course",
-          "stage": "fruit",
+          "stage": "bloom",
           "status": "Consolidating",
           "note": "Close to harvest, needs summary notes.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-lotus-fruit.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-lotus-bloom.png",
           "x": 0.295,
           "y": 0.728,
           "visits": 0,
           "logs": 4,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lotus-fruit.png",
-          "size_scale": 0.92,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lotus-bloom.png",
+          "size_scale": 1.0,
           "growth": 54,
           "care_today": {
             "sun": 0,
@@ -173,7 +183,7 @@
           "visits": 0,
           "logs": 2,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-willow-flower.png",
-          "size_scale": 0.92,
+          "size_scale": 1.0,
           "growth": 54,
           "care_today": {
             "sun": 0,
@@ -188,7 +198,7 @@
           "stage": "empty",
           "status": "Available",
           "note": "Tap to inspect the detail-card flow.",
-          "sprite": "res://assets/sprites/sprout/ground/plot-soil-gpt-v3.png",
+          "sprite": "",
           "x": 0.72,
           "y": 0.728,
           "visits": 0,
@@ -201,31 +211,31 @@
           "id": "bench",
           "x": 0.17,
           "y": 0.822,
-          "size_scale": 1.0
+          "size_scale": 0.82
         },
         {
           "id": "lamp",
           "x": 0.835,
           "y": 0.806,
-          "size_scale": 1.0
+          "size_scale": 0.92
         },
         {
           "id": "pond",
           "x": 0.705,
           "y": 0.832,
-          "size_scale": 1.0
+          "size_scale": 0.86
         },
         {
           "id": "sign",
           "x": 0.148,
           "y": 0.424,
-          "size_scale": 1.0
+          "size_scale": 0.82
         },
         {
           "id": "flower-rock",
           "x": 0.842,
           "y": 0.62,
-          "size_scale": 1.0
+          "size_scale": 0.86
         }
       ]
     },
@@ -240,16 +250,16 @@
           "id": "harvested-1",
           "title": "Course Sunflower",
           "kind": "course",
-          "stage": "seed_saved",
+          "stage": "blossom",
           "status": "Archived",
           "note": "Finished course notes waiting for review.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-sunflower-seed_saved.png",
-          "x": 0.293,
-          "y": 0.445,
+          "sprite": "res://assets/sprites/web-normalized-stages/course-sunflower-blossom.png",
+          "x": 0.295,
+          "y": 0.471,
           "visits": 0,
           "logs": 5,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-sunflower-seed_saved.png",
-          "size_scale": 0.72,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-sunflower-blossom.png",
+          "size_scale": 1.0,
           "growth": 72,
           "care_today": {
             "sun": 0,
@@ -266,12 +276,12 @@
           "status": "Harvested",
           "note": "Useful references and summary cards are ready.",
           "sprite": "res://assets/sprites/web-normalized-stages/paper-camphor-fruit.png",
-          "x": 0.503,
-          "y": 0.445,
+          "x": 0.5,
+          "y": 0.471,
           "visits": 0,
           "logs": 6,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-camphor-fruit.png",
-          "size_scale": 0.72,
+          "size_scale": 1.0,
           "growth": 72,
           "care_today": {
             "sun": 0,
@@ -288,26 +298,26 @@
           "sprite": "res://assets/sprites/web-normalized-stages/paper-cherry-fruit.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.72,
+          "size_scale": 1.0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-cherry-fruit.png",
           "id": "harvested-3",
-          "x": 0.719,
-          "y": 0.445
+          "x": 0.72,
+          "y": 0.471
         },
         {
           "title": "Course Lavender",
           "kind": "course",
-          "stage": "seed_saved",
+          "stage": "blossom",
           "status": "Archived",
           "note": "Course material distilled into reusable seeds.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-lavender-seed_saved.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-lavender-blossom.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.82,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lavender-seed_saved.png",
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lavender-blossom.png",
           "id": "harvested-4",
-          "x": 0.293,
-          "y": 0.59
+          "x": 0.295,
+          "y": 0.592
         },
         {
           "title": "Paper Ginkgo",
@@ -318,26 +328,26 @@
           "sprite": "res://assets/sprites/web-normalized-stages/paper-ginkgo-flower.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.82,
+          "size_scale": 1.0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-ginkgo-flower.png",
           "id": "harvested-5",
-          "x": 0.503,
-          "y": 0.59
+          "x": 0.5,
+          "y": 0.592
         },
         {
           "title": "Course Lotus",
           "kind": "course",
-          "stage": "fruit",
+          "stage": "bloom",
           "status": "Completed",
           "note": "Finished exercises and reflections.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-lotus-fruit.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-lotus-bloom.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.82,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lotus-fruit.png",
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lotus-bloom.png",
           "id": "harvested-6",
-          "x": 0.719,
-          "y": 0.59
+          "x": 0.72,
+          "y": 0.592
         },
         {
           "title": "Paper Maple",
@@ -348,26 +358,26 @@
           "sprite": "res://assets/sprites/web-normalized-stages/paper-maple-fruit.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.90,
+          "size_scale": 1.0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-maple-fruit.png",
           "id": "harvested-7",
-          "x": 0.293,
-          "y": 0.735
+          "x": 0.295,
+          "y": 0.728
         },
         {
           "title": "Course Daisy",
           "kind": "course",
-          "stage": "seed_saved",
+          "stage": "blossom",
           "status": "Archived",
           "note": "Small course loop closed cleanly.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-daisy-seed_saved.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-daisy-blossom.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.90,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-daisy-seed_saved.png",
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-daisy-blossom.png",
           "id": "harvested-8",
-          "x": 0.503,
-          "y": 0.735
+          "x": 0.5,
+          "y": 0.728
         },
         {
           "title": "Empty Plot",
@@ -375,13 +385,77 @@
           "stage": "empty",
           "status": "Available",
           "note": "Reserved for future completed work.",
-          "sprite": "res://assets/sprites/sprout/ground/plot-soil-gpt-v3.png",
+          "sprite": "",
           "visits": 0,
           "logs": 0,
           "size_scale": 0.96,
           "id": "harvested-9",
-          "x": 0.719,
-          "y": 0.735
+          "x": 0.72,
+          "y": 0.728
+        },
+        {
+          "title": "Paper Pine",
+          "kind": "paper",
+          "stage": "fruit",
+          "status": "Harvested",
+          "note": "A completed reading trail with useful citations.",
+          "sprite": "res://assets/sprites/web-normalized-stages/paper-pine-fruit.png",
+          "visits": 0,
+          "logs": 3,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-pine-fruit.png",
+          "id": "harvested-10",
+          "x": 0.295,
+          "y": 0.471,
+          "growth": 72,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
+        },
+        {
+          "title": "Course Hydrangea",
+          "kind": "course",
+          "stage": "blossom",
+          "status": "Archived",
+          "note": "Finished course notes waiting for review.",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-hydrangea-blossom.png",
+          "visits": 0,
+          "logs": 4,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-hydrangea-blossom.png",
+          "id": "harvested-11",
+          "x": 0.5,
+          "y": 0.471,
+          "growth": 72,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          },
+          "sessions": 2
+        },
+        {
+          "title": "Paper Willow",
+          "kind": "paper",
+          "stage": "fruit",
+          "status": "Published",
+          "note": "Useful references and summary cards are ready.",
+          "sprite": "res://assets/sprites/web-normalized-stages/paper-willow-fruit.png",
+          "visits": 0,
+          "logs": 2,
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-willow-fruit.png",
+          "id": "harvested-12",
+          "x": 0.72,
+          "y": 0.471,
+          "growth": 72,
+          "care_today": {
+            "sun": 0,
+            "water": 0,
+            "fertilizer": 0
+          }
         }
       ],
       "decorations": [
@@ -389,31 +463,31 @@
           "id": "well",
           "x": 0.16,
           "y": 0.8,
-          "size_scale": 1.0
+          "size_scale": 0.9
         },
         {
           "id": "picnic",
           "x": 0.735,
           "y": 0.832,
-          "size_scale": 1.0
+          "size_scale": 0.86
         },
         {
           "id": "path",
           "x": 0.5,
           "y": 0.775,
-          "size_scale": 1.0
+          "size_scale": 0.86
         },
         {
           "id": "bench",
           "x": 0.82,
           "y": 0.615,
-          "size_scale": 1.0
+          "size_scale": 0.82
         },
         {
           "id": "workbench",
           "x": 0.172,
           "y": 0.43,
-          "size_scale": 1.0
+          "size_scale": 0.84
         }
       ]
     },
@@ -432,12 +506,12 @@
           "status": "Paused",
           "note": "A quiet project that should stay visible.",
           "sprite": "res://assets/sprites/web-normalized-stages/paper-pine-sapling.png",
-          "x": 0.293,
-          "y": 0.445,
+          "x": 0.295,
+          "y": 0.471,
           "visits": 0,
           "logs": 1,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-pine-sapling.png",
-          "size_scale": 0.82,
+          "size_scale": 1.0,
           "growth": 18,
           "care_today": {
             "sun": 0,
@@ -449,16 +523,16 @@
           "id": "dormant-2",
           "title": "Course Hydrangea",
           "kind": "course",
-          "stage": "sowing",
+          "stage": "seed",
           "status": "Waiting",
           "note": "A course seed for the next study cycle.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-hydrangea-sowing.png",
-          "x": 0.503,
-          "y": 0.445,
+          "sprite": "res://assets/sprites/web-normalized-stages/course-hydrangea-seed.png",
+          "x": 0.5,
+          "y": 0.471,
           "visits": 0,
           "logs": 0,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-hydrangea-sowing.png",
-          "size_scale": 0.82,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-hydrangea-seed.png",
+          "size_scale": 1.0,
           "growth": 0,
           "care_today": {
             "sun": 0,
@@ -476,26 +550,26 @@
           "sprite": "res://assets/sprites/web-normalized-stages/paper-willow-sapling.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.82,
+          "size_scale": 1.0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-willow-sapling.png",
           "id": "dormant-3",
-          "x": 0.719,
-          "y": 0.445
+          "x": 0.72,
+          "y": 0.471
         },
         {
           "title": "Course Rose",
           "kind": "course",
-          "stage": "growing",
+          "stage": "seedling",
           "status": "Paused",
           "note": "Practice cycle stopped midway.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-rose-growing.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-rose-seedling.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.92,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-rose-growing.png",
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-rose-seedling.png",
           "id": "dormant-4",
-          "x": 0.293,
-          "y": 0.59
+          "x": 0.295,
+          "y": 0.592
         },
         {
           "title": "Paper Maple",
@@ -506,26 +580,26 @@
           "sprite": "res://assets/sprites/web-normalized-stages/paper-maple-seed.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.92,
+          "size_scale": 1.0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-maple-seed.png",
           "id": "dormant-5",
-          "x": 0.503,
-          "y": 0.59
+          "x": 0.5,
+          "y": 0.592
         },
         {
           "title": "Course Lotus",
           "kind": "course",
-          "stage": "sowing",
+          "stage": "seed",
           "status": "Waiting",
           "note": "Course seed waiting for the next study sprint.",
-          "sprite": "res://assets/sprites/web-normalized-stages/course-lotus-sowing.png",
+          "sprite": "res://assets/sprites/web-normalized-stages/course-lotus-seed.png",
           "visits": 0,
           "logs": 0,
-          "size_scale": 0.92,
-          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lotus-sowing.png",
+          "size_scale": 1.0,
+          "portrait_sprite": "res://assets/sprites/web-normalized-stages/course-lotus-seed.png",
           "id": "dormant-6",
-          "x": 0.719,
-          "y": 0.59
+          "x": 0.72,
+          "y": 0.592
         },
         {
           "title": "Empty Plot",
@@ -533,13 +607,13 @@
           "stage": "empty",
           "status": "Available",
           "note": "Quiet land for parked ideas.",
-          "sprite": "res://assets/sprites/sprout/ground/plot-soil-gpt-v3.png",
+          "sprite": "",
           "visits": 0,
           "logs": 0,
           "size_scale": 1.0,
           "id": "dormant-7",
-          "x": 0.293,
-          "y": 0.735
+          "x": 0.295,
+          "y": 0.728
         },
         {
           "title": "Paper Ginkgo",
@@ -553,8 +627,8 @@
           "size_scale": 1.0,
           "portrait_sprite": "res://assets/sprites/web-normalized-stages/paper-ginkgo-sapling.png",
           "id": "dormant-8",
-          "x": 0.503,
-          "y": 0.735
+          "x": 0.5,
+          "y": 0.728
         },
         {
           "title": "Empty Plot",
@@ -562,13 +636,13 @@
           "stage": "empty",
           "status": "Available",
           "note": "Open dormant space.",
-          "sprite": "res://assets/sprites/sprout/ground/plot-soil-gpt-v3.png",
+          "sprite": "",
           "visits": 0,
           "logs": 0,
           "size_scale": 1.0,
           "id": "dormant-9",
-          "x": 0.719,
-          "y": 0.735
+          "x": 0.72,
+          "y": 0.728
         }
       ],
       "decorations": [
@@ -576,31 +650,31 @@
           "id": "pond",
           "x": 0.18,
           "y": 0.812,
-          "size_scale": 1.0
+          "size_scale": 0.86
         },
         {
           "id": "sign",
           "x": 0.83,
           "y": 0.548,
-          "size_scale": 1.0
+          "size_scale": 0.82
         },
         {
           "id": "lamp",
           "x": 0.22,
           "y": 0.43,
-          "size_scale": 1.0
+          "size_scale": 0.92
         },
         {
           "id": "flower-rock",
           "x": 0.79,
           "y": 0.82,
-          "size_scale": 1.0
+          "size_scale": 0.86
         },
         {
           "id": "bridge",
           "x": 0.5,
           "y": 0.772,
-          "size_scale": 1.0
+          "size_scale": 0.86
         }
       ]
     }
@@ -608,75 +682,75 @@
   "decoration_catalog": [
     {
       "id": "path",
-      "title": "Stone Path",
-      "price": 8,
+      "title": "石子路",
+      "price": 45,
       "sprite": "res://assets/sprites/sprout/decor/decor-stone-path.png"
     },
     {
       "id": "bench",
-      "title": "Bench",
-      "price": 12,
+      "title": "木凳",
+      "price": 55,
       "sprite": "res://assets/sprites/sprout/decor/decor-wood-bench.png"
     },
     {
       "id": "lamp",
-      "title": "Lamp",
-      "price": 10,
+      "title": "灯盏",
+      "price": 75,
       "sprite": "res://assets/sprites/sprout/decor/decor-lamp.png"
     },
     {
       "id": "pond",
-      "title": "Pond",
-      "price": 18,
+      "title": "池塘",
+      "price": 120,
       "sprite": "res://assets/sprites/sprout/decor/decor-pond.png"
     },
     {
       "id": "well",
-      "title": "Well",
-      "price": 16,
+      "title": "水井",
+      "price": 105,
       "sprite": "res://assets/sprites/sprout/decor/decor-well.png"
     },
     {
       "id": "workbench",
-      "title": "Workbench",
-      "price": 14,
+      "title": "工作台",
+      "price": 80,
       "sprite": "res://assets/sprites/sprout/decor/decor-workbench.png"
     },
     {
       "id": "sign",
-      "title": "Sign",
-      "price": 6,
+      "title": "木牌",
+      "price": 45,
       "sprite": "res://assets/sprites/sprout/decor/decor-sign.png"
     },
     {
       "id": "flower-rock",
-      "title": "Flower Rock",
-      "price": 9,
+      "title": "花石堆",
+      "price": 65,
       "sprite": "res://assets/sprites/sprout/decor/decor-flower-rock.png"
     },
     {
       "id": "bridge",
-      "title": "Bridge",
-      "price": 20,
+      "title": "木桥",
+      "price": 95,
       "sprite": "res://assets/sprites/sprout/decor/decor-wood-bridge.png"
     },
     {
       "id": "picnic",
-      "title": "Picnic Rug",
-      "price": 15,
+      "title": "阅读垫",
+      "price": 80,
       "sprite": "res://assets/sprites/sprout/decor/decor-picnic-rug.png"
     }
   ],
   "owned_decorations": {
-    "path": 2,
-    "bench": 1,
-    "lamp": 1,
-    "pond": 1,
-    "well": 1,
+    "path": 0,
+    "bench": 0,
+    "lamp": 0,
+    "pond": 0,
+    "well": 0,
     "workbench": 0,
-    "sign": 1,
+    "sign": 0,
     "flower-rock": 0,
     "bridge": 0,
-    "picnic": 1
+    "picnic": 0
   }
 }

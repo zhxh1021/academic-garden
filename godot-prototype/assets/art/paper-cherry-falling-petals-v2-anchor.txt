@@ -1,4 +1,0 @@
-root_anchor=(128, 232)
-base_y=210
-angles_degrees=[0.0, -1.1, -2.0, -0.7, 1.1, 0.0]
-source=paper-cherry-falling-petals-v2-sheet.png

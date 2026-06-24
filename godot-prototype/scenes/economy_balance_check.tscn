@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://academic_garden_economy_balance_check"]
+
+[ext_resource type="Script" path="res://scripts/economy_balance_check.gd" id="1_economy_check"]
+
+[node name="EconomyBalanceCheck" type="Node"]
+script = ExtResource("1_economy_check")
